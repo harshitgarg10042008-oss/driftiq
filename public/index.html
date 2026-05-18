@@ -26,27 +26,36 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(124,107,255,0.12),transparent);pointer-events:none;z-index:0;}
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,107,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,107,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
 
-/* LOGIN */
+/* LOGIN PAGE */
 #loginPage{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
-.login-box{background:var(--s1);border:1px solid var(--border);border-radius:28px;padding:40px 36px;width:100%;max-width:400px;animation:popIn 0.4s ease;}
+.login-container{display:flex;gap:24px;width:100%;max-width:900px;animation:popIn 0.4s ease;}
+.login-box,.register-box{background:var(--s1);border:1px solid var(--border);border-radius:28px;padding:40px 36px;flex:1;min-width:0;}
 .login-logo{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:6px;}
 .login-sub{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:32px;}
 .field{margin-bottom:16px;}
 .field label{display:block;font-size:0.75rem;color:var(--muted);margin-bottom:7px;font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;}
 .field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;outline:none;transition:border-color 0.2s;}
 .field input:focus{border-color:var(--accent);}
-.login-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8fff);border:none;color:white;padding:14px;border-radius:13px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;margin-top:8px;transition:all 0.2s;box-shadow:0 4px 24px rgba(124,107,255,0.35);}
-.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,107,255,0.5);}
+.login-btn,.register-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8fff);border:none;color:white;padding:14px;border-radius:13px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;margin-top:8px;transition:all 0.2s;box-shadow:0 4px 24px rgba(124,107,255,0.35);}
+.login-btn:hover,.register-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,107,255,0.5);}
 .login-hint{text-align:center;color:var(--muted);font-size:0.78rem;margin-top:16px;}
 .login-hint span{color:var(--accent);}
-.login-error{color:#ff6b9d;font-size:0.82rem;text-align:center;margin-top:10px;display:none;}
+.login-error,.register-error{color:#ff6b9d;font-size:0.82rem;text-align:center;margin-top:10px;display:none;}
+.tab-switch{text-align:center;margin-top:20px;color:var(--muted);font-size:0.85rem;}
+.tab-switch a{color:var(--accent);cursor:pointer;text-decoration:underline;}
+.register-box{display:none;}
 
 /* NAV */
 nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-center{display:flex;gap:2px;align-items:center;flex:1;justify-content:center;}
+.nav-btn{background:none;border:1px solid transparent;color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-family:'Syne',sans-serif;transition:all 0.2s;}
+.nav-btn.active{border-color:var(--accent);color:var(--accent);}
+.nav-btn:hover{color:var(--accent);}
 .nav-right{display:flex;align-items:center;gap:10px;}
 .user-chip{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:0.78rem;font-family:'Syne',sans-serif;color:var(--muted);}
 .user-chip span{color:var(--accent);}
+.admin-badge{background:rgba(255,107,157,0.2);color:var(--accent2);padding:4px 8px;border-radius:6px;font-size:0.7rem;margin-left:6px;}
 .logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:10px;cursor:pointer;font-size:0.78rem;font-family:'Syne',sans-serif;transition:all 0.2s;}
 .logout-btn:hover{border-color:var(--accent2);color:var(--accent2);}
 
@@ -58,6 +67,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 .hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:800;line-height:1.1;margin-bottom:8px;}
 .hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .hero p{color:var(--muted);font-size:0.92rem;}
+
+/* FOLDER NAV */
+.folder-nav{display:flex;gap:8px;margin-bottom:20px;align-items:center;flex-wrap:wrap;}
+.folder-nav a,.folder-nav span{font-size:0.85rem;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:8px;transition:all 0.2s;}
+.folder-nav a:hover,.folder-nav span.active{color:var(--accent);background:rgba(124,107,255,0.1);}
+.folder-sep{color:var(--muted);}
 
 /* UPLOAD */
 .upload-zone{border:2px dashed var(--border);border-radius:22px;padding:36px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--card);margin-bottom:28px;animation:fadeUp 0.5s 0.05s ease both;}
@@ -86,6 +101,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 .filter-tabs{display:flex;gap:6px;}
 .ftab{background:var(--s2);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:0.76rem;cursor:pointer;transition:all 0.2s;font-family:'Syne',sans-serif;font-weight:600;}
 .ftab.active,.ftab:hover{background:rgba(124,107,255,0.15);border-color:var(--accent);color:var(--accent);}
+.folder-tools{display:flex;gap:8px;}
+.folder-btn{background:var(--s2);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:0.76rem;cursor:pointer;transition:all 0.2s;font-family:'Syne',sans-serif;font-weight:600;}
+.folder-btn:hover{border-color:var(--accent);color:var(--accent);}
 
 /* GRID */
 .section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:14px;animation:fadeUp 0.5s 0.2s ease both;}
@@ -94,6 +112,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 .mcard:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 30px rgba(124,107,255,0.18);}
 .mthumb{width:100%;height:118px;object-fit:cover;display:block;}
 .mplaceholder{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:linear-gradient(135deg,var(--s2),var(--s1));}
+.folder-item{width:100%;height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(124,107,255,0.2),rgba(124,107,255,0.1));font-size:2.4rem;}
 .minfo{padding:10px 11px;}
 .mname{font-family:'Syne',sans-serif;font-size:0.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
 .mmeta{font-size:0.68rem;color:var(--muted);}
@@ -104,11 +123,36 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 .dbtn:hover{background:var(--green);}
 .xbtn{background:rgba(255,107,157,0.9);color:white;}
 .xbtn:hover{background:var(--accent2);}
+.sbtn{background:rgba(124,107,255,0.9);color:white;}
+.sbtn:hover{background:var(--accent);}
 
 /* EMPTY */
 .empty{text-align:center;padding:56px 20px;color:var(--muted);grid-column:1/-1;}
 .empty .ei{font-size:2.8rem;margin-bottom:10px;}
 .empty p{font-size:0.88rem;}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:450;align-items:center;justify-content:center;padding:20px;}
+.modal.open{display:flex;}
+.modal-box{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:450px;width:100%;animation:popIn 0.3s ease;}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:20px;}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;transition:color 0.2s;}
+.modal-close:hover{color:var(--text);}
+.modal-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:14px;outline:none;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8fff);border:none;color:white;padding:12px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.modal-btn:hover{transform:translateY(-2px);}
+
+/* ADMIN PANEL */
+.admin-view{display:none;}
+.admin-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.admin-table thead{background:var(--s2);}
+.admin-table th{padding:12px;text-align:left;font-family:'Syne',sans-serif;font-weight:600;font-size:0.85rem;color:var(--muted);}
+.admin-table td{padding:12px;border-top:1px solid var(--border);}
+.admin-table tr:hover{background:var(--s2);}
+.admin-actions{display:flex;gap:8px;}
+.admin-del{background:rgba(255,107,157,0.2);color:var(--accent2);border:1px solid var(--accent2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.75rem;transition:all 0.2s;}
+.admin-del:hover{background:var(--accent2);color:white;}
 
 /* TOAST */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:11px 20px;font-size:0.83rem;font-family:'Syne',sans-serif;z-index:999;transition:transform 0.3s;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,0.4);}
@@ -117,14 +161,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 .toast.err{border-color:var(--accent2);color:var(--accent2);}
 .toast.info{border-color:var(--accent);color:var(--accent);}
 
-/* LIGHTBOX */
-.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:400;align-items:center;justify-content:center;padding:20px;}
-.lb.open{display:flex;}
-.lb img{max-width:90vw;max-height:85vh;border-radius:14px;object-fit:contain;}
-.lb-close{position:absolute;top:18px;right:18px;width:38px;height:38px;background:var(--s2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 @keyframes popIn{from{opacity:0;transform:scale(0.93);}to{opacity:1;transform:scale(1);}}
+
+@media(max-width:900px){
+  .login-container{flex-direction:column;}
+  .register-box{display:block!important;margin-top:20px;}
+}
 
 @media(max-width:480px){
   .stats{gap:8px;}
@@ -136,85 +179,228 @@ nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filt
 </head>
 <body>
 
-<!-- LOGIN -->
+<body>
+
+<!-- LOGIN PAGE -->
 <div id="loginPage">
-  <div class="login-box">
-    <div class="login-logo">DriftIQ</div>
-    <div class="login-sub">Your personal Telegram cloud storage</div>
-    <div class="field"><label>Username</label><input type="text" id="uname" placeholder="harshit" /></div>
-    <div class="field"><label>Password</label><input type="password" id="upass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
-    <button class="login-btn" onclick="login()">Sign In →</button>
-    <div class="login-error" id="loginErr">❌ Invalid username or password</div>
-    <div class="login-hint">Default: <span>harshit</span> / <span>driftiq123</span></div>
+  <div class="login-container">
+    <!-- LOGIN -->
+    <div class="login-box" id="loginBox">
+      <div class="login-logo">DriftIQ</div>
+      <div class="login-sub">Your personal Telegram cloud storage</div>
+      <div class="field"><label>Username</label><input type="text" id="uname" placeholder="Enter username" /></div>
+      <div class="field"><label>Password</label><input type="password" id="upass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
+      <button class="login-btn" onclick="login()">Sign In →</button>
+      <div class="login-error" id="loginErr">❌ Invalid username or password</div>
+      <div class="login-hint">Default: <span>harshit</span> / <span>driftiq123</span></div>
+      <div class="tab-switch">Don't have account? <a onclick="switchTab('register')">Register</a></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="register-box" id="registerBox">
+      <div class="login-logo">DriftIQ</div>
+      <div class="login-sub">Create your account</div>
+      <div class="field"><label>Username</label><input type="text" id="regname" placeholder="Choose username" /></div>
+      <div class="field"><label>Password</label><input type="password" id="regpass" placeholder="••••••••" /></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="regpass2" placeholder="••••••••" onkeydown="if(event.key==='Enter')register()" /></div>
+      <button class="register-btn" onclick="register()">Create Account →</button>
+      <div class="register-error" id="registerErr"></div>
+      <div class="tab-switch">Already have account? <a onclick="switchTab('login')">Sign In</a></div>
+    </div>
   </div>
 </div>
-
-<!-- LIGHTBOX -->
-<div class="lb" id="lb" onclick="closeLb()">
-  <button class="lb-close">✕</button>
-  <img id="lbImg" src="" alt=""/>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
 
 <!-- NAV -->
 <nav id="mainNav" style="display:none">
   <div class="logo">DriftIQ</div>
+  <div class="nav-center">
+    <button class="nav-btn active" onclick="switchView('files',this)">📁 Files</button>
+    <button class="nav-btn" id="adminNavBtn" onclick="switchView('admin',this)" style="display:none;">⚙️ Admin</button>
+  </div>
   <div class="nav-right">
-    <div class="user-chip">👤 <span id="navUser"></span></div>
+    <div class="user-chip">👤 <span id="navUser"></span><span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </nav>
 
 <!-- APP -->
 <div class="app" id="mainApp" style="display:none">
-  <div class="hero">
-    <h1>Your <span>Media Vault</span></h1>
-    <p>Upload anything. Store forever. Powered by Telegram.</p>
+
+  <!-- FILES VIEW -->
+  <div id="filesView">
+    <div class="hero">
+      <h1>Your <span>Media Vault</span></h1>
+      <p>Upload anything. Store forever. Powered by Telegram.</p>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">📤</div>
+      <h3>Drop files here</h3>
+      <p>Photos, videos, docs — any file up to 2GB</p>
+      <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose Files</button>
+      <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)"/>
+      <div class="progress-wrap" id="pw"><div class="progress-fill" id="pf"></div></div>
+      <div class="progress-label" id="pl"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat"><div class="n" id="sTotal">0</div><div class="l">Files</div></div>
+      <div class="stat"><div class="n" id="sSize">0 MB</div><div class="l">Stored</div></div>
+      <div class="stat"><div class="n">∞</div><div class="l">Free Space</div></div>
+    </div>
+
+    <!-- FOLDER NAV -->
+    <div class="folder-nav" id="folderNav">
+      <span class="active" onclick="goToFolder(null)">📁 All Files</span>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <input class="search-box" placeholder="🔍 Search files..." oninput="searchFiles(this.value)" />
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="filter('all',this)">All</button>
+        <button class="ftab" onclick="filter('image',this)">Images</button>
+        <button class="ftab" onclick="filter('video',this)">Videos</button>
+        <button class="ftab" onclick="filter('other',this)">Docs</button>
+      </div>
+      <div class="folder-tools">
+        <button class="folder-btn" onclick="openNewFolderModal()">+ Folder</button>
+      </div>
+    </div>
+
+    <div class="section-title" id="sectionTitle">📁 My Files</div>
+    <div class="media-grid" id="grid"></div>
   </div>
 
-  <!-- UPLOAD -->
-  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-    <div class="upload-icon">📤</div>
-    <h3>Drop files here</h3>
-    <p>Photos, videos, docs — any file up to 2GB</p>
-    <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose Files</button>
-    <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)"/>
-    <div class="progress-wrap" id="pw"><div class="progress-fill" id="pf"></div></div>
-    <div class="progress-label" id="pl"></div>
-  </div>
+  <!-- ADMIN VIEW -->
+  <div class="admin-view" id="adminView">
+    <div class="hero">
+      <h1>Admin <span>Panel</span></h1>
+      <p>Manage users and monitor all files</p>
+    </div>
 
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat"><div class="n" id="sTotal">0</div><div class="l">Files</div></div>
-    <div class="stat"><div class="n" id="sSize">0 MB</div><div class="l">Stored</div></div>
-    <div class="stat"><div class="n">∞</div><div class="l">Free Space</div></div>
-  </div>
+    <div style="margin-bottom:32px;">
+      <h2 style="font-family:Syne;font-size:1.1rem;margin-bottom:16px;">👥 All Users</h2>
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsers"></tbody>
+        </table>
+      </div>
+    </div>
 
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <input class="search-box" placeholder="🔍 Search files..." oninput="searchFiles(this.value)" />
-    <div class="filter-tabs">
-      <button class="ftab active" onclick="filter('all',this)">All</button>
-      <button class="ftab" onclick="filter('image',this)">Images</button>
-      <button class="ftab" onclick="filter('video',this)">Videos</button>
-      <button class="ftab" onclick="filter('other',this)">Docs</button>
+    <div>
+      <h2 style="font-family:Syne;font-size:1.1rem;margin-bottom:16px;">📊 All Files</h2>
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>File Name</th>
+              <th>Owner</th>
+              <th>Size</th>
+              <th>Uploaded</th>
+            </tr>
+          </thead>
+          <tbody id="adminFiles"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div class="section-title">📁 My Files</div>
-  <div class="media-grid" id="grid"></div>
 </div>
+
+<!-- MODALS -->
+<div class="modal" id="shareModal" onclick="if(event.target===this)closeModal('shareModal')">
+  <div class="modal-box" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('shareModal')">✕</button>
+    <div class="modal-title">📤 Share File</div>
+    <p style="color:var(--muted);margin-bottom:16px;font-size:0.9rem;">Anyone with this link can download the file without logging in:</p>
+    <input class="modal-input" id="shareLink" readonly />
+    <button class="modal-btn" onclick="copyShareLink()">📋 Copy Link</button>
+  </div>
+</div>
+
+<div class="modal" id="folderModal" onclick="if(event.target===this)closeModal('folderModal')">
+  <div class="modal-box" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
+    <div class="modal-title">➕ New Folder</div>
+    <input class="modal-input" id="folderName" placeholder="Folder name" onkeydown="if(event.key==='Enter')createFolder()" />
+    <button class="modal-btn" onclick="createFolder()">Create Folder</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
 let TOKEN = localStorage.getItem('dq_token') || '';
 let USERNAME = localStorage.getItem('dq_user') || '';
+let ISADMIN = localStorage.getItem('dq_admin') === 'true';
 let allFiles = [];
+let allFolders = [];
+let currentFolder = null;
 let currentFilter = 'all';
 let searchQuery = '';
 
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  if (tab === 'login') {
+    document.getElementById('loginBox').style.display = 'block';
+    document.getElementById('registerBox').style.display = 'none';
+  } else {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('registerBox').style.display = 'block';
+  }
+}
+
+function switchView(view, btn) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('filesView').style.display = view === 'files' ? 'block' : 'none';
+  document.getElementById('adminView').style.display = view === 'admin' ? 'block' : 'none';
+  if (view === 'admin') loadAdminData();
+}
+
 // ── AUTH ──
+async function register() {
+  const u = document.getElementById('regname').value.trim();
+  const p = document.getElementById('regpass').value.trim();
+  const p2 = document.getElementById('regpass2').value.trim();
+  const err = document.getElementById('registerErr');
+  err.style.display = 'none';
+  if (!u || !p || !p2) { err.textContent = '❌ All fields required'; err.style.display = 'block'; return; }
+  if (u.length < 3) { err.textContent = '❌ Username must be 3+ chars'; err.style.display = 'block'; return; }
+  if (p.length < 6) { err.textContent = '❌ Password must be 6+ chars'; err.style.display = 'block'; return; }
+  if (p !== p2) { err.textContent = '❌ Passwords do not match'; err.style.display = 'block'; return; }
+  try {
+    const r = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    TOKEN = d.token;
+    USERNAME = d.username;
+    localStorage.setItem('dq_token', TOKEN);
+    localStorage.setItem('dq_user', USERNAME);
+    localStorage.setItem('dq_admin', false);
+    showApp();
+  } catch (e) {
+    err.textContent = '❌ ' + e.message;
+    err.style.display = 'block';
+  }
+}
+
 async function login() {
   const u = document.getElementById('uname').value.trim();
   const p = document.getElementById('upass').value.trim();
@@ -229,8 +415,10 @@ async function login() {
     if (!r.ok) throw new Error(d.error);
     TOKEN = d.token;
     USERNAME = d.username;
+    ISADMIN = d.isAdmin || false;
     localStorage.setItem('dq_token', TOKEN);
     localStorage.setItem('dq_user', USERNAME);
+    localStorage.setItem('dq_admin', ISADMIN);
     showApp();
   } catch {
     document.getElementById('loginErr').style.display = 'block';
@@ -238,12 +426,14 @@ async function login() {
 }
 
 function logout() {
-  TOKEN = ''; USERNAME = '';
+  TOKEN = ''; USERNAME = ''; ISADMIN = false;
   localStorage.removeItem('dq_token');
   localStorage.removeItem('dq_user');
+  localStorage.removeItem('dq_admin');
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('mainNav').style.display = 'none';
   document.getElementById('mainApp').style.display = 'none';
+  switchTab('login');
 }
 
 function showApp() {
@@ -251,7 +441,12 @@ function showApp() {
   document.getElementById('mainNav').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'block';
   document.getElementById('navUser').textContent = USERNAME;
+  if (ISADMIN) {
+    document.getElementById('adminNavBtn').style.display = 'inline-block';
+    document.getElementById('adminBadge').style.display = 'inline-block';
+  }
   loadFiles();
+  loadFolders();
 }
 
 window.onload = () => { if (TOKEN) showApp(); };
@@ -265,6 +460,29 @@ async function loadFiles() {
   } catch { toast('❌ Failed to load files', 'err'); }
 }
 
+async function loadFolders() {
+  try {
+    const r = await fetch('/api/folders', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    allFolders = await r.json();
+    renderFolderNav();
+  } catch { }
+}
+
+function renderFolderNav() {
+  const nav = document.getElementById('folderNav');
+  nav.innerHTML = '<span class="active" onclick="goToFolder(null)">📁 All Files</span>';
+  if (currentFolder) {
+    const folder = allFolders.find(f => f.id === currentFolder);
+    if (folder) nav.innerHTML += `<span class="folder-sep">/</span><span class="active" onclick="goToFolder('${currentFolder}')">${folder.name}</span>`;
+  }
+}
+
+function goToFolder(folderId) {
+  currentFolder = folderId;
+  renderFolderNav();
+  renderFiles();
+}
+
 async function handleFiles(fileList) {
   for (const file of fileList) await uploadFile(file);
   document.getElementById('fileInput').value = '';
@@ -275,6 +493,7 @@ async function uploadFile(file) {
   setP(20);
   const fd = new FormData();
   fd.append('file', file);
+  if (currentFolder) fd.append('folderId', currentFolder);
   try {
     setP(50);
     const r = await fetch('/api/upload', {
@@ -315,9 +534,101 @@ async function deleteFile(id) {
   toast('🗑️ Deleted', 'info');
 }
 
+async function shareFile(fileId, fileName) {
+  try {
+    const r = await fetch('/api/shares', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+      body: JSON.stringify({ fileId })
+    });
+    const d = await r.json();
+    document.getElementById('shareLink').value = window.location.origin + d.shareUrl;
+    document.getElementById('shareModal').classList.add('open');
+  } catch { toast('❌ Failed to create share link', 'err'); }
+}
+
+function copyShareLink() {
+  const link = document.getElementById('shareLink');
+  link.select();
+  document.execCommand('copy');
+  toast('📋 Link copied!', 'ok');
+}
+
+// ── FOLDERS ──
+function openNewFolderModal() {
+  document.getElementById('folderName').value = '';
+  document.getElementById('folderModal').classList.add('open');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('open');
+}
+
+async function createFolder() {
+  const name = document.getElementById('folderName').value.trim();
+  if (!name) return;
+  try {
+    const r = await fetch('/api/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+      body: JSON.stringify({ name, parentFolderId: currentFolder })
+    });
+    const d = await r.json();
+    allFolders.push(d);
+    renderFolderNav();
+    renderFiles();
+    closeModal('folderModal');
+    toast('📁 Folder created!', 'ok');
+  } catch { toast('❌ Failed to create folder', 'err'); }
+}
+
+// ── ADMIN ──
+async function loadAdminData() {
+  try {
+    const r1 = await fetch('/api/admin/users', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    const users = await r1.json();
+    const r2 = await fetch('/api/admin/files', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    const files = await r2.json();
+    
+    document.getElementById('adminUsers').innerHTML = users.map(u => `
+      <tr>
+        <td>${u.username}</td>
+        <td>${u.isAdmin ? '👑 Admin' : '👤 User'}</td>
+        <td>${timeAgo(u.createdAt)}</td>
+        <td>${u.isAdmin ? '—' : `<button class="admin-del" onclick="deleteUser(${u.id})">Delete</button>`}</td>
+      </tr>`).join('');
+    
+    document.getElementById('adminFiles').innerHTML = files.map(f => `
+      <tr>
+        <td>${f.name}</td>
+        <td>${f.uploadedBy}</td>
+        <td>${fmtSize(f.size)}</td>
+        <td>${timeAgo(f.date)}</td>
+      </tr>`).join('');
+  } catch { toast('❌ Failed to load admin data', 'err'); }
+}
+
+async function deleteUser(userId) {
+  if (!confirm('Delete this user and all their files?')) return;
+  try {
+    const r = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + TOKEN } });
+    if (!r.ok) throw new Error('Failed');
+    loadAdminData();
+    toast('👤 User deleted', 'ok');
+  } catch { toast('❌ Failed to delete user', 'err'); }
+}
+
 // ── RENDER ──
 function renderFiles() {
   let list = allFiles;
+  if (currentFolder) {
+    list = list.filter(f => f.folderId === currentFolder);
+  } else {
+    list = list.filter(f => !f.folderId);
+  }
+  
+  const folders = allFolders.filter(f => currentFolder ? f.parentFolderId === currentFolder : !f.parentFolderId);
+  
   if (currentFilter !== 'all') {
     list = list.filter(f =>
       currentFilter === 'image' ? f.type.startsWith('image/') :
@@ -325,23 +636,36 @@ function renderFiles() {
       !f.type.startsWith('image/') && !f.type.startsWith('video/')
     );
   }
-  if (searchQuery) list = list.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  if (searchQuery) {
+    list = list.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    folders = folders.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }
 
   const grid = document.getElementById('grid');
   document.getElementById('sTotal').textContent = allFiles.length;
   document.getElementById('sSize').textContent = fmtSize(allFiles.reduce((s,f)=>s+f.size,0));
 
-  if (!list.length) {
+  if (!list.length && !folders.length) {
     grid.innerHTML = `<div class="empty"><div class="ei">🌌</div><p>No files found</p></div>`;
     return;
   }
 
   const emoji = t => t.startsWith('image/') ? '🖼️' : t.startsWith('video/') ? '🎬' : t.startsWith('audio/') ? '🎵' : t.includes('pdf') ? '📄' : '📁';
 
-  grid.innerHTML = list.map(f => `
+  let html = folders.map(f => `
+    <div class="mcard" onclick="goToFolder('${f.id}')">
+      <div class="folder-item">📂</div>
+      <div class="minfo">
+        <div class="mname">${f.name}</div>
+        <div class="mmeta">Folder</div>
+      </div>
+    </div>`).join('');
+
+  html += list.map(f => `
     <div class="mcard">
       <div class="mplaceholder">${emoji(f.type)}</div>
       <div class="mactions">
+        <button class="abtn sbtn" onclick="event.stopPropagation();shareFile('${f.id}','${f.name}')" title="Share">🔗</button>
         <button class="abtn dbtn" onclick="event.stopPropagation();downloadFile('${f.fileId}','${f.name}')" title="Download">⬇</button>
         <button class="abtn xbtn" onclick="event.stopPropagation();deleteFile('${f.id}')" title="Delete">✕</button>
       </div>
@@ -350,6 +674,8 @@ function renderFiles() {
         <div class="mmeta">${fmtSize(f.size)} · ${timeAgo(f.date)}</div>
       </div>
     </div>`).join('');
+
+  grid.innerHTML = html || `<div class="empty"><div class="ei">🌌</div><p>No files found</p></div>`;
 }
 
 function filter(type, btn) {
@@ -367,10 +693,6 @@ zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add(
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
 zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
 
-// ── LIGHTBOX ──
-function openLb(src) { document.getElementById('lbImg').src = src; document.getElementById('lb').classList.add('open'); }
-function closeLb() { document.getElementById('lb').classList.remove('open'); }
-
 // ── HELPERS ──
 function fmtSize(b) {
   if (b < 1024) return b + ' B';
@@ -378,6 +700,7 @@ function fmtSize(b) {
   if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
   return (b/1073741824).toFixed(1) + ' GB';
 }
+
 function timeAgo(iso) {
   const d = (Date.now() - new Date(iso)) / 1000;
   if (d < 60) return 'just now';
@@ -385,17 +708,20 @@ function timeAgo(iso) {
   if (d < 86400) return Math.floor(d/3600) + 'h ago';
   return Math.floor(d/86400) + 'd ago';
 }
+
 function toast(msg, type='info') {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
 function showProgress(show, text='') {
   document.getElementById('pw').style.display = show ? 'block' : 'none';
   document.getElementById('pl').style.display = show ? 'block' : 'none';
   document.getElementById('pl').textContent = text;
   if (!show) setP(0);
 }
+
 function setP(v) { document.getElementById('pf').style.width = v + '%'; }
 </script>
 </body>
