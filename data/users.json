@@ -1,7 +1,16 @@
 [
   {
-    "id": 1,
+    "id": "a627806d-7539-4771-9138-7da260e6e2aa",
     "username": "harshit",
-    "password": "$2a$10$aiPvh/zINveQIc3jGhLRA.ynLcerwn8LQ8UBIHtqrbhgLI6W8WPya"
+    "password": "$2a$10$7FYYSmU1FVRyWeIzkgbiQ.RvHTnsvJ6aizZmNUTUE4OIQZIkz2cHa",
+    "role": "admin",
+    "createdAt": "2026-05-18T12:07:45.426Z"
+  },
+  {
+    "id": "8cfeccad-24f5-4b16-b545-05e454dc73ab",
+    "username": "admin",
+    "password": "$2a$10$VUURTd4Dtok3zYvaYnck3uO15hSvUkv.jwN8AzVC6qQ28SDUTTo4.",
+    "role": "admin",
+    "createdAt": "2026-05-18T12:07:45.488Z"
   }
 ]
