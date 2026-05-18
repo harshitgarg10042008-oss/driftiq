@@ -34,7 +34,9 @@ function writeDB(file, data) {
 // Initialize database
 function initDB() {
   const users = readDB(USERS_DB);
-  if (users.length === 0) {
+  
+  // Create harshit admin if doesn't exist
+  if (!users.find(u => u.username === 'harshit')) {
     const hash = bcrypt.hashSync('driftiq123', 10);
     users.push({ 
       id: 1, 
@@ -43,9 +45,24 @@ function initDB() {
       isAdmin: true,
       createdAt: new Date().toISOString()
     });
-    writeDB(USERS_DB, users);
-    console.log('✅ Default admin user created: harshit / driftiq123');
+    console.log('✅ Admin user created: harshit / driftiq123');
   }
+  
+  // Create admin account if doesn't exist
+  if (!users.find(u => u.username === 'admin')) {
+    const hash = bcrypt.hashSync('admin123', 10);
+    users.push({ 
+      id: 999, 
+      username: 'admin', 
+      password: hash,
+      isAdmin: true,
+      createdAt: new Date().toISOString()
+    });
+    console.log('✅ Admin user created: admin / admin123');
+  }
+  
+  writeDB(USERS_DB, users);
+  
   // Ensure other files exist
   if (!fs.existsSync(FILES_DB)) writeDB(FILES_DB, []);
   if (!fs.existsSync(FOLDERS_DB)) writeDB(FOLDERS_DB, []);
