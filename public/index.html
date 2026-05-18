@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DriftIQ — Personal Cloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #08080f;
+  --s1: #0f0f1a;
+  --s2: #161625;
+  --s3: #1e1e30;
+  --border: #2a2a42;
+  --accent: #7c6bff;
+  --accent2: #ff6b9d;
+  --green: #4ade80;
+  --text: #eeeeff;
+  --muted: #6b6b8f;
+  --card: #111120;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* BG */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(124,107,255,0.12),transparent);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,107,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,107,255,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+
+/* LOGIN */
+#loginPage{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+.login-box{background:var(--s1);border:1px solid var(--border);border-radius:28px;padding:40px 36px;width:100%;max-width:400px;animation:popIn 0.4s ease;}
+.login-logo{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:6px;}
+.login-sub{text-align:center;color:var(--muted);font-size:0.85rem;margin-bottom:32px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:0.75rem;color:var(--muted);margin-bottom:7px;font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;}
+.field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;outline:none;transition:border-color 0.2s;}
+.field input:focus{border-color:var(--accent);}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--accent),#9b8fff);border:none;color:white;padding:14px;border-radius:13px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;margin-top:8px;transition:all 0.2s;box-shadow:0 4px 24px rgba(124,107,255,0.35);}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(124,107,255,0.5);}
+.login-hint{text-align:center;color:var(--muted);font-size:0.78rem;margin-top:16px;}
+.login-hint span{color:var(--accent);}
+.login-error{color:#ff6b9d;font-size:0.82rem;text-align:center;margin-top:10px;display:none;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.user-chip{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:0.78rem;font-family:'Syne',sans-serif;color:var(--muted);}
+.user-chip span{color:var(--accent);}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:10px;cursor:pointer;font-size:0.78rem;font-family:'Syne',sans-serif;transition:all 0.2s;}
+.logout-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* MAIN */
+.app{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:32px 20px 80px;}
+
+/* HERO */
+.hero{padding:44px 0 36px;animation:fadeUp 0.5s ease both;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:800;line-height:1.1;margin-bottom:8px;}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--muted);font-size:0.92rem;}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:22px;padding:36px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--card);margin-bottom:28px;animation:fadeUp 0.5s 0.05s ease both;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(124,107,255,0.05);}
+.upload-icon{width:54px;height:54px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.5rem;box-shadow:0 6px 28px rgba(124,107,255,0.35);}
+.upload-zone h3{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:5px;}
+.upload-zone p{color:var(--muted);font-size:0.84rem;margin-bottom:18px;}
+.upload-btn{background:linear-gradient(135deg,var(--accent),#9b8fff);border:none;color:white;padding:11px 26px;border-radius:11px;font-family:'Syne',sans-serif;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 18px rgba(124,107,255,0.3);}
+.upload-btn:hover{transform:translateY(-2px);}
+#fileInput{display:none;}
+.progress-wrap{display:none;margin-top:14px;background:var(--s2);border-radius:8px;height:5px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.3s;}
+.progress-label{display:none;margin-top:7px;font-size:0.8rem;color:var(--accent);font-family:'Syne',sans-serif;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;animation:fadeUp 0.5s 0.1s ease both;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
+.stat .n{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat .l{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+/* SEARCH + FILTER */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center;animation:fadeUp 0.5s 0.15s ease both;flex-wrap:wrap;}
+.search-box{flex:1;min-width:160px;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+.search-box:focus{border-color:var(--accent);}
+.search-box::placeholder{color:var(--muted);}
+.filter-tabs{display:flex;gap:6px;}
+.ftab{background:var(--s2);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:0.76rem;cursor:pointer;transition:all 0.2s;font-family:'Syne',sans-serif;font-weight:600;}
+.ftab.active,.ftab:hover{background:rgba(124,107,255,0.15);border-color:var(--accent);color:var(--accent);}
+
+/* GRID */
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:14px;animation:fadeUp 0.5s 0.2s ease both;}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:13px;animation:fadeUp 0.5s 0.25s ease both;}
+.mcard{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.25s;cursor:pointer;position:relative;}
+.mcard:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 30px rgba(124,107,255,0.18);}
+.mthumb{width:100%;height:118px;object-fit:cover;display:block;}
+.mplaceholder{width:100%;height:118px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:linear-gradient(135deg,var(--s2),var(--s1));}
+.minfo{padding:10px 11px;}
+.mname{font-family:'Syne',sans-serif;font-size:0.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.mmeta{font-size:0.68rem;color:var(--muted);}
+.mactions{position:absolute;top:7px;right:7px;display:flex;gap:4px;opacity:0;transition:opacity 0.2s;}
+.mcard:hover .mactions{opacity:1;}
+.abtn{width:27px;height:27px;border-radius:7px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.78rem;transition:all 0.2s;}
+.dbtn{background:rgba(74,222,128,0.9);color:#0a0a0f;}
+.dbtn:hover{background:var(--green);}
+.xbtn{background:rgba(255,107,157,0.9);color:white;}
+.xbtn:hover{background:var(--accent2);}
+
+/* EMPTY */
+.empty{text-align:center;padding:56px 20px;color:var(--muted);grid-column:1/-1;}
+.empty .ei{font-size:2.8rem;margin-bottom:10px;}
+.empty p{font-size:0.88rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:11px 20px;font-size:0.83rem;font-family:'Syne',sans-serif;z-index:999;transition:transform 0.3s;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,0.4);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:var(--green);color:var(--green);}
+.toast.err{border-color:var(--accent2);color:var(--accent2);}
+.toast.info{border-color:var(--accent);color:var(--accent);}
+
+/* LIGHTBOX */
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:400;align-items:center;justify-content:center;padding:20px;}
+.lb.open{display:flex;}
+.lb img{max-width:90vw;max-height:85vh;border-radius:14px;object-fit:contain;}
+.lb-close{position:absolute;top:18px;right:18px;width:38px;height:38px;background:var(--s2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popIn{from{opacity:0;transform:scale(0.93);}to{opacity:1;transform:scale(1);}}
+
+@media(max-width:480px){
+  .stats{gap:8px;}
+  .stat .n{font-size:1.2rem;}
+  .media-grid{grid-template-columns:repeat(2,1fr);}
+  .filter-tabs{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">DriftIQ</div>
+    <div class="login-sub">Your personal Telegram cloud storage</div>
+    <div class="field"><label>Username</label><input type="text" id="uname" placeholder="harshit" /></div>
+    <div class="field"><label>Password</label><input type="password" id="upass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
+    <button class="login-btn" onclick="login()">Sign In →</button>
+    <div class="login-error" id="loginErr">❌ Invalid username or password</div>
+    <div class="login-hint">Default: <span>harshit</span> / <span>driftiq123</span></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lb-close">✕</button>
+  <img id="lbImg" src="" alt=""/>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav id="mainNav" style="display:none">
+  <div class="logo">DriftIQ</div>
+  <div class="nav-right">
+    <div class="user-chip">👤 <span id="navUser"></span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- APP -->
+<div class="app" id="mainApp" style="display:none">
+  <div class="hero">
+    <h1>Your <span>Media Vault</span></h1>
+    <p>Upload anything. Store forever. Powered by Telegram.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-icon">📤</div>
+    <h3>Drop files here</h3>
+    <p>Photos, videos, docs — any file up to 2GB</p>
+    <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose Files</button>
+    <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)"/>
+    <div class="progress-wrap" id="pw"><div class="progress-fill" id="pf"></div></div>
+    <div class="progress-label" id="pl"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="n" id="sTotal">0</div><div class="l">Files</div></div>
+    <div class="stat"><div class="n" id="sSize">0 MB</div><div class="l">Stored</div></div>
+    <div class="stat"><div class="n">∞</div><div class="l">Free Space</div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input class="search-box" placeholder="🔍 Search files..." oninput="searchFiles(this.value)" />
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="filter('all',this)">All</button>
+      <button class="ftab" onclick="filter('image',this)">Images</button>
+      <button class="ftab" onclick="filter('video',this)">Videos</button>
+      <button class="ftab" onclick="filter('other',this)">Docs</button>
+    </div>
+  </div>
+
+  <div class="section-title">📁 My Files</div>
+  <div class="media-grid" id="grid"></div>
+</div>
+
+<script>
+let TOKEN = localStorage.getItem('dq_token') || '';
+let USERNAME = localStorage.getItem('dq_user') || '';
+let allFiles = [];
+let currentFilter = 'all';
+let searchQuery = '';
+
+// ── AUTH ──
+async function login() {
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value.trim();
+  if (!u || !p) return;
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    TOKEN = d.token;
+    USERNAME = d.username;
+    localStorage.setItem('dq_token', TOKEN);
+    localStorage.setItem('dq_user', USERNAME);
+    showApp();
+  } catch {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function logout() {
+  TOKEN = ''; USERNAME = '';
+  localStorage.removeItem('dq_token');
+  localStorage.removeItem('dq_user');
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainNav').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainNav').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('navUser').textContent = USERNAME;
+  loadFiles();
+}
+
+window.onload = () => { if (TOKEN) showApp(); };
+
+// ── FILES ──
+async function loadFiles() {
+  try {
+    const r = await fetch('/api/files', { headers: { Authorization: 'Bearer ' + TOKEN } });
+    allFiles = await r.json();
+    renderFiles();
+  } catch { toast('❌ Failed to load files', 'err'); }
+}
+
+async function handleFiles(fileList) {
+  for (const file of fileList) await uploadFile(file);
+  document.getElementById('fileInput').value = '';
+}
+
+async function uploadFile(file) {
+  showProgress(true, `Uploading ${file.name}...`);
+  setP(20);
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    setP(50);
+    const r = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + TOKEN },
+      body: fd
+    });
+    const d = await r.json();
+    setP(90);
+    if (!r.ok) throw new Error(d.error);
+    allFiles.unshift(d.file);
+    renderFiles();
+    setP(100);
+    toast(`✅ ${file.name} uploaded!`, 'ok');
+    setTimeout(() => showProgress(false), 600);
+  } catch (e) {
+    showProgress(false);
+    toast('❌ ' + e.message, 'err');
+  }
+}
+
+async function downloadFile(fileId, name) {
+  toast('⏳ Getting link...', 'info');
+  try {
+    const r = await fetch(`/api/download/${fileId}`, { headers: { Authorization: 'Bearer ' + TOKEN } });
+    const d = await r.json();
+    const a = document.createElement('a');
+    a.href = d.url; a.download = name; a.target = '_blank'; a.click();
+    toast('⬇️ Downloading!', 'ok');
+  } catch { toast('❌ Download failed', 'err'); }
+}
+
+async function deleteFile(id) {
+  if (!confirm('Delete this file?')) return;
+  await fetch(`/api/files/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + TOKEN } });
+  allFiles = allFiles.filter(f => f.id !== id);
+  renderFiles();
+  toast('🗑️ Deleted', 'info');
+}
+
+// ── RENDER ──
+function renderFiles() {
+  let list = allFiles;
+  if (currentFilter !== 'all') {
+    list = list.filter(f =>
+      currentFilter === 'image' ? f.type.startsWith('image/') :
+      currentFilter === 'video' ? f.type.startsWith('video/') :
+      !f.type.startsWith('image/') && !f.type.startsWith('video/')
+    );
+  }
+  if (searchQuery) list = list.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const grid = document.getElementById('grid');
+  document.getElementById('sTotal').textContent = allFiles.length;
+  document.getElementById('sSize').textContent = fmtSize(allFiles.reduce((s,f)=>s+f.size,0));
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty"><div class="ei">🌌</div><p>No files found</p></div>`;
+    return;
+  }
+
+  const emoji = t => t.startsWith('image/') ? '🖼️' : t.startsWith('video/') ? '🎬' : t.startsWith('audio/') ? '🎵' : t.includes('pdf') ? '📄' : '📁';
+
+  grid.innerHTML = list.map(f => `
+    <div class="mcard">
+      <div class="mplaceholder">${emoji(f.type)}</div>
+      <div class="mactions">
+        <button class="abtn dbtn" onclick="event.stopPropagation();downloadFile('${f.fileId}','${f.name}')" title="Download">⬇</button>
+        <button class="abtn xbtn" onclick="event.stopPropagation();deleteFile('${f.id}')" title="Delete">✕</button>
+      </div>
+      <div class="minfo">
+        <div class="mname">${f.name}</div>
+        <div class="mmeta">${fmtSize(f.size)} · ${timeAgo(f.date)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function filter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderFiles();
+}
+
+function searchFiles(q) { searchQuery = q; renderFiles(); }
+
+// ── DRAG DROP ──
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+
+// ── LIGHTBOX ──
+function openLb(src) { document.getElementById('lbImg').src = src; document.getElementById('lb').classList.add('open'); }
+function closeLb() { document.getElementById('lb').classList.remove('open'); }
+
+// ── HELPERS ──
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(1) + ' GB';
+}
+function timeAgo(iso) {
+  const d = (Date.now() - new Date(iso)) / 1000;
+  if (d < 60) return 'just now';
+  if (d < 3600) return Math.floor(d/60) + 'm ago';
+  if (d < 86400) return Math.floor(d/3600) + 'h ago';
+  return Math.floor(d/86400) + 'd ago';
+}
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function showProgress(show, text='') {
+  document.getElementById('pw').style.display = show ? 'block' : 'none';
+  document.getElementById('pl').style.display = show ? 'block' : 'none';
+  document.getElementById('pl').textContent = text;
+  if (!show) setP(0);
+}
+function setP(v) { document.getElementById('pf').style.width = v + '%'; }
+</script>
+</body>
+</html>
