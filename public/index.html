@@ -515,7 +515,7 @@ async function doLogin() {
   if (!u || !p) return;
   
   try {
-    const res = await fetch(`${API}/auth/login`, {
+    const res = await fetch(`${API}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: u, password: p })
@@ -550,7 +550,7 @@ async function doRegister() {
   if (p.length < 6) { err.textContent = '❌ Min 6 characters'; return; }
   
   try {
-    const res = await fetch(`${API}/auth/register`, {
+    const res = await fetch(`${API}/api/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: u, password: p })
@@ -614,7 +614,7 @@ async function loadAll() {
 
 async function loadFolders() {
   try {
-    const res = await fetch(`${API}/folders`, {
+    const res = await fetch(`${API}/api/folders`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     allFolders = await res.json();
@@ -625,8 +625,8 @@ async function loadFolders() {
 async function loadFiles() {
   try {
     const url = currentFolder 
-      ? `${API}/files?folder=${currentFolder}` 
-      : `${API}/files`;
+      ? `${API}/api/files?folder=${currentFolder}` 
+      : `${API}/api/files`;
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -687,7 +687,7 @@ async function createFolder() {
   if (!name) return;
   
   try {
-    const res = await fetch(`${API}/folders`, {
+    const res = await fetch(`${API}/api/folders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ name, parentId: currentFolder })
@@ -713,8 +713,8 @@ async function renameFolder() {
   if (!name) return;
   
   try {
-    await fetch(`${API}/folders/${id}`, {
-      method: 'PATCH',
+    await fetch(`${API}/api/folders/${id}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ name })
     });
@@ -729,7 +729,7 @@ async function renameFolder() {
 async function deleteFolder(id) {
   if (!confirm('Delete folder?')) return;
   try {
-    await fetch(`${API}/folders/${id}`, {
+    await fetch(`${API}/api/folders/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -811,8 +811,8 @@ async function renameFile() {
   if (!name) return;
   
   try {
-    await fetch(`${API}/files/${id}`, {
-      method: 'PATCH',
+    await fetch(`${API}/api/files/${id}/rename`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ name })
     });
@@ -839,10 +839,10 @@ async function moveFile() {
   const folder = document.getElementById('moveFolderSelect').value || 'root';
   
   try {
-    await fetch(`${API}/files/${id}`, {
-      method: 'PATCH',
+    await fetch(`${API}/api/files/${id}/move`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ folder })
+      body: JSON.stringify({ folderId: folder })
     });
     allFiles = allFiles.filter(f => f.id !== id);
     renderFiles();
@@ -854,7 +854,7 @@ async function moveFile() {
 async function deleteFile(id) {
   if (!confirm('Delete file?')) return;
   try {
-    await fetch(`${API}/files/${id}`, {
+    await fetch(`${API}/api/files/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -873,7 +873,7 @@ async function handleUpload(fileList) {
     
     try {
       document.getElementById('progBar').style.display = 'block';
-      const res = await fetch(`${API}/upload`, {
+      const res = await fetch(`${API}/api/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: fd
@@ -894,7 +894,7 @@ async function handleUpload(fileList) {
 
 async function downloadFile(id, name) {
   const link = document.createElement('a');
-  link.href = `${API}/file/${id}`;
+  link.href = `${API}/api/download/${id}`;
   link.download = name;
   link.click();
   toast('⬇️ Downloading', 'info');
@@ -913,7 +913,7 @@ async function previewFile(id, name, ext) {
     preview.innerHTML = `<embed src="${API}/file/${id}" type="application/pdf" style="width:100%;height:60vh;"/>`;
   } else if (['txt', 'md', 'json', 'xml', 'html', 'css', 'js'].includes(ext)) {
     try {
-      const res = await fetch(`${API}/file/${id}`);
+      const res = await fetch(`${API}/api/download/${id}?preview=true`);
       const text = await res.text();
       preview.innerHTML = `<div class="preview-text">${text.slice(0, 5000)}</div>`;
     } catch (e) {
@@ -928,10 +928,10 @@ async function previewFile(id, name, ext) {
 
 async function shareFile(id) {
   try {
-    const res = await fetch(`${API}/share`, {
+    const res = await fetch(`${API}/api/share/${id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ fileId: id })
+      body: JSON.stringify({})
     });
     const data = await res.json();
     shareLink = `${window.location.origin}/shared.html?share=${data.shareId}`;
@@ -953,7 +953,7 @@ async function changePassword() {
   if (pwd.length < 6) { toast('Min 6 chars', 'error'); return; }
   
   try {
-    const res = await fetch(`${API}/auth/password`, {
+    const res = await fetch(`${API}/api/change-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ oldPassword: old, newPassword: pwd })
@@ -974,8 +974,8 @@ async function changePassword() {
 async function loadAdmin() {
   try {
     const [ures, fres] = await Promise.all([
-      fetch(`${API}/admin/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
-      fetch(`${API}/admin/files`, { headers: { 'Authorization': `Bearer ${token}` } })
+      fetch(`${API}/api/admin/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/files`, { headers: { 'Authorization': `Bearer ${token}` } })
     ]);
     
     const users = await ures.json();
@@ -1006,7 +1006,7 @@ async function loadAdmin() {
 async function deleteUser(id) {
   if (!confirm('Delete user?')) return;
   try {
-    await fetch(`${API}/admin/users/${id}`, {
+    await fetch(`${API}/api/admin/users/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -1018,7 +1018,7 @@ async function deleteUser(id) {
 async function adminDelFile(id) {
   if (!confirm('Delete file?')) return;
   try {
-    await fetch(`${API}/admin/files/${id}`, {
+    await fetch(`${API}/api/admin/files/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
