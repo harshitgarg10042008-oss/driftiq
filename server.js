@@ -34,7 +34,7 @@ function writeDB(file, data) { fs.writeFileSync(file, JSON.stringify(data, null,
 function initUsers() {
   const users = readDB(USERS_DB);
   if (!users.find(u => u.username === 'harshit')) {
-    users.push({ id: uuidv4(), username: 'harshit', password: bcrypt.hashSync('driftiq123', 10), role: 'admin', createdAt: new Date().toISOString() });
+    users.push({ id: uuidv4(), username: 'harshit', password: bcrypt.hashSync('driftiq123', 10), role: 'user', createdAt: new Date().toISOString() });
   }
   if (!users.find(u => u.username === 'admin')) {
     users.push({ id: uuidv4(), username: 'admin', password: bcrypt.hashSync('admin123', 10), role: 'admin', createdAt: new Date().toISOString() });
