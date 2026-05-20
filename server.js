@@ -16,7 +16,6 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // ── DATA FILES ──
 const FILES_DB = './data/files.json';
@@ -132,7 +131,9 @@ app.delete('/api/folders/:id', auth, (req, res) => {
 app.get('/api/files', auth, (req, res) => {
   const { folderId } = req.query;
   let files = readDB(FILES_DB).filter(f => f.userId === req.user.id);
-  if (folderId && folderId !== 'null' && folderId !== 'undefined') {
+  if (folderId === 'null' || folderId === undefined) {
+    files = files.filter(f => !f.folderId);
+  } else {
     files = files.filter(f => f.folderId === folderId);
   }
   res.json(files.reverse());
@@ -144,45 +145,21 @@ app.post('/api/upload', auth, upload.single('file'), async (req, res) => {
     const { folderId } = req.body;
     if (!file) return res.status(400).json({ error: 'No file' });
 
-    let fileId = uuidv4();
-    let messageId = null;
-    let useTelegram = false;
+    const formData = new FormData();
+    formData.append('chat_id', process.env.CHANNEL_ID);
+    formData.append('document', file.buffer, { filename: file.originalname, contentType: file.mimetype });
+    formData.append('caption', `📁 ${file.originalname}\n📦 ${formatSize(file.size)}\n👤 ${req.user.username}`);
 
-    // Try Telegram if credentials exist
-    if (process.env.BOT_TOKEN && process.env.CHANNEL_ID) {
-      try {
-        const formData = new FormData();
-        formData.append('chat_id', process.env.CHANNEL_ID);
-        formData.append('document', file.buffer, { filename: file.originalname, contentType: file.mimetype });
-        formData.append('caption', `📁 ${file.originalname}\n📦 ${formatSize(file.size)}\n👤 ${req.user.username}`);
+    const response = await axios.post(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendDocument`,
+      formData,
+      { headers: formData.getHeaders(), maxContentLength: Infinity, maxBodyLength: Infinity }
+    );
 
-        const response = await axios.post(
-          `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendDocument`,
-          formData,
-          { headers: formData.getHeaders(), maxContentLength: Infinity, maxBodyLength: Infinity }
-        );
+    if (!response.data.ok) throw new Error(response.data.description);
 
-        if (response.data.ok) {
-          const msg = response.data.result;
-          fileId = msg.document?.file_id || msg.video?.file_id || msg.audio?.file_id;
-          messageId = msg.message_id;
-          useTelegram = true;
-        }
-      } catch (err) {
-        console.log('⚠️ Telegram upload failed, using local storage:', err.message);
-      }
-    }
-
-    // If Telegram failed or not configured, use local storage
-    if (!useTelegram) {
-      const uploadsDir = path.join(__dirname, 'public', 'uploads');
-      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-      
-      const fileName = `${fileId}-${file.originalname}`;
-      const filePath = path.join(uploadsDir, fileName);
-      fs.writeFileSync(filePath, file.buffer);
-      console.log(`✅ File saved locally: ${fileName}`);
-    }
+    const msg = response.data.result;
+    const fileId = msg.document?.file_id || msg.video?.file_id || msg.audio?.file_id;
 
     const fileRecord = {
       id: uuidv4(),
@@ -190,12 +167,11 @@ app.post('/api/upload', auth, upload.single('file'), async (req, res) => {
       size: file.size,
       type: file.mimetype,
       fileId,
-      messageId,
+      messageId: msg.message_id,
       userId: req.user.id,
       uploadedBy: req.user.username,
       folderId: folderId || null,
-      date: new Date().toISOString(),
-      storage: useTelegram ? 'telegram' : 'local'
+      date: new Date().toISOString()
     };
 
     const files = readDB(FILES_DB);
@@ -203,7 +179,7 @@ app.post('/api/upload', auth, upload.single('file'), async (req, res) => {
     writeDB(FILES_DB, files);
     res.json({ success: true, file: fileRecord });
   } catch (err) {
-    console.error('Upload error:', err.message);
+    console.error(err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -230,37 +206,11 @@ app.put('/api/files/:id/move', auth, (req, res) => {
 
 app.get('/api/download/:fileId', auth, async (req, res) => {
   try {
-    const files = readDB(FILES_DB);
-    const file = files.find(f => f.id === req.params.fileId && f.userId === req.user.id);
-    if (!file) return res.status(404).json({ error: 'File not found' });
-
-    // If stored locally, send file directly
-    if (file.storage === 'local') {
-      const fileName = `${file.fileId}-${file.name}`;
-      const filePath = path.join(__dirname, 'public', 'uploads', fileName);
-      if (fs.existsSync(filePath)) {
-        if (req.query.preview) {
-          res.sendFile(filePath);
-        } else {
-          res.download(filePath, file.name);
-        }
-        return;
-      }
-    }
-
-    // Fall back to Telegram
-    if (file.fileId && process.env.BOT_TOKEN) {
-      const response = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getFile?file_id=${file.fileId}`);
-      if (!response.data.ok) throw new Error('File not found on Telegram');
-      const url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${response.data.result.file_path}`;
-      res.json({ url });
-      return;
-    }
-
-    res.status(404).json({ error: 'File not found' });
-  } catch (err) { 
-    res.status(500).json({ error: err.message }); 
-  }
+    const response = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getFile?file_id=${req.params.fileId}`);
+    if (!response.data.ok) throw new Error('File not found');
+    const url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${response.data.result.file_path}`;
+    res.json({ url });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/files/:id', auth, (req, res) => {
@@ -293,6 +243,22 @@ app.get('/api/shared/:shareId', async (req, res) => {
     const url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${response.data.result.file_path}`;
     res.json({ url, fileName: share.fileName });
   } catch { res.status(500).json({ error: 'Could not get file' }); }
+});
+
+// Fix 3: Proxy download route — avoids CORS issues in browser
+app.get('/api/shared/:shareId/download', async (req, res) => {
+  const shares = readDB(SHARES_DB);
+  const share = shares.find(s => s.id === req.params.shareId);
+  if (!share) return res.status(404).json({ error: 'Share not found' });
+  try {
+    const fileInfo = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getFile?file_id=${share.telegramFileId}`);
+    const url = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${fileInfo.data.result.file_path}`;
+    // Stream file through our server — no CORS issues!
+    const fileResponse = await axios.get(url, { responseType: 'stream' });
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(share.fileName)}"`);
+    res.setHeader('Content-Type', fileResponse.headers['content-type'] || 'application/octet-stream');
+    fileResponse.data.pipe(res);
+  } catch (err) { res.status(500).json({ error: 'Download failed' }); }
 });
 
 // ── ADMIN ──
