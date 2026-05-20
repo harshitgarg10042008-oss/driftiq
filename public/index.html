@@ -1047,10 +1047,19 @@
 
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('load', () => {
-          loadFiles();
-          toast('✅ Upload complete', 'success');
+          if (xhr.status >= 200 && xhr.status < 300) {
+            loadFiles();
+            toast('✅ Upload complete', 'success');
+          } else {
+            try {
+              const error = JSON.parse(xhr.responseText);
+              toast(`❌ Upload failed: ${error.error || 'Unknown error'}`, 'error');
+            } catch {
+              toast(`❌ Upload failed: HTTP ${xhr.status}`, 'error');
+            }
+          }
         });
-        xhr.addEventListener('error', () => toast('❌ Upload failed', 'error'));
+        xhr.addEventListener('error', () => toast('❌ Upload failed: Network error', 'error'));
         xhr.open('POST', `${API}/api/upload`);
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.send(formData);
