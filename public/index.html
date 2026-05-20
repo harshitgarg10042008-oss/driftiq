@@ -881,8 +881,8 @@
         const ext = f.name.split('.').pop().toLowerCase();
         const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
         return `
-          <div class="file-item">
-            <div class="file-preview" onclick="previewFile('${f.id}')">
+          <div class="file-item" ondblclick="openFile('${f.id}')">
+            <div class="file-preview" onclick="previewFile('${f.id}')" style="cursor: pointer;">
               ${isImg ? `<img src="${API}/api/download/${f.id}?preview=true" onerror="this.style.display='none'">` : '📄 ' + ext.toUpperCase()}
             </div>
             <div class="file-name" title="${f.name}">${f.name}</div>
@@ -963,6 +963,50 @@
         }
       } catch (err) {
         toast('❌ Download failed', 'error');
+        console.error(err);
+      }
+    }
+
+    async function openFile(id) {
+      const file = allFiles.find(f => f.id === id);
+      if (!file) return;
+      const ext = file.name.split('.').pop().toLowerCase();
+      const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+      const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+      const isPdf = ext === 'pdf';
+      const isTxt = ['txt', 'md', 'json', 'js', 'html', 'css'].includes(ext);
+
+      try {
+        if (isImg || isVideo || isPdf) {
+          // Open media files in new tab
+          const res = await fetch(`${API}/api/download/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await res.json();
+            if (data.url) window.open(data.url, '_blank');
+          } else {
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+          }
+        } else if (isTxt) {
+          // Display text files in full-screen modal
+          const res = await fetch(`${API}/api/download/${id}?preview=true`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const text = await res.text();
+          document.getElementById('previewTitle').textContent = file.name;
+          document.getElementById('previewContent').innerHTML = `<pre style="background: var(--bg); padding: 16px; border-radius: 8px; max-height: 500px; overflow: auto; font-size: 14px;">${text}</pre>`;
+          showModal('previewModal');
+        } else {
+          // For other files, download
+          downloadFile(id);
+        }
+      } catch (err) {
+        toast('❌ Failed to open file', 'error');
         console.error(err);
       }
     }
