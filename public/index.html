@@ -936,13 +936,35 @@
       showModal('previewModal');
     }
 
-    function downloadFile(id) {
+    async function downloadFile(id) {
       const file = allFiles.find(f => f.id === id);
       if (!file) return;
-      const link = document.createElement('a');
-      link.href = `${API}/api/download/${id}`;
-      link.download = file.name;
-      link.click();
+      
+      try {
+        const res = await fetch(`${API}/api/download/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        // If response has a url (Telegram storage), open that
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          if (data.url) {
+            window.open(data.url, '_blank');
+          }
+        } else {
+          // Local storage - download directly
+          const blob = await res.blob();
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = file.name;
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }
+      } catch (err) {
+        toast('❌ Download failed', 'error');
+        console.error(err);
+      }
     }
 
     async function deleteFile(id) {
