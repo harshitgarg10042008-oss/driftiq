@@ -866,7 +866,8 @@
 
     async function loadFiles() {
       try {
-        const res = await fetch(`${API}/api/files`, {
+        const url = currentFolder ? `${API}/api/files?folderId=${currentFolder}` : `${API}/api/files`;
+        const res = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         allFiles = await res.json();
@@ -876,8 +877,7 @@
 
     function renderFiles() {
       const grid = document.getElementById('fileGrid');
-      const files = allFiles.filter(f => !currentFolder || f.folderId === currentFolder);
-      grid.innerHTML = files.map(f => {
+      grid.innerHTML = allFiles.map(f => {
         const ext = f.name.split('.').pop().toLowerCase();
         const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
         return `

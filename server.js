@@ -131,9 +131,7 @@ app.delete('/api/folders/:id', auth, (req, res) => {
 app.get('/api/files', auth, (req, res) => {
   const { folderId } = req.query;
   let files = readDB(FILES_DB).filter(f => f.userId === req.user.id);
-  if (folderId === 'null' || folderId === undefined) {
-    files = files.filter(f => !f.folderId);
-  } else {
+  if (folderId && folderId !== 'null' && folderId !== 'undefined') {
     files = files.filter(f => f.folderId === folderId);
   }
   res.json(files.reverse());
