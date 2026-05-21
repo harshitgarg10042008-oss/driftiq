@@ -177,7 +177,23 @@ app.post('/api/upload', auth, upload.single('file'), async (req, res) => {
     const files = readDB(FILES_DB);
     files.push(fileRecord);
     writeDB(FILES_DB, files);
+
+    // Send to user's personal Telegram if connected
+    const allUsers = readDB(USERS_DB);
+    const uploader = allUsers.find(u => u.id === req.user.id);
+    if (uploader?.telegramChatId) {
+      try {
+        const userForm = new FormData();
+        userForm.append('chat_id', uploader.telegramChatId);
+        userForm.append('document', file.buffer, { filename: file.originalname, contentType: file.mimetype });
+        userForm.append('caption', `📁 ${file.originalname}\n📦 ${formatSize(file.size)}\n✅ Uploaded via DriftIQ`);
+        await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendDocument`, userForm, { headers: userForm.getHeaders(), maxContentLength: Infinity, maxBodyLength: Infinity });
+      } catch(e) { console.log('⚠️ Could not send to user Telegram:', e.message); }
+    }
+
     res.json({ success: true, file: fileRecord });
+
+
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: err.message });
@@ -302,3 +318,76 @@ function formatSize(bytes) {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 DriftIQ v2 running on port ${PORT}`));
+
+// ── TELEGRAM CONNECT ──
+app.get('/api/telegram/code', auth, (req, res) => {
+  const users = readDB(USERS_DB);
+  const user = users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const code = `${req.user.username}_${Math.random().toString(36).substring(2, 8)}`;
+  user.telegramCode = code;
+  user.telegramConnected = false;
+  writeDB(USERS_DB, users);
+  res.json({
+    code,
+    botUsername: 'DriftIQBot',
+    link: `https://t.me/DriftIQBot?start=${code}`
+  });
+});
+
+app.get('/api/telegram/status', auth, (req, res) => {
+  const users = readDB(USERS_DB);
+  const user = users.find(u => u.id === req.user.id);
+  res.json({
+    connected: !!user?.telegramChatId,
+    chatId: user?.telegramChatId || null
+  });
+});
+
+app.post('/api/telegram/webhook', async (req, res) => {
+  res.sendStatus(200);
+  const update = req.body;
+  if (!update.message) return;
+  const msg = update.message;
+  const chatId = msg.chat.id;
+  const text = msg.text || '';
+
+  if (text.startsWith('/start ')) {
+    const code = text.split(' ')[1];
+    const users = readDB(USERS_DB);
+    const user = users.find(u => u.telegramCode === code);
+    if (user) {
+      user.telegramChatId = chatId.toString();
+      user.telegramConnected = true;
+      user.telegramCode = null;
+      writeDB(USERS_DB, users);
+      await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        chat_id: chatId,
+        text: `✅ *DriftIQ Connected!*\n\nHey ${user.username}! Your Telegram is now linked.\n\nEvery file you upload will be sent here automatically! 📁`,
+        parse_mode: 'Markdown'
+      });
+    } else {
+      await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        chat_id: chatId,
+        text: `❌ Invalid or expired code. Get a new link from DriftIQ website.`
+      });
+    }
+  } else if (text === '/start') {
+    await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+      chat_id: chatId,
+      text: `👋 Welcome to DriftIQ!\n\nGo to DriftIQ website and click "Connect Telegram" to link your account.`
+    });
+  }
+});
+
+async function setupWebhook() {
+  const appUrl = process.env.APP_URL;
+  if (!appUrl) { console.log('⚠️ APP_URL not set — webhook not configured'); return; }
+  try {
+    const r = await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/setWebhook`, {
+      url: `${appUrl}/api/telegram/webhook`
+    });
+    if (r.data.ok) console.log('✅ Telegram webhook set!');
+    else console.log('❌ Webhook failed:', r.data.description);
+  } catch(e) { console.log('❌ Webhook error:', e.message); }
+}
