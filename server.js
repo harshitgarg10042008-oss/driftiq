@@ -391,3 +391,4 @@ async function setupWebhook() {
     else console.log('❌ Webhook failed:', r.data.description);
   } catch(e) { console.log('❌ Webhook error:', e.message); }
 }
+setupWebhook();
