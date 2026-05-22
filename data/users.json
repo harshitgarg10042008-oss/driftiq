@@ -1,5 +1,7 @@
-{
-  "username": "admin",
-  "password": "1234567890",
-  "role": "admin"
-}
+[
+  {
+    "username": "admin",
+    "password": "$2b$10$v7m2QG/k9x8Z7W8P8d8v8O7R8Z7W8P8d8v8O7R8Z7W8P8d8v8O",
+    "role": "admin"
+  }
+]
