@@ -1,16 +1,1 @@
-[
-  {
-    "id": "8cfeccad-24f5-4b16-b545-05e454dc73ab",
-    "username": "admin",
-    "password": "$2a$10$VUURTd4Dtok3zYvaYnck3uO15hSvUkv.jwN8AzVC6qQ28SDUTTo4.",
-    "role": "admin",
-    "createdAt": "2026-05-18T12:07:45.488Z"
-  },
-  {
-    "id": "4907d4c9-5761-4194-8b42-97ee5abcefec",
-    "username": "harshit",
-    "password": "$2a$10$XuM/bJy2XP6DEegoWpS2t.2Cd.n0enMfup0GVbH9LptAL9B/5lPXe",
-    "role": "user",
-    "createdAt": "2026-05-20T05:23:24.330Z"
-  }
-]
+[]
