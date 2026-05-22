@@ -44,18 +44,45 @@ function adminOnly(req, res, next) {
 }
 
 // ── AUTH ──
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-  const users = readDB(USERS_DB);
-  const user = users.find((u) => u.username === username);
-  if (!user || !bcrypt.compareSync(password, user.password))
-    return res.status(401).json({ error: "Invalid credentials" });
-  const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" },
-  );
-  res.json({ token, username: user.username, role: user.role });
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const valid = bcrypt.compareSync(password, user.password);
+
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      username: user.username,
+      role: user.role
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/register", (req, res) => {
@@ -90,15 +117,39 @@ app.post("/api/register", (req, res) => {
   res.json({ token, username: newUser.username, role: newUser.role });
 });
 
-app.post("/api/change-password", auth, (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const users = readDB(USERS_DB);
-  const user = users.find((u) => u.id === req.user.id);
-  if (!user || !bcrypt.compareSync(oldPassword, user.password))
-    return res.status(401).json({ error: "Wrong current password" });
-  user.password = bcrypt.hashSync(newPassword, 10);
-  writeDB(USERS_DB, users);
-  res.json({ success: true });
+app.post('/api/change-password', auth, async (req, res) => {
+  try {
+
+    const { oldPassword, newPassword } = req.body;
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', req.user.id)
+      .single();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const valid = bcrypt.compareSync(oldPassword, user.password);
+
+    if (!valid) {
+      return res.status(401).json({ error: 'Wrong current password' });
+    }
+
+    const hashed = bcrypt.hashSync(newPassword, 10);
+
+    await supabase
+      .from('users')
+      .update({ password: hashed })
+      .eq('id', req.user.id);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── FOLDERS ──
