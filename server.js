@@ -1,3 +1,9 @@
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
@@ -5,8 +11,6 @@ const axios = require("axios");
 const FormData = require("form-data");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const fs = require("fs");
-const path = require("path");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 
@@ -20,31 +24,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
-// ── DATA FILES ──
-const FILES_DB = "./data/files.json";
-const USERS_DB = "./data/users.json";
-const FOLDERS_DB = "./data/folders.json";
-const SHARES_DB = "./data/shares.json";
-
-function readDB(file) {
-  if (!fs.existsSync(file)) fs.writeFileSync(file, "[]");
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
-    return [];
-  }
-}
-function writeDB(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
-
-// Init default users
-function initUsers() {
-  console.log("✅ User system ready");
-}
-
-initUsers();
 
 // ── MIDDLEWARE ──
 function auth(req, res, next) {
