@@ -15,6 +15,9 @@ const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,7 +44,7 @@ function adminOnly(req, res, next) {
   next();
 }
 
-/* ───────── REGISTER (FIXED) ───────── */
+/* ───────── REGISTER ───────── */
 
 app.post("/api/register", async (req, res) => {
   try {
@@ -52,7 +55,7 @@ app.post("/api/register", async (req, res) => {
     }
 
     const hashed = bcrypt.hashSync(password, 10);
-    const userId = uuidv4(); // Generate the UUID beforehand
+    const userId = uuidv4();
 
     const { error } = await supabase.from("users").insert([
       {
@@ -60,19 +63,15 @@ app.post("/api/register", async (req, res) => {
         username,
         password: hashed,
         role: "user",
+        telegramconnected: false,
         created_at: new Date().toISOString(),
       },
     ]);
 
     if (error) return res.status(400).json({ error: error.message });
 
-    // FIXED: Embedded the critical generated 'id' so middleware maps it instantly
     const token = jwt.sign(
-      { 
-        id: userId, 
-        username, 
-        role: "user" 
-      },
+      { id: userId, username, role: "user" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -83,7 +82,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-/* ───────── LOGIN (FIXED) ───────── */
+/* ───────── LOGIN ───────── */
 
 app.post("/api/login", async (req, res) => {
   try {
@@ -107,33 +106,88 @@ app.post("/api/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
+      { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    res.json({ token, username: user.username, role: user.role });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ───────── TELEGRAM STATUS ENDPOINTS (FIXED) ───────── */
+
+// Frontend checks this endpoint to toggle the "Connect with Telegram" workspace layout
+app.get("/api/user/telegram-status", auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("telegramconnected, telegramchatid")
+      .eq("id", req.user.id)
+      .single();
+
+    if (error || !data) {
+      return res.json({ telegramconnected: false });
+    }
+
     res.json({
-      token,
-      username: user.username,
-      role: user.role,
+      telegramconnected: data.telegramconnected || false,
+      telegramchatid: data.telegramchatid || null
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-/* ───────── ADMIN USERS (FIXED) ───────── */
+/* ───────── FILE MANAGEMENT ROUTES ───────── */
+
+app.get("/api/files", auth, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("files")
+      .select("*")
+      .eq("user_id", req.user.id);
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/upload", auth, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+    const fileMetadata = {
+      id: uuidv4(),
+      user_id: req.user.id,
+      name: req.file.originalname,
+      size: req.file.size,
+      mime_type: req.file.mimetype,
+      created_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from("files")
+      .insert([fileMetadata])
+      .select();
+
+    if (error) return res.status(400).json({ error: error.message });
+    res.json({ success: true, file: data[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ───────── ADMIN USERS ───────── */
 
 app.get("/api/admin/users", auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase.from("users").select("*");
 
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
+  if (error) return res.status(500).json({ error: error.message });
 
   const safeUsers = data.map((u) => {
     delete u.password;
