@@ -33,15 +33,11 @@
         min-height: 100vh;
         overflow-x: hidden;
       }
-
-      /* SPLIT */
       .split {
         display: grid;
         grid-template-columns: 1fr 1fr;
         min-height: 100vh;
       }
-
-      /* LEFT */
       .left {
         position: relative;
         overflow: hidden;
@@ -68,7 +64,6 @@
         position: relative;
         z-index: 2;
       }
-
       .brand {
         display: flex;
         align-items: center;
@@ -95,7 +90,6 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-
       .headline {
         animation: sR 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
@@ -118,7 +112,6 @@
       .l3 {
         color: var(--a3);
       }
-
       .tagline {
         font-size: 0.92rem;
         color: var(--muted);
@@ -128,7 +121,6 @@
         font-weight: 300;
         animation: sR 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
-
       .features {
         display: flex;
         flex-direction: column;
@@ -186,28 +178,6 @@
         color: var(--text);
         font-weight: 600;
       }
-
-      .srow {
-        display: flex;
-        gap: 28px;
-        animation: sR 0.8s 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-      }
-      .sn {
-        font-family: "Bebas Neue", sans-serif;
-        font-size: 1.9rem;
-        letter-spacing: 1px;
-        background: linear-gradient(135deg, var(--a3), var(--accent));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .sl {
-        font-size: 0.68rem;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: "JetBrains Mono", monospace;
-      }
-
       .fcards {
         position: absolute;
         right: -14px;
@@ -236,12 +206,6 @@
       .fc:nth-child(2) {
         animation-delay: 0.5s;
       }
-      .fc:nth-child(3) {
-        animation-delay: 1s;
-      }
-      .fc:nth-child(4) {
-        animation-delay: 1.5s;
-      }
       .fci {
         font-size: 1.1rem;
       }
@@ -263,8 +227,6 @@
         margin-left: auto;
         box-shadow: 0 0 5px var(--green);
       }
-
-      /* RIGHT */
       .right {
         background: var(--s1);
         display: flex;
@@ -305,14 +267,12 @@
         border-radius: 50%;
         animation: drift 8s ease-in-out infinite reverse;
       }
-
       .ac {
         width: 100%;
         max-width: 370px;
         position: relative;
         z-index: 1;
       }
-
       .atabs {
         display: flex;
         background: var(--s2);
@@ -341,14 +301,12 @@
         color: white;
         box-shadow: 0 3px 14px rgba(97, 87, 255, 0.3);
       }
-
       .aform {
         display: none;
       }
       .aform.active {
         display: block;
       }
-
       .ftitle {
         font-family: "Bebas Neue", sans-serif;
         font-size: 2rem;
@@ -363,7 +321,6 @@
         font-weight: 300;
         animation: fU 0.6s 0.5s both;
       }
-
       .field {
         margin-bottom: 13px;
         animation: fU 0.6s both;
@@ -373,9 +330,6 @@
       }
       .field:nth-child(2) {
         animation-delay: 0.6s;
-      }
-      .field:nth-child(3) {
-        animation-delay: 0.7s;
       }
       .field label {
         display: block;
@@ -418,7 +372,6 @@
         font-size: 0.95rem;
         pointer-events: none;
       }
-
       .sbtn2 {
         width: 100%;
         background: linear-gradient(135deg, var(--accent), #8b84ff);
@@ -437,26 +390,10 @@
         overflow: hidden;
         animation: fU 0.6s 0.8s both;
       }
-      .sbtn2::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          transparent,
-          rgba(255, 255, 255, 0.1)
-        );
-        transform: translateX(-100%);
-        transition: transform 0.4s;
-      }
-      .sbtn2:hover::before {
-        transform: translateX(100%);
-      }
       .sbtn2:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 28px rgba(97, 87, 255, 0.5);
       }
-
       .aerr {
         color: var(--a2);
         font-size: 0.76rem;
@@ -466,37 +403,6 @@
         font-family: "JetBrains Mono", monospace;
         animation: shake 0.4s ease;
       }
-      .div {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 18px 0;
-        animation: fU 0.6s 0.75s both;
-      }
-      .dl {
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-      }
-      .dt {
-        font-size: 0.68rem;
-        color: var(--muted);
-        white-space: nowrap;
-        font-family: "JetBrains Mono", monospace;
-      }
-      .tgnote {
-        background: rgba(0, 229, 255, 0.05);
-        border: 1px solid rgba(0, 229, 255, 0.13);
-        border-radius: 9px;
-        padding: 11px 13px;
-        font-size: 0.74rem;
-        color: var(--a3);
-        text-align: center;
-        font-family: "JetBrains Mono", monospace;
-        animation: fU 0.6s 0.9s both;
-      }
-
-      /* ── MAIN APP ── */
       #mainApp {
         display: none;
       }
@@ -554,10 +460,6 @@
         border-color: var(--accent);
         color: var(--accent);
       }
-      .nbtn.r:hover {
-        border-color: var(--a2);
-        color: var(--a2);
-      }
       .apill {
         background: rgba(251, 191, 36, 0.1);
         border: 1px solid rgba(251, 191, 36, 0.25);
@@ -568,7 +470,6 @@
         font-family: "JetBrains Mono", monospace;
         font-weight: 700;
       }
-
       .aw {
         max-width: 1020px;
         margin: 0 auto;
@@ -576,6 +477,9 @@
       }
       .ph {
         margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
       }
       .ph h2 {
         font-family: "Bebas Neue", sans-serif;
@@ -593,7 +497,23 @@
         font-size: 0.82rem;
         margin-top: 3px;
       }
-
+      .tg-btn {
+        background: #0088cc;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 9px;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+      }
+      .tg-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 136, 204, 0.5);
+      }
       .bc {
         display: flex;
         align-items: center;
@@ -617,7 +537,6 @@
       .bcs {
         color: var(--border);
       }
-
       .uz {
         border: 2px dashed var(--border);
         border-radius: 18px;
@@ -630,25 +549,8 @@
         position: relative;
         overflow: hidden;
       }
-      .uz::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-          circle at 50% 50%,
-          rgba(97, 87, 255, 0.06),
-          transparent 70%
-        );
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-      .uz:hover,
-      .uz.drag {
+      .uz:hover {
         border-color: var(--accent);
-      }
-      .uz:hover::before,
-      .uz.drag::before {
-        opacity: 1;
       }
       .ui {
         width: 48px;
@@ -690,28 +592,6 @@
       #fi {
         display: none;
       }
-      .pw {
-        display: none;
-        margin-top: 10px;
-        background: var(--s2);
-        border-radius: 5px;
-        height: 4px;
-        overflow: hidden;
-      }
-      .pf {
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent), var(--a2));
-        width: 0%;
-        transition: width 0.3s;
-      }
-      .pl {
-        display: none;
-        margin-top: 5px;
-        font-size: 0.72rem;
-        color: var(--accent);
-        font-family: "JetBrains Mono", monospace;
-      }
-
       .stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -744,7 +624,6 @@
         text-transform: uppercase;
         letter-spacing: 1px;
       }
-
       .tb {
         display: flex;
         gap: 7px;
@@ -768,9 +647,6 @@
       .sb:focus {
         border-color: var(--accent);
       }
-      .sb::placeholder {
-        color: var(--muted);
-      }
       .tbtn {
         background: var(--s2);
         border: 1px solid var(--border);
@@ -790,13 +666,11 @@
         border-color: var(--accent);
         color: var(--accent);
       }
-      .tbtn.g:hover,
-      .tbtn.g.act {
+      .tbtn.g:hover {
         background: rgba(57, 255, 133, 0.07);
         border-color: var(--green);
         color: var(--green);
       }
-
       .sl {
         font-family: "JetBrains Mono", monospace;
         font-size: 0.67rem;
@@ -806,7 +680,6 @@
         margin-bottom: 9px;
         margin-top: 2px;
       }
-
       .fg {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
@@ -864,16 +737,9 @@
         align-items: center;
         justify-content: center;
         font-size: 0.58rem;
-      }
-      .ffe {
-        background: rgba(97, 87, 255, 0.8);
-        color: white;
-      }
-      .ffd {
         background: rgba(255, 77, 141, 0.8);
         color: white;
       }
-
       .mg {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
@@ -959,30 +825,16 @@
         background: rgba(251, 191, 36, 0.85);
         color: #050508;
       }
-      .am {
-        background: rgba(0, 229, 255, 0.85);
-        color: #050508;
-      }
       .ax {
         background: rgba(255, 77, 141, 0.85);
         color: white;
       }
-
       .empty {
         text-align: center;
         padding: 44px;
         color: var(--muted);
         grid-column: 1/-1;
       }
-      .empty .ei {
-        font-size: 2.3rem;
-        margin-bottom: 8px;
-      }
-      .empty p {
-        font-size: 0.8rem;
-        font-family: "JetBrains Mono", monospace;
-      }
-
       .mo {
         position: fixed;
         inset: 0;
@@ -1009,11 +861,9 @@
       .mb h3 {
         font-family: "Bebas Neue", sans-serif;
         font-size: 1.3rem;
-        letter-spacing: 1px;
         margin-bottom: 14px;
       }
-      .mb input,
-      .mb select {
+      .mb input {
         width: 100%;
         background: var(--bg);
         border: 1px solid var(--border);
@@ -1021,14 +871,8 @@
         padding: 10px 12px;
         color: var(--text);
         font-family: "Space Grotesk", sans-serif;
-        font-size: 0.85rem;
-        outline: none;
         margin-bottom: 11px;
-        transition: border-color 0.2s;
-      }
-      .mb input:focus,
-      .mb select:focus {
-        border-color: var(--accent);
+        outline: none;
       }
       .mbtns {
         display: flex;
@@ -1043,7 +887,6 @@
         font-family: "Space Grotesk", sans-serif;
         font-weight: 700;
         font-size: 0.82rem;
-        transition: all 0.2s;
       }
       .mbtn.p {
         background: linear-gradient(135deg, var(--accent), #8b84ff);
@@ -1064,18 +907,15 @@
         word-break: break-all;
         margin-bottom: 11px;
         font-family: "JetBrains Mono", monospace;
-        line-height: 1.6;
       }
-
       .as2 {
         margin-bottom: 26px;
       }
       .as2 h3 {
         font-family: "Bebas Neue", sans-serif;
         font-size: 1.2rem;
-        letter-spacing: 1px;
-        margin-bottom: 11px;
         color: #fbbf24;
+        margin-bottom: 11px;
       }
       .at {
         width: 100%;
@@ -1093,7 +933,6 @@
         font-size: 0.64rem;
         color: var(--muted);
         text-transform: uppercase;
-        letter-spacing: 1px;
       }
       .db2 {
         background: rgba(255, 77, 141, 0.1);
@@ -1103,13 +942,8 @@
         border-radius: 5px;
         cursor: pointer;
         font-size: 0.67rem;
-        font-family: "Space Grotesk", sans-serif;
         transition: all 0.2s;
       }
-      .db2:hover {
-        background: rgba(255, 77, 141, 0.22);
-      }
-
       .toast {
         position: fixed;
         bottom: 20px;
@@ -1120,158 +954,13 @@
         border-radius: 10px;
         padding: 9px 16px;
         font-size: 0.77rem;
-        font-family: "JetBrains Mono", monospace;
         z-index: 999;
         transition: transform 0.3s;
-        white-space: nowrap;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
       }
       .toast.show {
         transform: translateX(-50%) translateY(0);
       }
-
-      /* PREVIEW MODAL */
-      .prev-mo {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.92);
-        backdrop-filter: blur(16px);
-        z-index: 400;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        padding: 20px;
-      }
-      .prev-mo.open {
-        display: flex;
-      }
-      .prev-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 900px;
-        margin-bottom: 14px;
-      }
-      .prev-name {
-        font-family: "Bebas Neue", sans-serif;
-        font-size: 1.2rem;
-        letter-spacing: 1px;
-        color: var(--text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 60%;
-      }
-      .prev-actions {
-        display: flex;
-        gap: 8px;
-      }
-      .prev-btn {
-        background: var(--s2);
-        border: 1px solid var(--border);
-        color: var(--muted);
-        padding: 7px 14px;
-        border-radius: 9px;
-        cursor: pointer;
-        font-size: 0.76rem;
-        font-family: "Space Grotesk", sans-serif;
-        font-weight: 600;
-        transition: all 0.2s;
-      }
-      .prev-btn:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-      .prev-btn.dl {
-        background: rgba(57, 255, 133, 0.1);
-        border-color: rgba(57, 255, 133, 0.3);
-        color: var(--green);
-      }
-      .prev-btn.cl {
-        background: rgba(255, 77, 141, 0.1);
-        border-color: rgba(255, 77, 141, 0.3);
-        color: var(--a2);
-      }
-      .prev-body {
-        width: 100%;
-        max-width: 900px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        max-height: 80vh;
-      }
-      .prev-body img {
-        max-width: 100%;
-        max-height: 80vh;
-        border-radius: 14px;
-        object-fit: contain;
-        animation: popIn 0.3s ease;
-      }
-      .prev-body video {
-        max-width: 100%;
-        max-height: 80vh;
-        border-radius: 14px;
-        outline: none;
-      }
-      .prev-body audio {
-        width: 100%;
-        max-width: 500px;
-      }
-      .prev-body iframe {
-        width: 100%;
-        height: 75vh;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-      }
-      .prev-body .prev-doc {
-        background: var(--s1);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 48px;
-        text-align: center;
-        width: 100%;
-      }
-      .prev-doc .pd-icon {
-        font-size: 4rem;
-        margin-bottom: 16px;
-      }
-      .prev-doc .pd-name {
-        font-family: "Bebas Neue", sans-serif;
-        font-size: 1.4rem;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-      }
-      .prev-doc .pd-info {
-        color: var(--muted);
-        font-size: 0.82rem;
-        font-family: "JetBrains Mono", monospace;
-        margin-bottom: 24px;
-      }
-      .prev-doc .pd-dl {
-        background: linear-gradient(135deg, var(--accent), #8b84ff);
-        border: none;
-        color: white;
-        padding: 12px 28px;
-        border-radius: 11px;
-        font-family: "Space Grotesk", sans-serif;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .prev-doc .pd-dl:hover {
-        transform: translateY(-2px);
-      }
-      .prev-loader {
-        color: var(--muted);
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.85rem;
-        animation: pulse 1.5s infinite;
-      }
-
       .toast.ok {
         border-color: var(--green);
         color: var(--green);
@@ -1280,11 +969,6 @@
         border-color: var(--a2);
         color: var(--a2);
       }
-      .toast.info {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-
       @keyframes sR {
         from {
           opacity: 0;
@@ -1356,30 +1040,6 @@
           transform: translateX(5px);
         }
       }
-
-      @media (max-width: 768px) {
-        .split {
-          grid-template-columns: 1fr;
-        }
-        .left {
-          display: none;
-        }
-        .right {
-          min-height: 100vh;
-        }
-        .stats {
-          gap: 7px;
-        }
-        .sc .n {
-          font-size: 1.3rem;
-        }
-        .mg {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .fg {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
     </style>
   </head>
   <body>
@@ -1393,55 +1053,15 @@
           </div>
           <div class="headline">
             <h1>
-              <span class="l1">Telegram Powered</span>
-              <span class="l2">Cloud Storage</span>
-              <span class="l3">Simplified.</span>
+              <span class="l1">Telegram Powered</span
+              ><span class="l2">Cloud Storage</span
+              ><span class="l3">Simplified.</span>
             </h1>
           </div>
           <p class="tagline">
             Store unlimited files safely by utilizing decentralized background
             systems built over your channels.
           </p>
-          <div class="features">
-            <div class="feat">
-              <div class="fdot"></div>
-              <div class="ft">
-                <strong>Secure</strong> session mapping infrastructure
-              </div>
-            </div>
-            <div class="feat">
-              <div class="fdot"></div>
-              <div class="ft">
-                <strong>Proxy Bypass</strong> routed server chunk download
-                stream
-              </div>
-            </div>
-            <div class="feat">
-              <div class="fdot"></div>
-              <div class="ft">
-                <strong>Admin Console</strong> granular client supervision
-                workspace
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="fcards">
-          <div class="fc">
-            <span class="fci">📄</span>
-            <div>
-              <p class="fcn">document.pdf</p>
-              <p class="fcs">4.2 MB</p>
-            </div>
-            <div class="fcd"></div>
-          </div>
-          <div class="fc" style="transform: translateX(-15px)">
-            <span class="fci">🎬</span>
-            <div>
-              <p class="fcn">movie.mp4</p>
-              <p class="fcs">1.2 GB</p>
-            </div>
-            <div class="fcd"></div>
-          </div>
         </div>
       </div>
       <div class="right">
@@ -1454,70 +1074,34 @@
               Create Account
             </button>
           </div>
-
           <div id="loginForm" class="aform active">
             <h2 class="ftitle">Welcome back</h2>
-            <p class="fsub">
-              Sign in to resume access to your personal cloud files
-            </p>
             <form onsubmit="handleAuth(event, 'login')">
               <div class="field">
                 <label>Username</label>
-                <div class="iw">
-                  <span class="ii">👤</span
-                  ><input
-                    type="text"
-                    id="lUser"
-                    placeholder="Enter username"
-                    required
-                  />
-                </div>
+                <div class="iw"><input type="text" id="lUser" required /></div>
               </div>
               <div class="field">
                 <label>Password</label>
                 <div class="iw">
-                  <span class="ii">🔑</span
-                  ><input
-                    type="password"
-                    id="lPass"
-                    placeholder="••••••••"
-                    required
-                  />
+                  <input type="password" id="lPass" required />
                 </div>
               </div>
               <button type="submit" class="sbtn2">Authenticate 🚀</button>
               <div id="lErr" class="aerr"></div>
             </form>
           </div>
-
           <div id="registerForm" class="aform">
             <h2 class="ftitle">Get Started</h2>
-            <p class="fsub">
-              Deploy your instance credentials to begin allocating space
-            </p>
             <form onsubmit="handleAuth(event, 'register')">
               <div class="field">
-                <label>Choose Username</label>
-                <div class="iw">
-                  <span class="ii">👤</span
-                  ><input
-                    type="text"
-                    id="rUser"
-                    placeholder="e.g., harshit"
-                    required
-                  />
-                </div>
+                <label>Username</label>
+                <div class="iw"><input type="text" id="rUser" required /></div>
               </div>
               <div class="field">
-                <label>Secure Password</label>
+                <label>Password</label>
                 <div class="iw">
-                  <span class="ii">🔑</span
-                  ><input
-                    type="password"
-                    id="rPass"
-                    placeholder="••••••••"
-                    required
-                  />
+                  <input type="password" id="rPass" required />
                 </div>
               </div>
               <button type="submit" class="sbtn2">
@@ -1535,8 +1119,8 @@
         <div class="nlogo">DriftIQ // <span>Cloud</span></div>
         <div class="nr">
           <div class="nchip">
-            User: <span id="navUser">-</span>
-            <span id="adminBadge" class="apill" style="display: none"
+            User: <span id="navUser">-</span
+            ><span id="adminBadge" class="apill" style="display: none"
               >ADMIN</span
             >
           </div>
@@ -1560,26 +1144,24 @@
               <tr>
                 <th>User UID</th>
                 <th>Username</th>
-                <th>Assigned Role</th>
+                <th>Role</th>
                 <th>Registered Time</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="adminUsersList"></tbody>
           </table>
-          <div class="div">
-            <div class="dl"></div>
-            <div class="dt">End of Client Supervision View</div>
-            <div class="dl"></div>
-          </div>
         </div>
 
         <div class="ph">
-          <h2>Allocated Storage <span>Workspace</span></h2>
-          <p>
-            Upload, organize, secure, and proxy-stream files across Telegram
-            pipelines.
-          </p>
+          <div>
+            <h2>Allocated Storage <span>Workspace</span></h2>
+            <p>
+              Upload, organize, secure, and proxy-stream files across Telegram
+              pipelines.
+            </p>
+          </div>
+          <div id="tgStatusArea"></div>
         </div>
 
         <div class="bc" id="breadcrumbs"></div>
@@ -1591,15 +1173,8 @@
         >
           <div class="ui">📤</div>
           <h3>Drag files here or click to browse</h3>
-          <p>Max individual cloud threshold chunk limits bounded dynamically</p>
           <button class="ub">Select Local Asset</button>
           <input type="file" id="fi" onchange="uploadFile(this.files[0])" />
-          <div class="pw" id="progressWrap">
-            <div class="pf" id="progressBar"></div>
-          </div>
-          <div class="pl" id="progressLabel">
-            Initializing transport tunnel...
-          </div>
         </div>
 
         <div class="stats">
@@ -1628,12 +1203,6 @@
           <button class="tbtn act" id="fAll" onclick="filterType('all')">
             All
           </button>
-          <button class="tbtn" id="fDoc" onclick="filterType('doc')">
-            Documents
-          </button>
-          <button class="tbtn" id="fMedia" onclick="filterType('media')">
-            Media
-          </button>
           <button class="tbtn g" onclick="openModal('folder')">
             📁 New Directory
           </button>
@@ -1658,45 +1227,30 @@
       </div>
     </div>
 
-    <div class="prev-mo" id="prevModal">
-      <div class="prev-header">
-        <div class="prev-name" id="prevName">Asset Preview</div>
-        <div class="prev-actions">
-          <button class="prev-btn dl" onclick="prevDownload()">
-            ⬇️ Fetch Node
-          </button>
-          <button class="prev-btn cl" onclick="closePreview()">✕ Close</button>
-        </div>
-      </div>
-      <div class="prev-body" id="prevBody"></div>
-    </div>
-
     <div class="toast" id="toast">Pipeline event logged successfully</div>
 
     <script>
       let token = localStorage.getItem("drift_token") || "";
       let userRole = localStorage.getItem("drift_role") || "user";
       let username = localStorage.getItem("drift_user") || "";
+      let currentFolderId = null,
+        files = [],
+        folders = [],
+        folderPath = [],
+        typeFilter = "all",
+        isAdminViewOpen = false;
 
-      let currentFolderId = null;
-      let files = [];
-      let folders = [];
-      let folderPath = [];
-      let typeFilter = "all";
-      let isAdminViewOpen = false;
-
-      // Initialization Route Guard Check
-      if (token) {
-        showApp();
-      }
+      if (token) showApp();
 
       function switchAuth(mode) {
-        document.querySelectorAll(".atab").forEach((t, i) => {
-          t.classList.toggle(
-            "active",
-            (mode === "login" && i === 0) || (mode === "register" && i === 1),
+        document
+          .querySelectorAll(".atab")
+          .forEach((t, i) =>
+            t.classList.toggle(
+              "active",
+              (mode === "login" && i === 0) || (mode === "register" && i === 1),
+            ),
           );
-        });
         document
           .getElementById("loginForm")
           .classList.toggle("active", mode === "login");
@@ -1729,12 +1283,11 @@
 
           if (type === "login") {
             token = d.token;
-            userRole = d.role || "user";
-            username = d.username || u;
+            userRole = d.role;
+            username = d.username;
             localStorage.setItem("drift_token", token);
             localStorage.setItem("drift_role", userRole);
             localStorage.setItem("drift_user", username);
-            showToast("Authentication pipeline handoff complete", "ok");
             showApp();
           } else {
             showToast("Profile allocated! Proceeding to logon status", "ok");
@@ -1743,7 +1296,6 @@
         } catch (err) {
           errDiv.textContent = err.message;
           errDiv.style.display = "block";
-          showToast(err.message, "err");
         }
       }
 
@@ -1751,13 +1303,36 @@
         document.getElementById("authScreen").style.display = "none";
         document.getElementById("mainApp").style.display = "block";
         document.getElementById("navUser").textContent = username;
-
         if (userRole === "admin") {
           document.getElementById("adminBadge").style.display = "inline-block";
           document.getElementById("adminToggleBtn").style.display =
             "inline-block";
         }
+        checkTelegram();
         loadCloudData();
+      }
+
+      async function checkTelegram() {
+        try {
+          const res = await fetchWithAuth("/api/user/telegram-status");
+          const d = await res.json();
+          const tgArea = document.getElementById("tgStatusArea");
+          if (!d.telegramconnected) {
+            tgArea.innerHTML = `<button class="tg-btn" onclick="connectTelegram()">🔌 Connect Telegram</button>`;
+          } else {
+            tgArea.innerHTML = `<span class="apill" style="background:rgba(57,255,133,0.1);color:var(--green)">✅ Telegram Connected</span>`;
+          }
+        } catch (e) {}
+      }
+
+      async function connectTelegram() {
+        try {
+          await fetchWithAuth("/api/user/telegram-connect", { method: "POST" });
+          showToast("Telegram Decentralized Uplink Established", "ok");
+          checkTelegram();
+        } catch (e) {
+          showToast("Failed to connect Telegram pipeline", "err");
+        }
       }
 
       function logout() {
@@ -1787,538 +1362,182 @@
 
       function toggleAdminView() {
         isAdminViewOpen = !isAdminViewOpen;
-        const panel = document.getElementById("adminPanelSection");
-        const btn = document.getElementById("adminToggleBtn");
-
-        if (isAdminViewOpen) {
-          panel.style.display = "block";
-          btn.textContent = "📂 View Files";
-          loadAdminUsers();
-        } else {
-          panel.style.display = "none";
-          btn.textContent = "⚙️ System Panel";
-        }
+        document.getElementById("adminPanelSection").style.display =
+          isAdminViewOpen ? "block" : "none";
+        document.getElementById("adminToggleBtn").textContent = isAdminViewOpen
+          ? "📂 View Files"
+          : "⚙️ System Panel";
+        if (isAdminViewOpen) loadAdminUsers();
       }
 
       async function loadAdminUsers() {
-        try {
-          const res = await fetchWithAuth("/api/admin/users");
-          const d = await res.json();
-          const container = document.getElementById("adminUsersList");
-          container.innerHTML = "";
-
-          if (!d.length) {
-            container.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted)">No accounts found</td></tr>`;
-            return;
-          }
-
-          d.forEach((u) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-        <td><span style="font-family:monospace;font-size:0.7rem">${u.id}</span></td>
-        <td><strong>${u.username}</strong></td>
-        <td><span class="apill" style="background:${u.role === "admin" ? "rgba(255,77,141,0.1)" : "rgba(97,87,255,0.1)"};color:${u.role === "admin" ? "var(--a2)" : "var(--accent)"}">${u.role}</span></td>
-        <td style="color:var(--muted)">${new Date(u.createdAt).toLocaleString()}</td>
-        <td>
-          ${u.username !== "admin" ? `<button class="db2" onclick="deleteUser('${u.id}')">Drop Client</button>` : `<span style="color:var(--muted)">Immutable</span>`}
-        </td>
-      `;
-            container.appendChild(tr);
-          });
-        } catch (e) {
-          showToast("Failed to compile administrative metrics data", "err");
-        }
+        const res = await fetchWithAuth("/api/admin/users");
+        const d = await res.json();
+        const container = document.getElementById("adminUsersList");
+        container.innerHTML = "";
+        d.forEach((u) => {
+          container.innerHTML += `<tr><td>${u.id}</td><td><strong>${u.username}</strong></td><td>${u.role}</td><td>${new Date(u.created_at).toLocaleString()}</td><td>${u.username !== "admin" ? `<button class="db2" onclick="deleteUser('${u.id}')">Drop Client</button>` : "Immutable"}</td></tr>`;
+        });
       }
 
       async function deleteUser(uid) {
-        if (!confirm("Purge client records and dissociate persistent assets?"))
-          return;
-        try {
-          const res = await fetchWithAuth(`/api/admin/users/${uid}`, {
-            method: "DELETE",
-          });
-          if (!res.ok) throw new Error("Eviction operation denied");
-          showToast("Client session completely wiped", "ok");
-          loadAdminUsers();
-        } catch (err) {
-          showToast(err.message, "err");
-        }
+        if (!confirm("Purge client records?")) return;
+        await fetchWithAuth(`/api/admin/users/${uid}`, { method: "DELETE" });
+        loadAdminUsers();
       }
 
       function filterType(t) {
         typeFilter = t;
-        document
-          .querySelectorAll(".tb .tbtn:not(.g)")
-          .forEach((b) => b.classList.remove("act"));
-        if (t === "all") document.getElementById("fAll").classList.add("act");
-        if (t === "doc") document.getElementById("fDoc").classList.add("act");
-        if (t === "media")
-          document.getElementById("fMedia").classList.add("act");
         render();
       }
 
       function render() {
         renderBreadcrumbs();
-
         const searchQ = document
           .getElementById("searchBar")
           .value.toLowerCase();
 
-        // Filter Folders
-        const currentFolders = folders.filter(
+        const cFolders = folders.filter(
           (f) =>
             f.parentId === currentFolderId &&
             f.name.toLowerCase().includes(searchQ),
         );
         const fGrid = document.getElementById("folderGrid");
-        fGrid.innerHTML = "";
+        fGrid.innerHTML = cFolders.length
+          ? ""
+          : `<div class="empty"><p>No structural subdirectories here</p></div>`;
+        cFolders.forEach((f) => {
+          fGrid.innerHTML += `<div class="fcd2" onclick="currentFolderId='${f.id}'; folderPath.push(${JSON.stringify(f).replace(/"/g, "&quot;")}); render();"><span class="ffi">📁</span><span class="ffn">${f.name}</span><div class="ffa"><button class="ffact" onclick="event.stopPropagation(); removeFolder('${f.id}')">✕</button></div></div>`;
+        });
 
-        if (currentFolders.length) {
-          currentFolders.forEach((f) => {
-            const div = document.createElement("div");
-            div.className = "fcd2";
-            div.onclick = () => {
-              currentFolderId = f.id;
-              folderPath.push(f);
-              render();
-            };
-            div.innerHTML = `
-        <span class="ffi">📁</span>
-        <span class="ffn">${f.name}</span>
-        <div class="ffa">
-          <button class="ffact ffd" onclick="event.stopPropagation(); removeFolder('${f.id}')">✕</button>
-        </div>
-      `;
-            fGrid.appendChild(div);
-          });
-        } else {
-          fGrid.innerHTML = `<div class="empty"><p class="ei">🏜️</p><p>No structural subdirectories here</p></div>`;
-        }
-
-        // Filter Files
-        let currentFiles = files.filter((f) => f.folderId === currentFolderId);
-        if (searchQ)
-          currentFiles = currentFiles.filter((f) =>
+        let cFiles = files.filter(
+          (f) =>
+            f.folderId === currentFolderId &&
             f.name.toLowerCase().includes(searchQ),
-          );
-
-        if (typeFilter === "doc") {
-          const dExts = [
-            "pdf",
-            "doc",
-            "docx",
-            "txt",
-            "xls",
-            "xlsx",
-            "ppt",
-            "pptx",
-            "zip",
-            "rar",
-          ];
-          currentFiles = currentFiles.filter((f) =>
-            dExts.includes(f.name.split(".").pop().toLowerCase()),
-          );
-        } else if (typeFilter === "media") {
-          const mExts = [
-            "png",
-            "jpg",
-            "jpeg",
-            "gif",
-            "mp4",
-            "mkv",
-            "mp3",
-            "wav",
-            "mov",
-          ];
-          currentFiles = currentFiles.filter((f) =>
-            mExts.includes(f.name.split(".").pop().toLowerCase()),
-          );
-        }
-
+        );
         const fileGrid = document.getElementById("fileGrid");
-        fileGrid.innerHTML = "";
+        fileGrid.innerHTML = cFiles.length
+          ? ""
+          : `<div class="empty"><p>Empty data cluster grid segment</p></div>`;
 
-        if (currentFiles.length) {
-          currentFiles.forEach((f) => {
-            const ext = f.name.split(".").pop().toLowerCase();
-            let icon = "📄";
-            if (["png", "jpg", "jpeg", "gif"].includes(ext)) icon = "🖼️";
-            else if (["mp4", "mkv", "mov"].includes(ext)) icon = "🎬";
-            else if (["mp3", "wav"].includes(ext)) icon = "🎵";
-            else if (ext === "pdf") icon = "📕";
-            else if (["zip", "rar", "7z"].includes(ext)) icon = "🗜️";
+        cFiles.forEach((f) => {
+          fileGrid.innerHTML += `<div class="mc"><div class="mp">📄</div><div class="mi"><p class="mn">${f.name}</p><p class="mm">${(f.size / 1024).toFixed(1)} KB</p></div><div class="ma"><button class="ab ad" onclick="dl('${f.id}', '${f.name}')">⬇️</button><button class="ab as" onclick="generateShare('${f.id}')">🔗</button><button class="ab ar" onclick="triggerRename('${f.id}', '${f.name}')">✏️</button><button class="ab ax" onclick="deleteFile('${f.id}')">✕</button></div></div>`;
+        });
 
-            const div = document.createElement("div");
-            div.className = "mc";
-            div.onclick = () => openPreview(f);
-            div.innerHTML = `
-        <div class="mp">${icon}</div>
-        <div class="mi">
-          <p class="mn">${f.name}</p>
-          <p class="mm">${fmt(f.size)} • ${ago(f.createdAt)}</p>
-        </div>
-        <div class="ma">
-          <button class="ab ad" onclick="event.stopPropagation(); dl('${f.id}', '${f.name}')">⬇️</button>
-          <button class="ab as" onclick="event.stopPropagation(); generateShare('${f.id}')">🔗</button>
-          <button class="ab ar" onclick="event.stopPropagation(); triggerRename('${f.id}', '${f.name}')">✏️</button>
-          <button class="ab ax" onclick="event.stopPropagation(); deleteFile('${f.id}')">✕</button>
-        </div>
-      `;
-            fileGrid.appendChild(div);
-          });
-        } else {
-          fileGrid.innerHTML = `<div class="empty"><p class="ei">📦</p><p>Empty data cluster grid segment</p></div>`;
-        }
-
-        // Calculate Metrics
         document.getElementById("statFolders").textContent = folders.length;
         document.getElementById("statFiles").textContent = files.length;
-        const aggregateSize = files.reduce(
-          (acc, curr) => acc + (curr.size || 0),
-          0,
-        );
-        document.getElementById("statSize").textContent = fmt(aggregateSize);
       }
 
       function renderBreadcrumbs() {
         const container = document.getElementById("breadcrumbs");
-        container.innerHTML = `<span class="bci ${!currentFolderId ? "act" : ""}" onclick="navigateBreadcrumb(-1)">Root Node</span>`;
-
+        container.innerHTML = `<span class="bci ${!currentFolderId ? "act" : ""}" onclick="currentFolderId=null; folderPath=[]; render()">Root Node</span>`;
         folderPath.forEach((f, index) => {
-          container.innerHTML += `<span class="bcs">/</span><span class="bci ${index === folderPath.length - 1 ? "act" : ""}" onclick="navigateBreadcrumb(${index})">${f.name}</span>`;
+          container.innerHTML += `<span class="bcs">/</span><span class="bci ${index === folderPath.length - 1 ? "act" : ""}" onclick="currentFolderId='${f.id}'; folderPath=folderPath.slice(0, ${index + 1}); render()">${f.name}</span>`;
         });
-      }
-
-      function navigateBreadcrumb(index) {
-        if (index === -1) {
-          currentFolderId = null;
-          folderPath = [];
-        } else {
-          currentFolderId = folderPath[index].id;
-          folderPath = folderPath.slice(0, index + 1);
-        }
-        render();
       }
 
       async function uploadFile(file) {
         if (!file) return;
-
-        const pWrap = document.getElementById("progressWrap");
-        const pBar = document.getElementById("progressBar");
-        const pLabel = document.getElementById("progressLabel");
-
-        pWrap.style.display = "block";
-        pLabel.style.display = "block";
-        pBar.style.width = "0%";
-        pLabel.textContent = "Opening cloud ingress socket tunnel...";
-
         const formData = new FormData();
         formData.append("file", file);
         if (currentFolderId) formData.append("folderId", currentFolderId);
 
-        try {
-          // Basic standard layout for native fetch progress calculation fallback emulation
-          pBar.style.width = "40%";
-          pLabel.textContent =
-            "Transmitting payloads to proxy buffer gateway...";
-
-          const res = await fetchWithAuth("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          pBar.style.width = "80%";
-          pLabel.textContent =
-            "Syncing index records across Supabase mapping layers...";
-
-          const d = await res.json();
-          if (!res.ok) throw new Error(d.error || "Transport fault occurred");
-
-          pBar.style.width = "100%";
-          pLabel.textContent = "Asset synchronized successfully!";
-          showToast("Payload stored onto file segment grid", "ok");
-
-          setTimeout(() => {
-            pWrap.style.display = "none";
-            pLabel.style.display = "none";
-          }, 1500);
-
-          loadCloudData();
-        } catch (err) {
-          showToast(err.message, "err");
-          pLabel.textContent = `Error: ${err.message}`;
-          pBar.style.backgroundColor = "var(--a2)";
-        }
+        await fetchWithAuth("/api/upload", { method: "POST", body: formData });
+        showToast("Payload stored", "ok");
+        loadCloudData();
       }
 
       async function dl(fid, name) {
-        showToast("Initializing secure cluster stream context...", "info");
-        try {
-          const resp = await fetchWithAuth(`/api/files/${fid}/download`);
-          if (!resp.ok) throw new Error("Node download connection terminated");
-
-          const blob = await resp.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } catch (e) {
-          showToast(
-            "Failed to capture targeted network download stream",
-            "err",
-          );
-        }
+        const resp = await fetchWithAuth(`/api/files/${fid}/download`);
+        if (!resp.ok)
+          return showToast("Node download connection terminated", "err");
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
       }
 
       async function generateShare(fid) {
-        try {
-          const res = await fetchWithAuth("/api/shares", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fileId: fid }),
-          });
-          const d = await res.json();
-          if (!res.ok) throw new Error(d.error);
-
-          const fullShareUrl = `${window.location.origin}/shared.html?id=${d.id}`;
-          openModal("share", fullShareUrl);
-        } catch (e) {
-          showToast("Dissociation error parsing share token allocation", "err");
-        }
+        const res = await fetchWithAuth("/api/shares", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileId: fid }),
+        });
+        const d = await res.json();
+        openModal("share", `${window.location.origin}/shared.html?id=${d.id}`);
       }
 
       async function removeFolder(id) {
-        if (!confirm("Delete selected node and all recursive sub-elements?"))
-          return;
-        try {
-          const res = await fetchWithAuth(`/api/folders/${id}`, {
-            method: "DELETE",
-          });
-          if (!res.ok) throw new Error("Deletion failed");
-          showToast("Directory structure removed", "ok");
-          loadCloudData();
-        } catch (e) {
-          showToast("Failed to drop directory path structural sequence", "err");
-        }
+        if (!confirm("Delete node?")) return;
+        await fetchWithAuth(`/api/folders/${id}`, { method: "DELETE" });
+        loadCloudData();
       }
 
       async function deleteFile(id) {
-        if (!confirm("Purge active file permanently?")) return;
-        try {
-          const res = await fetchWithAuth(`/api/files/${id}`, {
-            method: "DELETE",
-          });
-          if (!res.ok) throw new Error("Deletion validation rejected");
-          showToast("Asset record decoupled", "ok");
-          loadCloudData();
-        } catch (e) {
-          showToast("Asset eviction lifecycle step halted", "err");
-        }
+        if (!confirm("Purge file?")) return;
+        await fetchWithAuth(`/api/files/${id}`, { method: "DELETE" });
+        loadCloudData();
       }
 
       function triggerRename(id, currentName) {
         openModal("rename", { id, currentName });
       }
 
-      // Modal Core Controller
       function openModal(type, meta = null) {
-        const m = document.getElementById("modal");
-        const title = document.getElementById("mTitle");
-        const body = document.getElementById("mBody");
-        const confirmBtn = document.getElementById("mConfirm");
-
+        const m = document.getElementById("modal"),
+          body = document.getElementById("mBody"),
+          btn = document.getElementById("mConfirm");
         m.classList.add("open");
-        body.innerHTML = "";
-
         if (type === "folder") {
-          title.textContent = "Create New Workspace Directory";
-          body.innerHTML = `<input type="text" id="mFolderInput" placeholder="Directory string key name..." autofocus/>`;
-          confirmBtn.onclick = async () => {
-            const val = document.getElementById("mFolderInput").value;
-            if (!val) return;
-            try {
-              const res = await fetchWithAuth("/api/folders", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: val, parentId: currentFolderId }),
-              });
-              if (!res.ok) throw new Error("Creation rejected");
-              closeModal();
-              loadCloudData();
-            } catch (e) {
-              showToast("Failed to resolve custom workspace creation", "err");
-            }
+          document.getElementById("mTitle").textContent = "New Directory";
+          body.innerHTML = `<input type="text" id="mInp" placeholder="Name..."/>`;
+          btn.onclick = async () => {
+            await fetchWithAuth("/api/folders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: document.getElementById("mInp").value,
+                parentId: currentFolderId,
+              }),
+            });
+            closeModal();
+            loadCloudData();
           };
         } else if (type === "share") {
-          title.textContent = "Public Access Node Key Allocated";
-          body.innerHTML = `
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">Distribute link below to bypass standard token constraints:</p>
-      <div class="sbox" id="shareUrlBox">${meta}</div>
-    `;
-          confirmBtn.textContent = "Copy String";
-          confirmBtn.onclick = () => {
+          document.getElementById("mTitle").textContent = "Share Link";
+          body.innerHTML = `<div class="sbox">${meta}</div>`;
+          btn.textContent = "Copy";
+          btn.onclick = () => {
             navigator.clipboard.writeText(meta);
-            showToast("URL payload mirrored to clipboard context", "ok");
             closeModal();
           };
-          return;
         } else if (type === "rename") {
-          title.textContent = "Refactor Object Structural Name";
-          body.innerHTML = `<input type="text" id="mRenameInput" value="${meta.currentName}" autofocus/>`;
-          confirmBtn.onclick = async () => {
-            const val = document.getElementById("mRenameInput").value;
-            if (!val || val === meta.currentName) {
-              closeModal();
-              return;
-            }
-            try {
-              const res = await fetchWithAuth(`/api/files/${meta.id}/rename`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: val }),
-              });
-              if (!res.ok) throw new Error("Refactor failed");
-              closeModal();
-              loadCloudData();
-            } catch (e) {
-              showToast("Payload error naming metadata patch sequence", "err");
-            }
+          document.getElementById("mTitle").textContent = "Rename";
+          body.innerHTML = `<input type="text" id="mInp" value="${meta.currentName}"/>`;
+          btn.onclick = async () => {
+            await fetchWithAuth(`/api/files/${meta.id}/rename`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: document.getElementById("mInp").value,
+              }),
+            });
+            closeModal();
+            loadCloudData();
           };
         }
-        confirmBtn.textContent = "Confirm Action";
       }
-
       function closeModal() {
         document.getElementById("modal").classList.remove("open");
       }
-
-      let prevFileId = null;
-      let prevFileName = null;
-
-      async function openPreview(file) {
-        prevFileId = file.id;
-        prevFileName = file.name;
-
-        document.getElementById("prevName").textContent = file.name;
-        document.getElementById("prevModal").classList.add("open");
-        const body = document.getElementById("prevBody");
-        body.innerHTML =
-          '<div class="prev-loader">Connecting live media proxy stream context...</div>';
-
-        try {
-          const ext = file.name.split(".").pop().toLowerCase();
-          const resp = await fetchWithAuth(`/api/files/${file.id}/download`);
-          if (!resp.ok) throw new Error();
-          const blob = await resp.blob();
-          const blobUrl = URL.createObjectURL(blob);
-
-          if (["png", "jpg", "jpeg", "gif"].includes(ext)) {
-            body.innerHTML = `<img src="${blobUrl}" alt="Preview"/>`;
-          } else if (["mp4", "mkv", "mov"].includes(ext)) {
-            body.innerHTML = `<video src="${blobUrl}" controls autoplay></video>`;
-          } else if (["mp3", "wav"].includes(ext)) {
-            body.innerHTML = `<audio src="${blobUrl}" controls autoplay></audio>`;
-          } else {
-            body.innerHTML = `
-        <div class="prev-doc">
-          <div class="pd-icon">📑</div>
-          <div class="pd-name">${file.name}</div>
-          <div class="pd-info">${fmt(file.size)} • File Format Interface Extension [.${ext.toUpperCase()}]</div>
-          <button class="pd-dl" onclick="prevDownload()">Download Binary Array Data</button>
-        </div>`;
-          }
-        } catch (e) {
-          body.innerHTML =
-            '<div class="prev-loader">// Error compiling targeted stream render preview</div>';
-        }
-      }
-
-      function closePreview() {
-        document.getElementById("prevModal").classList.remove("open");
-        document.getElementById("prevBody").innerHTML = "";
-      }
-
-      async function prevDownload() {
-        await dl(prevFileId, prevFileName);
-      }
-
-      document
-        .getElementById("prevModal")
-        .addEventListener("click", function (e) {
-          if (e.target === this) closePreview();
-        });
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          closeModal();
-          closePreview();
-        }
-      });
-
-      function fmt(b) {
-        if (b < 1024) return b + " B";
-        if (b < 1048176) return (b / 1024).toFixed(1) + " KB";
-        if (b < 1073741824) return (b / 1048576).toFixed(1) + " MB";
-        return (b / 1073741824).toFixed(1) + " GB";
-      }
-
-      function ago(iso) {
-        const d = (Date.now() - new Date(iso)) / 1000;
-        if (d < 60) return "just now";
-        if (d < 3600) return Math.floor(d / 60) + "m ago";
-        if (d < 86400) return Math.floor(d / 3600) + "h ago";
-        return Math.floor(d / 86400) + "d ago";
-      }
-
-      function showToast(txt, type = "info") {
+      function showToast(txt, type) {
         const t = document.getElementById("toast");
         t.textContent = txt;
         t.className = `toast show ${type}`;
         setTimeout(() => t.classList.remove("show"), 3000);
-      }
-
-      // Canvas Visual Matrix Effect Fallback Graphic
-      const canvas = document.getElementById("bgCanvas");
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        let w = (canvas.width = window.innerWidth / 2);
-        let h = (canvas.height = window.innerHeight);
-        window.addEventListener("resize", () => {
-          if (canvas) {
-            w = canvas.width = window.innerWidth / 2;
-            h = canvas.height = window.innerHeight;
-          }
-        });
-
-        const dots = Array(35)
-          .fill()
-          .map(() => ({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            vx: (Math.random() - 0.5) * 0.4,
-            vy: (Math.random() - 0.5) * 0.4,
-            r: Math.random() * 2 + 1,
-          }));
-
-        function loop() {
-          ctx.clearRect(0, 0, w, h);
-          ctx.fillStyle = "rgba(97, 87, 255, 0.15)";
-          dots.forEach((p) => {
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0 || p.x > w) p.vx *= -1;
-            if (p.y < 0 || p.y > h) p.vy *= -1;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fill();
-          });
-          requestAnimationFrame(loop);
-        }
-        loop();
       }
     </script>
   </body>

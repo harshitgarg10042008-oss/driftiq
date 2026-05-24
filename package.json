@@ -4,7 +4,8 @@
   "description": "DriftIQ - Personal Telegram Cloud Storage",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
@@ -17,5 +18,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }

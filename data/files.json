@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "19e3a957-2629-4614-92e5-732a9d3be921",
+    "user_id": "685f655e-b26a-4ad1-80c5-629674812204",
+    "name": "secondary_board_certificate.pdf",
+    "size": 1048576,
+    "mime_type": "application/pdf",
+    "folder_id": "ea44295f-b7b2-431f-9897-8eb810038acd",
+    "storage_path": "19e3a957-2629-4614-92e5-732a9d3be921-secondary_board_certificate.pdf",
+    "created_at": "2026-05-20T05:20:00.000Z"
+  }
+]
