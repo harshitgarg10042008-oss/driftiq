@@ -11,7 +11,7 @@ const uploadFile = async (req, res, next) => {
     if (!req.file) {
       return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        error: \"No file provided\",
+        error: "No file provided",
       });
     }
 
@@ -47,7 +47,7 @@ const uploadFile = async (req, res, next) => {
     if (!telegramResult.success) {
       return res.status(CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
         success: false,
-        error: \"Failed to upload file\",
+        error: "Failed to upload file",
       });
     }
 
@@ -98,7 +98,7 @@ const getFiles = async (req, res, next) => {
       });
     }
 
-    res.header(\"X-Total-Count\", result.pagination.total);
+    res.header("X-Total-Count", result.pagination.total);
     res.json({
       success: true,
       data: result.data,
@@ -159,14 +159,14 @@ const downloadFile = async (req, res, next) => {
     if (!downloadResult.success) {
       return res.status(CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
         success: false,
-        error: \"Failed to download file\",
+        error: "Failed to download file",
       });
     }
 
     // Send file
     res.set({
-      \"Content-Type\": file.mime_type,
-      \"Content-Disposition\": `attachment; filename=\"${file.name}\"`,
+      "Content-Type": file.mime_type,
+      "Content-Disposition": `attachment; filename="${file.name}"`,
     });
     res.send(downloadResult.data);
   } catch (error) {
@@ -277,7 +277,7 @@ const searchFiles = async (req, res, next) => {
     if (!query) {
       return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        error: \"Search query required\",
+        error: "Search query required",
       });
     }
 

@@ -18,6 +18,7 @@ const fileRoutes = require("./routes/files");
 const folderRoutes = require("./routes/folders");
 const shareRoutes = require("./routes/shares");
 const adminRoutes = require("./routes/admin");
+const telegramRoutes = require("./routes/telegram");
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use("/api/files", fileRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/shares", shareRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/telegram", telegramRoutes);
 
 // ============ ERROR HANDLING ============
 app.use(notFoundHandler);
@@ -83,11 +85,30 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       logger.info(`Server running on http://localhost:${PORT}`);
       console.log("🚀 DriftIQ Server started successfully!");
       console.log(`📡 API: http://localhost:${PORT}/api`);
       console.log(`🏥 Health: http://localhost:${PORT}/health`);
+
+      // Set up Telegram webhook automatically on startup
+      const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.BASE_URL;
+      if (baseUrl) {
+        const { BOT_TOKEN } = require("./config/telegram");
+        const axios = require("axios");
+        const webhookUrl = `${baseUrl}/api/telegram/webhook`;
+        try {
+          await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`, {
+            url: webhookUrl
+          });
+          logger.info(`✓ Telegram webhook registered to: ${webhookUrl}`);
+          console.log(`✓ Telegram webhook registered to: ${webhookUrl}`);
+        } catch (webhookErr) {
+          logger.error("Failed to register Telegram webhook: " + webhookErr.message);
+        }
+      } else {
+        console.log("⚠️ No BASE_URL or RENDER_EXTERNAL_URL found, skipping Telegram webhook auto-registration.");
+      }
     });
   } catch (error) {
     logger.error("Failed to start server:", error);

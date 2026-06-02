@@ -1,7 +1,7 @@
 // backend/config/telegram.js
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID;
+const CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || process.env.CHANNEL_ID;
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 
 if (!BOT_TOKEN) {
@@ -9,7 +9,7 @@ if (!BOT_TOKEN) {
 }
 
 if (!CHANNEL_ID) {
-  throw new Error("Missing TELEGRAM_CHANNEL_ID in environment variables");
+  throw new Error("Missing TELEGRAM_CHANNEL_ID or CHANNEL_ID in environment variables");
 }
 
 module.exports = {
