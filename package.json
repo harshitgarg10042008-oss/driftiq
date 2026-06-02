@@ -2,10 +2,10 @@
   "name": "driftiq",
   "version": "3.0.0",
   "description": "DriftIQ — Production-Grade Telegram-Powered Cloud Storage SaaS",
-  "main": "backend/server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "build": "echo 'No build step required for this project'",
     "lint": "eslint .",
     "test": "echo 'Tests to be implemented'",
