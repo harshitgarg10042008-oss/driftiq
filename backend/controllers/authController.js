@@ -32,9 +32,9 @@ const register = async (req, res, next) => {
 // Login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const result = await authService.login(email, password);
+    const result = await authService.login(username, password);
 
     if (!result.success) {
       return res.status(CONSTANTS.STATUS_CODES.UNAUTHORIZED).json({

@@ -80,10 +80,10 @@ class API {
     });
   }
 
-  async login(email, password) {
+  async login(username, password) {
     const response = await this.request("/auth/login", {
       method: "POST",
-      body: { email, password },
+      body: { username, password },
     });
 
     if (response.token) {

@@ -117,14 +117,18 @@ const register = async (email, username, password, fullName = null) => {
 };
 
 // Login user
-const login = async (email, password) => {
+const login = async (username, password) => {
   try {
-    // Get user
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", email)
-      .single();
+    // Get user by email or username
+    const isEmail = username.includes("@");
+    const query = supabase.from("users").select("*");
+    if (isEmail) {
+      query.eq("email", username);
+    } else {
+      query.eq("username", username);
+    }
+
+    const { data: user, error } = await query.maybeSingle();
 
     if (error || !user) {
       return {

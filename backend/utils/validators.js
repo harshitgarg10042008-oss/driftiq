@@ -30,8 +30,8 @@ const validateRegister = () => [
 ];
 
 const validateLogin = () => [
-  body("email").isEmail().normalizeEmail(),
-  body("password").notEmpty().trim(),
+  body("username").notEmpty().trim().withMessage("Username or Email is required"),
+  body("password").notEmpty().trim().withMessage("Password is required"),
 ];
 
 const validatePasswordChange = () => [
