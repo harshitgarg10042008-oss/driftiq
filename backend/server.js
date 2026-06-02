@@ -53,6 +53,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // ============ STATIC FILES ============
 app.use(express.static("public"));
+app.use("/assets", express.static("frontend/assets"));
 
 // ============ HEALTH CHECK ============
 app.get("/health", (req, res) => {

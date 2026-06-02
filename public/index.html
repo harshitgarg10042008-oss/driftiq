@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriftIQ — Decentralized Personal Storage Platform</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/animations.css">
+  <style>
+    /* Premium overrides and specific page styling */
+    body {
+      background: #050508;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    /* Background Canvas and Noise */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+    }
+    
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Auth Layout */
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      min-height: 100vh;
+    }
+    
+    .left-hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--spacing-2xl);
+      position: relative;
+    }
+    
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .brand-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 25px rgba(97, 87, 255, 0.4);
+    }
+    
+    .brand-text {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #fff, #a0a0c0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      line-height: 0.95;
+      margin-bottom: var(--spacing-md);
+      text-transform: uppercase;
+    }
+    
+    .hero-title span {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-desc {
+      max-width: 480px;
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .right-auth {
+      background: rgba(12, 12, 18, 0.7);
+      border-left: 1px solid var(--border-color);
+      backdrop-filter: blur(25px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xl);
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: rgba(5, 5, 8, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xs);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: var(--spacing-sm);
+      text-align: center;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.3s;
+      border: none;
+      background: transparent;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--accent-primary), #8b84ff);
+      color: white;
+      box-shadow: 0 4px 15px rgba(97, 87, 255, 0.3);
+    }
+
+    /* Main Dashboard Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(12, 12, 18, 0.85);
+      border-right: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+      padding: var(--spacing-lg) var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style: none;
+      margin-top: var(--spacing-xl);
+    }
+
+    .sidebar-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-item.active a,
+    .sidebar-item a:hover {
+      background: rgba(97, 87, 255, 0.1);
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent-primary);
+      padding-left: calc(var(--spacing-md) - 3px);
+    }
+
+    .main-content {
+      padding: var(--spacing-xl);
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card {
+      background: rgba(18, 18, 28, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md) var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(97, 87, 255, 0.1);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--accent-primary);
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: var(--font-mono);
+    }
+
+    /* Drag and Drop Zone */
+    .dropzone {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-xl);
+      background: rgba(12, 12, 18, 0.3);
+      padding: var(--spacing-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-primary);
+      background: rgba(97, 87, 255, 0.05);
+    }
+
+    /* File / Folder Grid */
+    .grid-container {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folder-card {
+      background: rgba(18, 18, 28, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .folder-card:hover {
+      border-color: var(--accent-tertiary);
+      transform: translateY(-2px);
+    }
+
+    .file-card {
+      background: rgba(12, 12, 18, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .file-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(97, 87, 255, 0.1);
+    }
+
+    .file-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .file-card:hover .file-actions {
+      opacity: 1;
+    }
+
+    .action-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .action-btn.delete:hover {
+      background: var(--error);
+      border-color: var(--error);
+    }
+
+    .star-btn {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      transition: color 0.2s;
+    }
+
+    .star-btn.starred {
+      color: #ffd700;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: var(--z-modal);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-md);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-xl);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    /* Admin Styles */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--spacing-md);
+    }
+
+    .admin-table th, .admin-table td {
+      border-bottom: 1px solid var(--border-color);
+      padding: var(--spacing-md);
+      text-align: left;
+    }
+
+    .admin-table th {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .admin-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    .badge-admin {
+      background: rgba(255, 77, 141, 0.15);
+      color: var(--accent-secondary);
+      border: 1px solid rgba(255, 77, 141, 0.3);
+    }
+
+    .badge-user {
+      background: rgba(97, 87, 255, 0.15);
+      color: var(--accent-primary);
+      border: 1px solid rgba(97, 87, 255, 0.3);
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-muted);
+    }
+
+    .breadcrumbs span {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .breadcrumbs span:hover {
+      color: var(--accent-primary);
+    }
+
+    .breadcrumbs span.current {
+      color: var(--text-primary);
+      cursor: default;
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: var(--border-color);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- ==================== AUTH SCREEN ==================== -->
+  <div id="auth-screen" class="split animate-fade-in">
+    <div class="left-hero">
+      <div class="brand-logo">
+        <div class="brand-icon">☁️</div>
+        <div class="brand-text">DriftIQ</div>
+      </div>
+      <h1 class="hero-title">Cloud Storage<br><span>Reinvented</span></h1>
+      <p class="hero-desc">Securely orchestrate, search, and synchronize your personal assets utilizing the absolute decentralization of your private Telegram channels.</p>
+    </div>
+    
+    <div class="right-auth">
+      <div class="auth-container">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+          <button class="auth-tab" onclick="switchTab('register')">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form-container" class="animate-slide-in">
+          <h3 class="mb-sm">Welcome back</h3>
+          <p class="text-secondary mb-lg">Access your secure decentralized asset vault.</p>
+          <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="mb-md">
+              <input type="email" id="login-email" placeholder="Email Address" required>
+            </div>
+            <div class="mb-lg">
+              <input type="password" id="login-password" placeholder="Vault Access Password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Unlock Vault 🔑</button>
+          </form>
+          <p class="text-center mt-md"><a href="#" onclick="switchTab('reset')">Forgot access key?</a></p>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-form-container" class="animate-slide-in hidden">
+          <h3 class="mb-sm">Allocate Profile</h3>
+          <p class="text-secondary mb-lg">Create a new secure storage vault instance.</p>
+          <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="mb-md">
+              <input type="text" id="reg-name" placeholder="Full Name (Optional)">
+            </div>
+            <div class="mb-md">
+              <input type="text" id="reg-username" placeholder="Username" required minlength="3">
+            </div>
+            <div class="mb-md">
+              <input type="email" id="reg-email" placeholder="Email Address" required>
+            </div>
+            <div class="mb-lg">
+              <input type="password" id="reg-password" placeholder="Encryption Password (min 8 chars)" required minlength="8">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Generate Keys ✨</button>
+          </form>
+        </div>
+
+        <!-- Reset Request Form -->
+        <div id="reset-form-container" class="animate-slide-in hidden">
+          <h3 class="mb-sm">Vault Restoration</h3>
+          <p class="text-secondary mb-lg">Verify email to request password reset token.</p>
+          <form id="resetForm" onsubmit="handleResetRequest(event)">
+            <div class="mb-lg">
+              <input type="email" id="reset-email" placeholder="Email Address" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Send Recovery Link 📡</button>
+          </form>
+          <p class="text-center mt-md"><a href="#" onclick="switchTab('login')">Return to Authentication</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD SCREEN ==================== -->
+  <div id="dashboard-screen" class="dashboard-layout hidden animate-fade-in">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-logo" style="margin-bottom: 0;">
+          <div class="brand-icon" style="width:34px; height:34px; font-size:14px;">☁️</div>
+          <div class="brand-text" style="font-size: 1.5rem;">DriftIQ</div>
+        </div>
+        
+        <ul class="sidebar-menu">
+          <li class="sidebar-item active" id="menu-dash"><a href="#" onclick="showSection('dash')">📊 Dashboard</a></li>
+          <li class="sidebar-item" id="menu-files"><a href="#" onclick="showSection('files')">📁 File Manager</a></li>
+          <li class="sidebar-item" id="menu-shares"><a href="#" onclick="showSection('shares')">🔗 Shared Links</a></li>
+          <li class="sidebar-item admin-only hidden" id="menu-admin"><a href="#" onclick="showSection('admin')">⚙️ System Console</a></li>
+          <li class="sidebar-item" id="menu-settings"><a href="#" onclick="showSection('settings')">🛠️ Settings</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <!-- Profile summary card -->
+        <div class="card p-sm flex gap-sm" style="background: rgba(0,0,0,0.2);">
+          <div style="font-size: 24px;">👤</div>
+          <div style="overflow:hidden;">
+            <p id="user-display-name" style="margin-bottom:0; font-weight:600; font-size:12px; color:white; white-space:nowrap; text-overflow:ellipsis;">User</p>
+            <p id="user-display-role" class="text-muted" style="margin-bottom:0; font-size:10px; font-family:var(--font-mono);">Role</p>
+          </div>
+        </div>
+        <button class="btn btn-secondary w-100 mt-md" onclick="logout()">Disconnect 🔒</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- HEADER -->
+      <header class="flex-between mb-lg">
+        <div>
+          <h2 id="section-title-heading" style="margin-bottom:4px;">My Storage Space</h2>
+          <p id="section-title-desc" class="text-secondary" style="font-size:12px;">Manage, coordinate, and share your decentralized nodes.</p>
+        </div>
+        
+        <div class="flex gap-md">
+          <input type="text" id="dashboard-search" placeholder="Search resources..." style="width:250px;" oninput="debounceSearch()">
+          <button class="btn btn-primary" onclick="triggerFileUpload()">Upload Node 📤</button>
+          <input type="file" id="file-input-raw" class="hidden" onchange="uploadSelectedFile(event)">
+        </div>
+      </header>
+
+      <!-- STATS GRID -->
+      <div class="stats-row" id="stats-panel">
+        <div class="stat-card">
+          <div class="stat-icon">📂</div>
+          <div>
+            <p class="stat-value" id="stat-folders-count">0</p>
+            <p class="stat-label">Directories</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div>
+            <p class="stat-value" id="stat-files-count">0</p>
+            <p class="stat-label">Allocated Files</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">☁️</div>
+          <div>
+            <p class="stat-value" id="stat-storage-size">0 B</p>
+            <p class="stat-label">Calculated Quota</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📡</div>
+          <div>
+            <p class="stat-value" id="stat-telegram-status">Active</p>
+            <p class="stat-label">Uplink Tunnel</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTAINER SECTIONS -->
+      <div id="content-container">
+
+        <!-- DASHBOARD / FILE VIEW -->
+        <div id="sec-dash" class="animate-fade-in">
+          <!-- Dropzone -->
+          <div class="dropzone" id="dropzone-area" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleFileDrop(event)">
+            <div style="font-size: 36px; margin-bottom:12px;">📤</div>
+            <h3>Drag & Drop Binary Objects Here</h3>
+            <p class="text-secondary">Or click to select an asset from your local client filesystem.</p>
+            <div id="upload-progress-wrapper" class="hidden" style="max-width: 300px; margin: 12px auto 0;">
+              <p id="upload-status-text" class="text-secondary" style="font-size:11px; margin-bottom:2px;">Uploading: 0%</p>
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="upload-progress-bar"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Breadcrumbs -->
+          <div class="breadcrumbs" id="folder-breadcrumbs">
+            <span onclick="navigateToFolder(null)">Root</span>
+          </div>
+
+          <!-- Folders Section -->
+          <div class="grid-container" id="folders-section">
+            <div class="section-title">
+              <span>Active Directories</span>
+              <button class="btn btn-secondary btn-sm" onclick="promptCreateFolder()">+ New Dir</button>
+            </div>
+            <div class="grid grid-4" id="folders-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Files Section -->
+          <div class="grid-container" id="files-section">
+            <div class="section-title">Allocated Binary Objects</div>
+            <div class="grid grid-3" id="files-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SHARED LINKS VIEW -->
+        <div id="sec-shares" class="animate-fade-in hidden">
+          <div class="card p-lg">
+            <h3 class="mb-sm">Active Share Access Tunnels</h3>
+            <p class="text-secondary mb-lg">Below is a list of your actively authenticated public access points to Telegram backend streams.</p>
+            
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>File Name</th>
+                  <th>Created At</th>
+                  <th>Downloads</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="shares-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADMIN SYSTEM CONSOLE -->
+        <div id="sec-admin" class="animate-fade-in hidden">
+          <div class="grid grid-2 mb-lg">
+            <div class="card p-lg">
+              <h3 class="mb-sm">System Database Health</h3>
+              <p class="text-secondary mb-md">Realtime monitoring of global SaaS parameters.</p>
+              <div class="stats-row" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="stat-card" style="background:rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-users">0</p>
+                    <p class="stat-label">Total Allocated Clients</p>
+                  </div>
+                </div>
+                <div class="stat-card" style="background:rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-files">0</p>
+                    <p class="stat-label">Global File Index</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card p-lg">
+              <h3 class="mb-sm">Storage Statistics</h3>
+              <p class="text-secondary mb-md">Cumulative payload distributed over Telegram Bot buffers.</p>
+              <div class="stat-card" style="background:rgba(0,0,0,0.2); width:100%;">
+                <div>
+                  <p class="stat-value" id="admin-total-storage">0 B</p>
+                  <p class="stat-label">Total Proxy Bandwidth</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-lg">
+            <h3 class="mb-sm">Client Account Directories</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Joined Date</th>
+                  <th>Role</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SETTINGS PANEL -->
+        <div id="sec-settings" class="animate-fade-in hidden">
+          <div class="card p-lg" style="max-width: 600px;">
+            <h3 class="mb-sm">Vault Administration & Keys</h3>
+            <p class="text-secondary mb-lg">Update your secure encryption layers and Telegram status.</p>
+            
+            <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+              <div class="mb-md">
+                <label class="text-secondary mb-sm d-block">Current Vault Password</label>
+                <input type="password" id="set-current-pass" required>
+              </div>
+              <div class="mb-md">
+                <label class="text-secondary mb-sm d-block">New Encryption Password</label>
+                <input type="password" id="set-new-pass" required minlength="8">
+              </div>
+              <div class="mb-lg">
+                <label class="text-secondary mb-sm d-block">Confirm New Password</label>
+                <input type="password" id="set-confirm-pass" required minlength="8">
+              </div>
+              <button type="submit" class="btn btn-primary">Rotate Vault Keys 🔒</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== CREATE SHARE LINK MODAL ==================== -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-box">
+      <h3 class="mb-sm">Generate Asset Share Tunnel</h3>
+      <p class="text-secondary mb-lg">Configure custom password and expiry locks for your Telegram storage link.</p>
+      
+      <div class="mb-md">
+        <label class="text-secondary mb-sm d-block">Password Lock (Optional)</label>
+        <input type="text" id="share-pass-lock" placeholder="Leave empty for public access">
+      </div>
+      
+      <div class="mb-md">
+        <label class="text-secondary mb-sm d-block">Download Limit Count (Optional)</label>
+        <input type="number" id="share-limit-lock" placeholder="Uncapped downloads">
+      </div>
+
+      <div class="mb-lg">
+        <label class="text-secondary mb-sm d-block">Expiry Timestamp (Optional)</label>
+        <input type="datetime-local" id="share-expiry-lock">
+      </div>
+
+      <div class="flex gap-md">
+        <button class="btn btn-secondary flex-1" onclick="closeShareModal()">Cancel</button>
+        <button class="btn btn-primary flex-1" id="share-confirm-btn">Create Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DISPLAY CREATED SHARE TUNNEL MODAL ==================== -->
+  <div class="modal-overlay" id="share-display-modal">
+    <div class="modal-box">
+      <h3 class="mb-sm">Access Link Generated</h3>
+      <p class="text-secondary mb-lg">Deploy this generated link to any client for authenticated download streams.</p>
+      
+      <div class="mb-lg">
+        <input type="text" id="generated-share-link" readonly style="font-family:var(--font-mono); font-size:11px; background:rgba(0,0,0,0.3);">
+      </div>
+
+      <button class="btn btn-primary w-100" onclick="copyGeneratedShareLink()">Copy Tunnel Link 📋</button>
+    </div>
+  </div>
+
+  <!-- JS Scripts -->
+  <script src="/assets/js/api.js"></script>
+  <script src="/assets/js/notifications.js"></script>
+  
+  <script>
+    // Canvas background particles
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.size = Math.random() * 2 + 1;
+        this.color = Math.random() > 0.5 ? 'rgba(97, 87, 255, 0.15)' : 'rgba(255, 77, 141, 0.1)';
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+    }
+    
+    for (let i = 0; i < 60; i++) {
+      particles.push(new Particle());
+    }
+    
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ==================== APP STATE & CONTROLLER ====================
+    let currentUser = null;
+    let currentFolderId = null;
+    let folderPath = []; // for breadcrumbs
+    let searchDebounceTimer = null;
+
+    // Check if already authenticated on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (api.token) {
+        try {
+          const profile = await api.getProfile();
+          currentUser = profile;
+          setupDashboardView();
+        } catch (e) {
+          api.clearToken();
+        }
+      }
+    });
+
+    function switchTab(mode) {
+      document.getElementById('login-form-container').classList.toggle('hidden', mode !== 'login');
+      document.getElementById('register-form-container').classList.toggle('hidden', mode !== 'register');
+      document.getElementById('reset-form-container').classList.toggle('hidden', mode !== 'reset');
+      
+      const tabs = document.querySelectorAll('.auth-tab');
+      if (tabs.length >= 2) {
+        tabs[0].classList.toggle('active', mode === 'login' || mode === 'reset');
+        tabs[1].classList.toggle('active', mode === 'register');
+      }
+    }
+
+    // Auth actions
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      
+      try {
+        const response = await api.login(email, pass);
+        currentUser = response.user;
+        notify.success("Decrypted storage session successfully.");
+        setupDashboardView();
+      } catch (err) {
+        notify.error(err.data?.error || "Credentials authorization failed.");
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const username = document.getElementById('reg-username').value;
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-password').value;
+
+      try {
+        await api.register(email, username, pass, name);
+        notify.success("Asset profile successfully generated! Logging in.");
+        const response = await api.login(email, pass);
+        currentUser = response.user;
+        setupDashboardView();
+      } catch (err) {
+        notify.error(err.data?.error || "Profile allocation failed.");
+      }
+    }
+
+    async function handleResetRequest(e) {
+      e.preventDefault();
+      const email = document.getElementById('reset-email').value;
+      try {
+        await api.requestPasswordReset(email);
+        notify.success("If the profile exists, vault recovery data will be sent.");
+        switchTab('login');
+      } catch (err) {
+        notify.error("Recovery broadcast transmission aborted.");
+      }
+    }
+
+    function setupDashboardView() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('dashboard-screen').classList.remove('hidden');
+      
+      document.getElementById('user-display-name').textContent = currentUser.full_name || currentUser.username;
+      document.getElementById('user-display-role').textContent = currentUser.role.toUpperCase();
+      
+      if (currentUser.role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      }
+      
+      showSection('dash');
+    }
+
+    // Navigation and Panels
+    function showSection(section) {
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      const activeMenu = document.getElementById(`menu-${section}`);
+      if (activeMenu) activeMenu.classList.add('active');
+
+      document.getElementById('sec-dash').classList.toggle('hidden', section !== 'dash' && section !== 'files');
+      document.getElementById('sec-shares').classList.toggle('hidden', section !== 'shares');
+      document.getElementById('sec-admin').classList.toggle('hidden', section !== 'admin');
+      document.getElementById('sec-settings').classList.toggle('hidden', section !== 'settings');
+
+      // Update descriptors
+      const titles = {
+        dash: ["Allocated Storage Workspace", "Manage, upload, organize, and stream files across Telegram pipelines."],
+        files: ["Secure Files Explorer", "Traverse nested storage trees, rename assets, and manage indices."],
+        shares: ["Authentication Share Tunnels", "Oversee password protected or download restricted share tokens."],
+        admin: ["System Health Console", "Monitor cloud users, purge clients, and watch global payload metrics."],
+        settings: ["Vault Administration", "Alter private credentials and review active backend tokens."]
+      };
+
+      const titleNode = document.getElementById('section-title-heading');
+      const descNode = document.getElementById('section-title-desc');
+      if (titles[section]) {
+        titleNode.textContent = titles[section][0];
+        descNode.textContent = titles[section][1];
+      }
+
+      // Hide or show search
+      document.getElementById('dashboard-search').classList.toggle('hidden', section === 'settings');
+
+      if (section === 'dash' || section === 'files') {
+        loadFilesAndFolders();
+      } else if (section === 'shares') {
+        loadShareTunnels();
+      } else if (section === 'admin') {
+        loadAdminPanelData();
+      }
+    }
+
+    // Load Files & Folders
+    async function loadFilesAndFolders() {
+      try {
+        const searchQuery = document.getElementById('dashboard-search').value;
+        const [filesRes, foldersRes, statsRes] = await Promise.all([
+          api.getFiles(1, 100, currentFolderId, searchQuery),
+          api.getFolders(currentFolderId),
+          api.getStorageStats()
+        ]);
+
+        renderFolders(foldersRes.data || []);
+        renderFiles(filesRes.data || []);
+        updateStats(statsRes.data || { total_files: 0, total_size: 0 }, filesRes.data || []);
+      } catch (err) {
+        notify.error("Synchronization with Supabase pipeline interrupted.");
+      }
+    }
+
+    function renderFolders(folders) {
+      const grid = document.getElementById('folders-grid');
+      const section = document.getElementById('folders-section');
+      
+      if (folders.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+      grid.innerHTML = '';
+      
+      folders.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'folder-card animate-slide-in';
+        div.onclick = () => navigateToFolder(f);
+        div.innerHTML = `
+          <div class="flex gap-sm">
+            <span style="font-size:20px; color:${f.color || 'var(--accent-tertiary)'}">📁</span>
+            <span style="font-weight:500; font-size:13px; color:white;">${f.name}</span>
+          </div>
+          <button class="action-btn delete" onclick="event.stopPropagation(); deleteFolder('${f.id}')">✕</button>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function renderFiles(files) {
+      const grid = document.getElementById('files-grid');
+      grid.innerHTML = '';
+
+      if (files.length === 0) {
+        grid.innerHTML = `
+          <div class="text-center opacity-50 p-lg w-100" style="grid-column: 1/-1;">
+            <p>No storage nodes mapped to this cluster.</p>
+          </div>
+        `;
+        return;
+      }
+
+      files.forEach(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        let icon = "📄";
+        if (['png','jpg','jpeg','gif','webp'].includes(ext)) icon = "🖼️";
+        else if (['mp4','webm','mkv','avi'].includes(ext)) icon = "🎬";
+        else if (['mp3','wav','aac'].includes(ext)) icon = "🎵";
+        else if (['zip','rar','7z'].includes(ext)) icon = "🗜️";
+        else if (ext === 'pdf') icon = "📄";
+
+        const sizeFormatted = formatBytes(f.size);
+        const card = document.createElement('div');
+        card.className = 'file-card animate-slide-in';
+        card.innerHTML = `
+          <div class="file-actions">
+            <button class="action-btn" onclick="downloadFile('${f.id}')">⬇️</button>
+            <button class="action-btn" onclick="openShareModal('${f.id}')">🔗</button>
+            <button class="action-btn" onclick="promptRenameFile('${f.id}', '${f.name}')">✏️</button>
+            <button class="action-btn delete" onclick="deleteFile('${f.id}')">✕</button>
+          </div>
+          <div class="text-center p-md" style="font-size: 38px;">${icon}</div>
+          <div>
+            <div class="flex-between">
+              <span class="star-btn ${f.is_starred ? 'starred' : ''}" onclick="toggleStar('${f.id}')">★</span>
+              <p class="text-muted" style="font-size:10px; font-family:var(--font-mono);">${sizeFormatted}</p>
+            </div>
+            <p style="font-weight:600; font-size:12px; color:white; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; margin-top:4px;" title="${f.name}">${f.name}</p>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function updateStats(stats, files) {
+      document.getElementById('stat-files-count').textContent = stats.total_files || files.length;
+      document.getElementById('stat-storage-size').textContent = formatBytes(stats.total_size || 0);
+      document.getElementById('stat-folders-count').textContent = document.getElementById('folders-grid').children.length;
+    }
+
+    // Search and Breadcrumbs
+    function debounceSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        loadFilesAndFolders();
+      }, 400);
+    }
+
+    function navigateToFolder(folder) {
+      if (folder === null) {
+        currentFolderId = null;
+        folderPath = [];
+      } else {
+        currentFolderId = folder.id;
+        // avoid duplicates on duplicate clicks
+        if (!folderPath.some(item => item.id === folder.id)) {
+          folderPath.push(folder);
+        } else {
+          // slice hierarchy to the clicked node
+          const idx = folderPath.findIndex(item => item.id === folder.id);
+          folderPath = folderPath.slice(0, idx + 1);
+        }
+      }
+      renderBreadcrumbs();
+      loadFilesAndFolders();
+    }
+
+    function renderBreadcrumbs() {
+      const container = document.getElementById('folder-breadcrumbs');
+      container.innerHTML = `<span onclick="navigateToFolder(null)">Root</span>`;
+      
+      folderPath.forEach((f, idx) => {
+        container.innerHTML += ` <span class="text-muted">/</span> `;
+        if (idx === folderPath.length - 1) {
+          container.innerHTML += `<span class="current">${f.name}</span>`;
+        } else {
+          container.innerHTML += `<span onclick="navigateToFolder(${JSON.stringify(f).replace(/"/g, '&quot;')})">${f.name}</span>`;
+        }
+      });
+    }
+
+    // CRUD - Folder Creation / Deletion
+    async function promptCreateFolder() {
+      const name = prompt("Enter folder name:");
+      if (!name) return;
+      try {
+        await api.createFolder(name, currentFolderId);
+        notify.success("Created subdirectory index.");
+        loadFilesAndFolders();
+      } catch (e) {
+        notify.error("Subdirectory allocation failed.");
+      }
+    }
+
+    async function deleteFolder(id) {
+      if (!confirm("Are you sure you want to purge this folder and all its contents?")) return;
+      try {
+        await api.deleteFolder(id);
+        notify.success("Purged subdirectory index recursively.");
+        loadFilesAndFolders();
+      } catch (e) {
+        notify.error("Purge operations aborted.");
+      }
+    }
+
+    // CRUD - File Actions
+    function triggerFileUpload() {
+      document.getElementById('file-input-raw').click();
+    }
+
+    async function uploadSelectedFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const pWrapper = document.getElementById('upload-progress-wrapper');
+      const pBar = document.getElementById('upload-progress-bar');
+      const pText = document.getElementById('upload-status-text');
+
+      pWrapper.classList.remove('hidden');
+      pBar.style.width = '20%';
+      pText.textContent = "Uploading to Telegram Bot...";
+
+      try {
+        await api.uploadFile(file, currentFolderId);
+        pBar.style.width = '100%';
+        pText.textContent = "Synced successfully!";
+        notify.success(`Asset '${file.name}' stored successfully!`);
+        setTimeout(() => pWrapper.classList.add('hidden'), 2000);
+        loadFilesAndFolders();
+      } catch (err) {
+        notify.error("Storage pipeline upload failed.");
+        pWrapper.classList.add('hidden');
+      }
+    }
+
+    async function handleFileDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone-area').classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        uploadSelectedFile({ target: { files: [file] } });
+      }
+    }
+
+    async function deleteFile(id) {
+      if (!confirm("Purge this binary object from storage index?")) return;
+      try {
+        await api.deleteFile(id);
+        notify.success("Asset index purged successfully.");
+        loadFilesAndFolders();
+      } catch (e) {
+        notify.error("Failed to purge asset.");
+      }
+    }
+
+    async function promptRenameFile(id, oldName) {
+      const name = prompt("Enter new filename:", oldName);
+      if (!name || name === oldName) return;
+      try {
+        await api.renameFile(id, name);
+        notify.success("Renamed index.");
+        loadFilesAndFolders();
+      } catch (e) {
+        notify.error("Index rename rejected.");
+      }
+    }
+
+    async function downloadFile(id) {
+      notify.info("Accessing Telegram API and piping payload stream...");
+      api.downloadFile(id);
+    }
+
+    async function toggleStar(id) {
+      try {
+        await api.toggleStar(id);
+        loadFilesAndFolders();
+      } catch (e) {}
+    }
+
+    // ==================== SHARES MANAGER ====================
+    let pendingShareFileId = null;
+
+    function openShareModal(fileId) {
+      pendingShareFileId = fileId;
+      document.getElementById('share-pass-lock').value = '';
+      document.getElementById('share-limit-lock').value = '';
+      document.getElementById('share-expiry-lock').value = '';
+      
+      const modal = document.getElementById('share-modal');
+      modal.classList.add('active');
+      
+      document.getElementById('share-confirm-btn').onclick = createShareLink;
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-modal').classList.remove('active');
+    }
+
+    async function createShareLink() {
+      const pass = document.getElementById('share-pass-lock').value;
+      const limit = document.getElementById('share-limit-lock').value;
+      const expiry = document.getElementById('share-expiry-lock').value;
+
+      try {
+        const res = await api.createShare(
+          pendingShareFileId,
+          expiry ? new Date(expiry).toISOString() : null,
+          pass || null,
+          limit ? parseInt(limit) : null
+        );
+
+        closeShareModal();
+        
+        const shareLink = `${window.location.origin}/shared.html?id=${res.data.token}`;
+        document.getElementById('generated-share-link').value = shareLink;
+        document.getElementById('share-display-modal').classList.add('active');
+      } catch (err) {
+        notify.error("Share endpoint mapping failed.");
+      }
+    }
+
+    function copyGeneratedShareLink() {
+      const input = document.getElementById('generated-share-link');
+      input.select();
+      document.execCommand('copy');
+      notify.success("Share tunnel copied to clipboard!");
+      document.getElementById('share-display-modal').classList.remove('active');
+    }
+
+    async function loadShareTunnels() {
+      try {
+        const res = await api.getUserShares();
+        const tbody = document.getElementById('shares-table-body');
+        tbody.innerHTML = '';
+
+        if (res.data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No active share tunnels.</td></tr>`;
+          return;
+        }
+
+        res.data.forEach(s => {
+          tbody.innerHTML += `
+            <tr id="share-row-${s.id}">
+              <td style="color:white; font-weight:600;">${s.files?.name || 'File'}</td>
+              <td>${new Date(s.created_at).toLocaleDateString()}</td>
+              <td style="font-family:var(--font-mono);">${s.download_count || 0}</td>
+              <td><span class="badge badge-user">${s.is_active ? 'Active' : 'Expired'}</span></td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="deleteShareTunnel('${s.id}')">Revoke</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (e) {}
+    }
+
+    async function deleteShareTunnel(id) {
+      if (!confirm("Revoke public download capabilities for this link?")) return;
+      try {
+        await api.deleteShare(id);
+        notify.success("Revoked share tunnel.");
+        loadShareTunnels();
+      } catch (e) {}
+    }
+
+    // ==================== ADMIN SYSTEM PANEL ====================
+    async function loadAdminPanelData() {
+      try {
+        const [dashRes, usersRes] = await Promise.all([
+          api.getDashboard(),
+          api.getAllUsers()
+        ]);
+
+        const data = dashRes.data || { total_users: 0, total_files: 0, total_size: 0 };
+        document.getElementById('admin-total-users').textContent = data.total_users;
+        document.getElementById('admin-total-files').textContent = data.total_files;
+        document.getElementById('admin-total-storage').textContent = formatBytes(data.total_size);
+
+        const tbody = document.getElementById('admin-users-tbody');
+        tbody.innerHTML = '';
+        
+        usersRes.data.forEach(u => {
+          const actionBtn = u.id === currentUser.id 
+            ? '<span class="text-muted" style="font-size:11px;">Immutable (Self)</span>' 
+            : `<button class="db2" style="background:rgba(255,77,92,0.1); border:1px solid var(--error); color:var(--error); padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="purgeUser('${u.id}')">Drop Client</button>`;
+            
+          tbody.innerHTML += `
+            <tr>
+              <td style="color:white; font-weight:600;">${u.username}</td>
+              <td>${u.email}</td>
+              <td>${new Date(u.created_at).toLocaleDateString()}</td>
+              <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role.toUpperCase()}</span></td>
+              <td>${actionBtn}</td>
+            </tr>
+          `;
+        });
+      } catch (e) {}
+    }
+
+    async function purgeUser(id) {
+      if (!confirm("Delete this user account and purge all their database/storage index resources?")) return;
+      try {
+        await api.deleteUser(id);
+        notify.success("Purged user profile registry successfully.");
+        loadAdminPanelData();
+      } catch (e) {
+        notify.error("User drop request rejected.");
+      }
+    }
+
+    // ==================== SETTINGS (Credentials) ====================
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const cur = document.getElementById('set-current-pass').value;
+      const newP = document.getElementById('set-new-pass').value;
+      const conf = document.getElementById('set-confirm-pass').value;
+
+      if (newP !== conf) {
+        notify.error("Passwords do not match.");
+        return;
+      }
+
+      try {
+        await api.changePassword(cur, newP);
+        notify.success("Encryption keys rotated successfully!");
+        document.getElementById('changePasswordForm').reset();
+      } catch (err) {
+        notify.error(err.data?.error || "Key rotation failed.");
+      }
+    }
+
+    function logout() {
+      api.clearToken();
+      notify.success("Storage tunnel disconnected.");
+      setTimeout(() => location.reload(), 1000);
+    }
+
+    // Helper functions
+    function formatBytes(bytes, decimals = 2) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+  </script>
+</body>
+</html>
