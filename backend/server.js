@@ -23,7 +23,22 @@ const telegramRoutes = require("./routes/telegram");
 const app = express();
 
 // ============ SECURITY MIDDLEWARE ============
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'", "https://*.supabase.co"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: []
+      }
+    }
+  })
+);
 app.use(cors(corsOptions));
 
 // ============ COMPRESSION ============
