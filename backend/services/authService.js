@@ -104,6 +104,7 @@ const register = async (email, username, password, fullName = null) => {
           email: newUser.email,
           username: newUser.username,
           role: newUser.role,
+          full_name: newUser.full_name,
         },
       },
     };
@@ -121,14 +122,11 @@ const login = async (username, password) => {
   try {
     // Get user by email or username
     const isEmail = username.includes("@");
-    const query = supabase.from("users").select("*");
-    if (isEmail) {
-      query.eq("email", username);
-    } else {
-      query.eq("username", username);
-    }
-
-    const { data: user, error } = await query.maybeSingle();
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq(isEmail ? "email" : "username", username)
+      .maybeSingle();
 
     if (error || !user) {
       return {

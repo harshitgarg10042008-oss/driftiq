@@ -1228,15 +1228,30 @@
         const email = document.getElementById("reg-email").value;
         const pass = document.getElementById("reg-password").value;
 
+        // Client-side validation before sending to server
+        if (!username || username.length < 3) {
+          notify.error("Username must be at least 3 characters.");
+          return;
+        }
+        if (!email || !email.includes("@")) {
+          notify.error("Please enter a valid email address.");
+          return;
+        }
+        const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!pwdRegex.test(pass)) {
+          notify.error("Password must be 8+ chars with uppercase, lowercase, number, and special char (@$!%*?&).");
+          return;
+        }
+
         try {
-          await api.register(email, username, pass, name);
-          notify.success("Asset profile successfully generated! Logging in.");
-          const response = await api.login(username, pass);
+          // api.register now also stores the token
+          const response = await api.register(email, username, pass, name);
           currentUser = response.user;
+          notify.success("Account created! Welcome to DriftIQ.");
           setupDashboardView();
         } catch (err) {
           // Detailed error reporter for validation rules (password complexity checks)
-          let msg = "Profile allocation failed.";
+          let msg = "Registration failed. Please check your details.";
           if (err.data?.details && err.data.details.length > 0) {
             msg = err.data.details
               .map((d) => `${d.path || d.param}: ${d.msg}`)
@@ -1247,6 +1262,7 @@
           notify.error(msg);
         }
       }
+
 
       async function handleResetRequest(e) {
         e.preventDefault();

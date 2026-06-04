@@ -69,7 +69,7 @@ class API {
   // ============ AUTH ENDPOINTS ============
 
   async register(email, username, password, fullName = "") {
-    return this.request("/auth/register", {
+    const response = await this.request("/auth/register", {
       method: "POST",
       body: {
         email,
@@ -78,6 +78,13 @@ class API {
         full_name: fullName,
       },
     });
+
+    // Store the JWT token just like login does
+    if (response.token) {
+      this.setToken(response.token);
+    }
+
+    return response;
   }
 
   async login(username, password) {
