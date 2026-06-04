@@ -40,7 +40,7 @@ const register = async (email, username, password, fullName = null) => {
       .from("users")
       .select("id")
       .eq("email", email)
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       return {
@@ -54,7 +54,7 @@ const register = async (email, username, password, fullName = null) => {
       .from("users")
       .select("id")
       .eq("username", username)
-      .single();
+      .maybeSingle();
 
     if (existingUsername) {
       return {
