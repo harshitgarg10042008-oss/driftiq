@@ -18,12 +18,6 @@
         --accent-secondary: var(--emerald, #10b981);
         --accent-tertiary: var(--violet, #7c3aed);
         --border-color: var(--border, rgba(255, 255, 255, 0.06));
-        --bg-secondary: var(--bg-secondary, #0d1117);
-        --bg-tertiary: var(--bg-tertiary, #131929);
-        --text-primary: var(--text-primary, #f0f6fc);
-        --text-secondary: var(--text-secondary, #8b949e);
-        --text-muted: var(--text-muted, #484f58);
-        --error: var(--error, #f85149);
       }
 
       body {
@@ -214,16 +208,16 @@
       </nav>
 
       <div class="landing-hero animate-fade-in">
-        <div class="badge-pill"><span>✨</span> The Intelligent Workspace</div>
-        <h1 class="hero-main-title">
-          Cloud File Manager <br /><span>Powered by Telegram.</span>
+        <div class="hero-badge"><span>✨</span> The Intelligent Workspace</div>
+        <h1 class="hero-title">
+          Cloud File Manager <br /><span class="gradient-text">Powered by Telegram.</span>
         </h1>
         <p class="hero-subtitle">
           DriftIQ leverages Telegram's secure, decentralized infrastructure to
           store, analyze, and retrieve your documents. No setup. Unlimited storage.
         </p>
-        <div class="cta-group">
-          <button class="btn btn-green-glow btn-lg" onclick="openAuthModal('login')">
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" onclick="openAuthModal('login')">
             Go to Dashboard →
           </button>
           <button class="btn btn-secondary btn-lg" onclick="openAuthModal('register')">
@@ -233,11 +227,14 @@
       </div>
 
       <div class="features-section" id="features-section">
-        <h3 class="features-title">Platform Features</h3>
+        <div class="features-header">
+          <div class="features-label">Platform Features</div>
+          <h2 class="features-title-lg">Enterprise capabilities, simplified.</h2>
+        </div>
         <div class="features-grid">
           <!-- Card 1 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-cyan">☁️</div>
+            <div class="feature-icon feature-icon-cyan">☁️</div>
             <h4>Secure Cloud Storage</h4>
             <p>
               Encrypted file storage utilizing Telegram channels as secure,
@@ -246,7 +243,7 @@
           </div>
           <!-- Card 2 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-blue">🔄</div>
+            <div class="feature-icon feature-icon-blue">🔄</div>
             <h4>File Conversion</h4>
             <p>
               Convert PDF, DOCX, PPT, images, and more instantly inside your browser workspace.
@@ -254,7 +251,7 @@
           </div>
           <!-- Card 3 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-indigo">💬</div>
+            <div class="feature-icon feature-icon-violet">💬</div>
             <h4>AI Chat for Files</h4>
             <p>
               Ask anything about your documents or folders and get instant answers from your private AI copilot.
@@ -262,7 +259,7 @@
           </div>
           <!-- Card 4 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-emerald">🔍</div>
+            <div class="feature-icon feature-icon-emerald">🔍</div>
             <h4>Folder AI Search</h4>
             <p>
               Search entire folders by meaning or concept, not only by filename—find what matters faster.
@@ -270,7 +267,7 @@
           </div>
           <!-- Card 5 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-yellow">🌐</div>
+            <div class="feature-icon feature-icon-amber">🌐</div>
             <h4>Anonymous File Rooms</h4>
             <p>
               Create temporary sharing links with optional password protection and download limits.
@@ -278,7 +275,7 @@
           </div>
           <!-- Card 6 -->
           <div class="feature-card">
-            <div class="feature-icon-wrapper feature-icon-rose">🛡️</div>
+            <div class="feature-icon feature-icon-rose">🛡️</div>
             <h4>Developer API</h4>
             <p>
               Integrate your own apps with DriftIQ using our fully documented REST API endpoints.

@@ -19,7 +19,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-md);
+        padding: var(--sp-4);
         overflow: hidden;
       }
 
@@ -35,31 +35,31 @@
         max-width: 420px;
         text-align: center;
         background: rgba(12, 12, 18, 0.7);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-xl);
-        padding: var(--spacing-2xl) var(--spacing-xl);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        padding: var(--sp-10) var(--sp-6);
         backdrop-filter: blur(20px);
         box-shadow: var(--shadow-xl);
         animation: slideIn 0.3s ease-out;
       }
 
       .brand-logo {
-        font-family: var(--font-display);
+        font-family: var(--font-brand);
         font-size: 1.8rem;
         letter-spacing: 2px;
         background: linear-gradient(
           135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
+          var(--cyan),
+          var(--emerald)
         );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: var(--sp-6);
       }
 
       .file-icon {
         font-size: 4rem;
-        margin-bottom: var(--spacing-md);
+        margin-bottom: var(--sp-4);
       }
 
       .filename {
@@ -74,11 +74,11 @@
         font-family: var(--font-mono);
         font-size: 11px;
         color: var(--text-muted);
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: var(--sp-6);
       }
 
       .input-password-wrapper {
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: var(--sp-6);
       }
     </style>
   </head>
