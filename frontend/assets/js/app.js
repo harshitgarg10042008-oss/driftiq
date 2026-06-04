@@ -439,7 +439,6 @@ function renderExplorer(folders, files) {
           <button class="action-btn" title="Preview" onclick="previewFile('${f.id}', '${f.name}', '${ext}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
           <button class="action-btn" title="Download" onclick="downloadFile('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
           <button class="action-btn" title="Share" onclick="openShareModal('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button>
-          <button class="action-btn" title="Convert" onclick="openConverterModal('${f.id}', '${f.name}', '${ext}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></button>
           <button class="action-btn" title="Rename" onclick="promptRenameFile('${f.id}', '${f.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
           <button class="action-btn" title="Move" onclick="openMoveModal('${f.id}', 'file')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
           <button class="action-btn delete" title="Delete" onclick="deleteFile('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
@@ -874,9 +873,10 @@ async function loadShareTunnels() {
     }
 
     res.data.forEach((s) => {
+      const shareLabel = s.file_name || s.share_url || "File";
       tbody.innerHTML += `
       <tr id="share-row-${s.id}" class="explorer-table-row animate-slide-in">
-        <td style="color:var(--text-primary); font-weight:500;">${s.files?.name || "File"}</td>
+        <td style="color:var(--text-primary); font-weight:500;">${shareLabel}</td>
         <td class="text-secondary">${new Date(s.created_at).toLocaleDateString()}</td>
         <td style="font-family:var(--font-mono);" class="text-secondary">${s.download_count || 0}</td>
         <td><span class="badge ${s.is_active ? 'badge-emerald' : 'badge-red'}">${s.is_active ? "Active" : "Expired"}</span></td>

@@ -140,6 +140,11 @@
           <span class="nav-item-icon">🔗</span> Share Tunnels
         </div>
 
+        <div class="sidebar-section-title">Actions</div>
+        <button class="btn btn-secondary w-100 mb-sm" onclick="promptCreateFolder()">New Folder</button>
+        <button class="btn btn-secondary w-100 mb-sm" onclick="triggerFileUpload()">Upload Files</button>
+        <button class="btn btn-secondary w-100" onclick="triggerFolderUpload()">Upload Folder</button>
+
         <div class="sidebar-section-title">Categories</div>
         <div class="nav-item" id="menu-docs" onclick="setCategory('documents')">
           <span class="nav-item-icon text-cyan">📄</span> Documents
@@ -223,8 +228,9 @@
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            Upload
+            Upload Files
           </button>
+          <button class="btn btn-secondary btn-sm" onclick="triggerFolderUpload()">Upload Folder</button>
           <button class="btn btn-primary btn-sm" onclick="promptCreateFolder()">+ New Folder</button>
           <div class="user-profile-btn" onclick="showSection('settings')">
             <div id="topbar-user-avatar" class="avatar" style="width: 24px; height: 24px; font-size: 11px;">U</div>

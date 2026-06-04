@@ -66,7 +66,7 @@ const getUserShares = async (req, res, next) => {
 const getSharedFile = async (req, res, next) => {
   try {
     const { token } = req.query;
-    const { password } = req.body || {};
+    const password = (req.body && req.body.password) || req.query.password || null;
 
     if (!token) {
       return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
@@ -100,14 +100,13 @@ const getSharedFile = async (req, res, next) => {
 const downloadSharedFile = async (req, res, next) => {
   try {
     const { token } = req.query;
-    const { password } = req.body || {};
+    const password = (req.body && req.body.password) || req.query.password || null;
 
     if (!token) {
       return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
         success: false,
         error: "Share token required",
       });
-    }
 
     // Get shared file details
     const shareResult = await shareService.getSharedFile(token, password);
@@ -138,7 +137,7 @@ const downloadSharedFile = async (req, res, next) => {
 
     // Log download
     await shareService.logDownload(
-      token.split(":")[0], // Assuming we can extract share ID
+      fileData.share_id || token,
       req.ip,
       req.get("user-agent"),
     );

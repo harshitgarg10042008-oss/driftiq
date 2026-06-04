@@ -170,6 +170,7 @@ const getSharedFile = async (shareToken, password = null) => {
     return {
       success: true,
       data: {
+        share_id: share.id,
         file_id: file.id,
         file_name: file.name,
         file_size: file.size,
@@ -279,15 +280,30 @@ const deleteShare = async (userId, shareId) => {
 };
 
 // Log download
-const logDownload = async (shareId, ipAddress = null, userAgent = null) => {
+const logDownload = async (shareIdentifier, ipAddress = null, userAgent = null) => {
   try {
-    const { data: share } = await supabase
+    let share = null;
+    let error = null;
+
+    const byId = await supabase
       .from("shares")
-      .select("download_count, download_limit")
-      .eq("id", shareId)
+      .select("download_count, download_limit, id")
+      .eq("id", shareIdentifier)
       .single();
 
-    if (!share) {
+    if (byId.data && !byId.error) {
+      share = byId.data;
+    } else {
+      const byToken = await supabase
+        .from("shares")
+        .select("download_count, download_limit, id")
+        .eq("share_token", shareIdentifier)
+        .single();
+      share = byToken.data;
+      error = byToken.error;
+    }
+
+    if (!share || error) {
       return {
         success: false,
         error: CONSTANTS.ERROR_MESSAGES.SHARE_NOT_FOUND,
@@ -298,14 +314,14 @@ const logDownload = async (shareId, ipAddress = null, userAgent = null) => {
     await supabase
       .from("shares")
       .update({
-        download_count: share.download_count + 1,
+        download_count: (share.download_count || 0) + 1,
       })
-      .eq("id", shareId);
+      .eq("id", share.id);
 
     // Log download
     await supabase.from("downloads").insert([
       {
-        share_id: shareId,
+        share_id: share.id,
         ip_address: ipAddress,
         user_agent: userAgent,
       },

@@ -19,6 +19,8 @@ const folderRoutes = require("./routes/folders");
 const shareRoutes = require("./routes/shares");
 const adminRoutes = require("./routes/admin");
 const telegramRoutes = require("./routes/telegram");
+const { auth } = require("./middleware/auth");
+const shareController = require("./controllers/shareController");
 
 const app = express();
 
@@ -29,10 +31,10 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:"],
-        connectSrc: ["'self'", "https://*.supabase.co"],
-        fontSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https://api.qrserver.com"],
+        connectSrc: ["'self'", "https://*.supabase.co", "https://api.telegram.org", "https://telegram.org"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: []
       }
@@ -80,6 +82,18 @@ app.use("/api/auth", authRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/api/folders", folderRoutes);
 app.use("/api/shares", shareRoutes);
+app.post("/api/share/:id", auth, (req, res, next) => {
+  req.body.file_id = req.params.id;
+  return shareController.createShare(req, res, next);
+});
+app.get("/api/shared/:shareId", (req, res, next) => {
+  req.query.token = req.params.shareId;
+  return shareController.getSharedFile(req, res, next);
+});
+app.get("/api/shared/:shareId/download", (req, res, next) => {
+  req.query.token = req.params.shareId;
+  return shareController.downloadSharedFile(req, res, next);
+});
 app.use("/api/admin", adminRoutes);
 app.use("/api/telegram", telegramRoutes);
 

@@ -177,7 +177,8 @@
       animateParticles();
 
       // Parse URL share token
-      const token = new URLSearchParams(window.location.search).get("id");
+      const queryParams = new URLSearchParams(window.location.search);
+      const token = queryParams.get("token") || queryParams.get("id");
       let needsPassword = false;
 
       window.addEventListener("DOMContentLoaded", async () => {

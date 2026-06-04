@@ -365,9 +365,21 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   backdrop-filter: blur(20px);
-  transition: transform var(--transition-smooth);
+  transition: width var(--transition-smooth), transform var(--transition-smooth);
   z-index: var(--z-nav);
   flex-shrink: 0;
+}
+.sidebar.collapsed {
+  width: 80px;
+}
+.sidebar.collapsed .sidebar-content,
+.sidebar.collapsed .sidebar-section-title,
+.sidebar.collapsed .nav-item {
+  opacity: 0;
+  pointer-events: none;
+}
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
 }
 
 .sidebar-header {

@@ -8,14 +8,16 @@ const logger = require("../utils/logger");
 const auth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(CONSTANTS.STATUS_CODES.UNAUTHORIZED).json({
-        success: false,
-        error: CONSTANTS.ERROR_MESSAGES.INVALID_TOKEN,
-      });
+    let token = null;
+
+    if (authHeader) {
+      token = authHeader.split(" ")[1]; // Bearer token
     }
 
-    const token = authHeader.split(" ")[1]; // Bearer token
+    if (!token && req.query && req.query.token) {
+      token = req.query.token;
+    }
+
     if (!token) {
       return res.status(CONSTANTS.STATUS_CODES.UNAUTHORIZED).json({
         success: false,
