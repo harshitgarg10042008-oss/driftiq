@@ -218,25 +218,27 @@ const moveFileToFolder = async (userId, fileId, folderId) => {
       return { success: false, error: CONSTANTS.ERROR_MESSAGES.FILE_NOT_FOUND };
     }
 
-    // Verify folder exists and belongs to user
-    const { data: folder } = await supabase
-      .from("folders")
-      .select("*")
-      .eq("id", folderId)
-      .eq("user_id", userId)
-      .single();
+    // Verify folder exists and belongs to user if folderId is provided
+    if (folderId !== null && folderId !== undefined && folderId !== "") {
+      const { data: folder } = await supabase
+        .from("folders")
+        .select("*")
+        .eq("id", folderId)
+        .eq("user_id", userId)
+        .single();
 
-    if (!folder) {
-      return {
-        success: false,
-        error: CONSTANTS.ERROR_MESSAGES.FOLDER_NOT_FOUND,
-      };
+      if (!folder) {
+        return {
+          success: false,
+          error: CONSTANTS.ERROR_MESSAGES.FOLDER_NOT_FOUND,
+        };
+      }
     }
 
     // Move file
     const { data: updatedFile, error } = await supabase
       .from("files")
-      .update({ folder_id: folderId })
+      .update({ folder_id: folderId || null })
       .eq("id", fileId)
       .select()
       .single();

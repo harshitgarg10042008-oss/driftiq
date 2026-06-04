@@ -330,6 +330,14 @@ class API {
   async getStorageStatistics() {
     return this.request("/admin/storage/stats");
   }
+
+  async adminGetAllFiles(page = 1, limit = 50) {
+    return this.request(`/admin/files?page=${page}&limit=${limit}`);
+  }
+
+  async adminDeleteFile(fileId) {
+    return this.request(`/admin/files/${fileId}`, { method: "DELETE" });
+  }
 }
 
 // Create global API instance

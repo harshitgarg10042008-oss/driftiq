@@ -217,6 +217,100 @@ const getStorageStatistics = async () => {
   }
 };
 
+// Get all uploaded files across all users (admin)
+const getAllFiles = async (page = 1, limit = 50) => {
+  try {
+    const offset = (page - 1) * limit;
+    
+    const { data: files, error, count } = await supabase
+      .from("files")
+      .select("*, users(username, email)", { count: "exact" })
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      logger.error("Admin get all files error: " + error.message);
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+    }
+
+    return {
+      success: true,
+      data: files || [],
+      pagination: { total: count, page, limit }
+    };
+  } catch (err) {
+    logger.error("Admin get all files service error: " + err.message);
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+  }
+};
+
+// Delete any file (admin)
+const deleteAnyFile = async (adminId, fileId) => {
+  try {
+    const { data: file, error: getError } = await supabase
+      .from("files")
+      .select("*")
+      .eq("id", fileId)
+      .single();
+
+    if (getError || !file) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.FILE_NOT_FOUND };
+    }
+
+    // Soft delete file
+    const { error: deleteErr } = await supabase
+      .from("files")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", fileId);
+
+    if (deleteErr) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+    }
+
+    // Update the file owner's storage stats
+    const userId = file.user_id;
+    const { data: user } = await supabase
+      .from("users")
+      .select("storage_used")
+      .eq("id", userId)
+      .single();
+
+    if (user) {
+      await supabase
+        .from("users")
+        .update({ storage_used: Math.max(0, user.storage_used - file.size) })
+        .eq("id", userId);
+    }
+
+    const { data: stats } = await supabase
+      .from("storage_stats")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (stats) {
+      await supabase
+        .from("storage_stats")
+        .update({
+          total_files: Math.max(0, stats.total_files - 1),
+          total_size: Math.max(0, stats.total_size - file.size),
+          last_updated: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
+    }
+
+    // Log admin action
+    await logAdminAction(adminId, "delete_file", fileId, null, `Deleted file '${file.name}' owned by user ${userId}`);
+
+    logger.info(`File ${fileId} deleted by admin ${adminId}`);
+    return { success: true, data: { message: "File deleted successfully" } };
+  } catch (error) {
+    logger.error("Admin delete file service error: " + error.message);
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+  }
+};
+
 module.exports = {
   getDashboardAnalytics,
   getAllUsers,
@@ -224,4 +318,6 @@ module.exports = {
   getSystemLogs,
   logAdminAction,
   getStorageStatistics,
+  getAllFiles,
+  deleteAnyFile,
 };

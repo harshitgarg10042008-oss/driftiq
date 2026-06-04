@@ -25,4 +25,10 @@ router.get("/logs", adminController.getSystemLogs);
 // Get storage statistics
 router.get("/storage/stats", adminController.getStorageStatistics);
 
+// Get all files (admin override)
+router.get("/files", adminController.getAllFiles);
+
+// Delete any file (admin override)
+router.delete("/files/:fileId", adminController.deleteFile);
+
 module.exports = router;

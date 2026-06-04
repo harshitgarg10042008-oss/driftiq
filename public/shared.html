@@ -1,276 +1,313 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DriftIQ — Shared Resource</title>
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="/assets/css/main.css">
-  <link rel="stylesheet" href="/assets/css/animations.css">
-  <style>
-    body {
-      background: #050508;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--spacing-md);
-      overflow: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DriftIQ — Shared Resource</title>
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/assets/css/main.css" />
+    <link rel="stylesheet" href="/assets/css/animations.css" />
+    <style>
+      body {
+        background: #050508;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-md);
+        overflow: hidden;
+      }
 
-    #bgCanvas {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      pointer-events: none;
-    }
+      #bgCanvas {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+      }
 
-    .shared-box {
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      background: rgba(12, 12, 18, 0.7);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-xl);
-      padding: var(--spacing-2xl) var(--spacing-xl);
-      backdrop-filter: blur(20px);
-      box-shadow: var(--shadow-xl);
-      animation: slideIn 0.3s ease-out;
-    }
+      .shared-box {
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+        background: rgba(12, 12, 18, 0.7);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-2xl) var(--spacing-xl);
+        backdrop-filter: blur(20px);
+        box-shadow: var(--shadow-xl);
+        animation: slideIn 0.3s ease-out;
+      }
 
-    .brand-logo {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: var(--spacing-lg);
-    }
+      .brand-logo {
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-primary),
+          var(--accent-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: var(--spacing-lg);
+      }
 
-    .file-icon {
-      font-size: 4rem;
-      margin-bottom: var(--spacing-md);
-    }
+      .file-icon {
+        font-size: 4rem;
+        margin-bottom: var(--spacing-md);
+      }
 
-    .filename {
-      font-weight: 700;
-      font-size: 16px;
-      color: white;
-      word-break: break-all;
-      margin-bottom: 4px;
-    }
+      .filename {
+        font-weight: 700;
+        font-size: 16px;
+        color: white;
+        word-break: break-all;
+        margin-bottom: 4px;
+      }
 
-    .meta-info {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: var(--spacing-lg);
-    }
+      .meta-info {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: var(--spacing-lg);
+      }
 
-    .input-password-wrapper {
-      margin-bottom: var(--spacing-lg);
-    }
-  </style>
-</head>
-<body>
+      .input-password-wrapper {
+        margin-bottom: var(--spacing-lg);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bgCanvas"></canvas>
 
-  <canvas id="bgCanvas"></canvas>
+    <div class="shared-box">
+      <div class="brand-logo">DriftIQ</div>
 
-  <div class="shared-box">
-    <div class="brand-logo">DriftIQ</div>
-    
-    <div id="loading-state" class="animate-pulse">
-      <div class="file-icon">⏳</div>
-      <p class="text-secondary">Resolving Telegram storage node...</p>
-    </div>
-
-    <!-- Mapped Resource Container -->
-    <div id="resource-container" class="hidden animate-fade-in">
-      <div class="file-icon" id="res-icon">📄</div>
-      <p class="filename" id="res-name">filename.ext</p>
-      <p class="meta-info" id="res-meta">0 B</p>
-
-      <!-- Password Lock Entry -->
-      <div class="input-password-wrapper hidden" id="password-wrapper">
-        <p class="text-warning mb-sm" style="font-size: 12px;">⚠️ Secure Share Tunnel. Password Required.</p>
-        <input type="password" id="share-password" placeholder="Tunnel Decryption Key">
+      <div id="loading-state" class="animate-pulse">
+        <div class="file-icon">⏳</div>
+        <p class="text-secondary">Resolving Telegram storage node...</p>
       </div>
 
-      <button class="btn btn-primary w-100" id="dl-btn" onclick="startDownload()">Download Node ⬇️</button>
+      <!-- Mapped Resource Container -->
+      <div id="resource-container" class="hidden animate-fade-in">
+        <div class="file-icon" id="res-icon">📄</div>
+        <p class="filename" id="res-name">filename.ext</p>
+        <p class="meta-info" id="res-meta">0 B</p>
+
+        <!-- Password Lock Entry -->
+        <div class="input-password-wrapper hidden" id="password-wrapper">
+          <p class="text-warning mb-sm" style="font-size: 12px">
+            ⚠️ Secure Share Tunnel. Password Required.
+          </p>
+          <input
+            type="password"
+            id="share-password"
+            placeholder="Tunnel Decryption Key"
+          />
+        </div>
+
+        <button
+          class="btn btn-primary w-100"
+          id="dl-btn"
+          onclick="startDownload()"
+        >
+          Download Node ⬇️
+        </button>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="hidden animate-slide-in">
+        <div class="file-icon">❌</div>
+        <h4 class="text-error mb-sm">Access Denied / Expired</h4>
+        <p class="text-secondary mb-lg" id="error-message">
+          This share tunnel is inactive or invalid.
+        </p>
+        <a href="/" class="btn btn-secondary w-100">Return to Authentication</a>
+      </div>
     </div>
 
-    <!-- Error State -->
-    <div id="error-state" class="hidden animate-slide-in">
-      <div class="file-icon">❌</div>
-      <h4 class="text-error mb-sm">Access Denied / Expired</h4>
-      <p class="text-secondary mb-lg" id="error-message">This share tunnel is inactive or invalid.</p>
-      <a href="/" class="btn btn-secondary w-100">Return to Authentication</a>
-    </div>
-  </div>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/notifications.js"></script>
+    <script>
+      // Canvas background particles
+      const canvas = document.getElementById("bgCanvas");
+      const ctx = canvas.getContext("2d");
+      let particles = [];
 
-  <script src="/assets/js/api.js"></script>
-  <script src="/assets/js/notifications.js"></script>
-  <script>
-    // Canvas background particles
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.size = Math.random() * 2 + 1;
-        this.color = 'rgba(97, 87, 255, 0.15)';
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
       }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.4;
+          this.size = Math.random() * 2 + 1;
+          this.color = "rgba(97, 87, 255, 0.15)";
+        }
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
       }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+      for (let i = 0; i < 30; i++) {
+        particles.push(new Particle());
       }
-    }
-    
-    for (let i = 0; i < 30; i++) {
-      particles.push(new Particle());
-    }
-    
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      // Parse URL share token
+      const token = new URLSearchParams(window.location.search).get("id");
+      let needsPassword = false;
+
+      window.addEventListener("DOMContentLoaded", async () => {
+        if (!token) {
+          showError("Invalid Share link token mapping.");
+          return;
+        }
+        resolveShareDetails();
       });
-      requestAnimationFrame(animateParticles);
-    }
-    animateParticles();
 
-    // Parse URL share token
-    const token = new URLSearchParams(window.location.search).get("id");
-    let needsPassword = false;
+      async function resolveShareDetails(password = null) {
+        document.getElementById("loading-state").classList.remove("hidden");
+        document.getElementById("resource-container").classList.add("hidden");
+        document.getElementById("error-state").classList.add("hidden");
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      if (!token) {
-        showError("Invalid Share link token mapping.");
-        return;
-      }
-      resolveShareDetails();
-    });
+        try {
+          const res = await api.getSharedFile(token, password);
+          const f = res.data;
 
-    async function resolveShareDetails(password = null) {
-      document.getElementById('loading-state').classList.remove('hidden');
-      document.getElementById('resource-container').classList.add('hidden');
-      document.getElementById('error-state').classList.add('hidden');
+          document.getElementById("loading-state").classList.add("hidden");
+          document
+            .getElementById("resource-container")
+            .classList.remove("hidden");
 
-      try {
-        const res = await api.getSharedFile(token, password);
-        const f = res.data;
-        
-        document.getElementById('loading-state').classList.add('hidden');
-        document.getElementById('resource-container').classList.remove('hidden');
+          document.getElementById("res-name").textContent =
+            f.file_name || f.name;
+          document.getElementById("res-meta").textContent = formatBytes(
+            f.size || 0,
+          );
 
-        document.getElementById('res-name').textContent = f.file_name || f.name;
-        document.getElementById('res-meta').textContent = formatBytes(f.size || 0);
+          const ext = (f.file_name || f.name || "")
+            .split(".")
+            .pop()
+            .toLowerCase();
+          let icon = "📁";
+          if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) icon = "🖼️";
+          else if (["mp4", "webm", "mkv", "avi"].includes(ext)) icon = "🎬";
+          else if (["mp3", "wav", "aac"].includes(ext)) icon = "🎵";
+          else if (["zip", "rar", "7z"].includes(ext)) icon = "🗜️";
+          else if (ext === "pdf") icon = "📄";
+          document.getElementById("res-icon").textContent = icon;
 
-        const ext = (f.file_name || f.name || '').split('.').pop().toLowerCase();
-        let icon = "📁";
-        if (['png','jpg','jpeg','gif','webp'].includes(ext)) icon = "🖼️";
-        else if (['mp4','webm','mkv','avi'].includes(ext)) icon = "🎬";
-        else if (['mp3','wav','aac'].includes(ext)) icon = "🎵";
-        else if (['zip','rar','7z'].includes(ext)) icon = "🗜️";
-        else if (ext === 'pdf') icon = "📄";
-        document.getElementById('res-icon').textContent = icon;
-
-        if (password) {
-          // Password worked! Save it.
-          needsPassword = false;
-          document.getElementById('password-wrapper').classList.add('hidden');
-        }
-      } catch (err) {
-        document.getElementById('loading-state').classList.add('hidden');
-        
-        if (err.status === 401) {
-          // Needs password or incorrect password
-          needsPassword = true;
-          document.getElementById('resource-container').classList.remove('hidden');
-          document.getElementById('password-wrapper').classList.remove('hidden');
           if (password) {
-            notify.error("Incorrect decryption password lock.");
+            // Password worked! Save it.
+            needsPassword = false;
+            document.getElementById("password-wrapper").classList.add("hidden");
           }
-        } else {
-          showError(err.data?.error || "This resource link has expired or has been revoked.");
+        } catch (err) {
+          document.getElementById("loading-state").classList.add("hidden");
+
+          if (err.status === 401) {
+            // Needs password or incorrect password
+            needsPassword = true;
+            document
+              .getElementById("resource-container")
+              .classList.remove("hidden");
+            document
+              .getElementById("password-wrapper")
+              .classList.remove("hidden");
+            if (password) {
+              notify.error("Incorrect decryption password lock.");
+            }
+          } else {
+            showError(
+              err.data?.error ||
+                "This resource link has expired or has been revoked.",
+            );
+          }
         }
       }
-    }
 
-    async function startDownload() {
-      const pass = document.getElementById('share-password').value;
-      if (needsPassword && !pass) {
-        notify.warning("Password lock verification required.");
-        return;
-      }
-
-      const btn = document.getElementById('dl-btn');
-      btn.disabled = true;
-      btn.textContent = "⏳ Extracting Node Payload...";
-
-      try {
-        if (needsPassword) {
-          // Double verify password
-          await api.getSharedFile(token, pass);
+      async function startDownload() {
+        const pass = document.getElementById("share-password").value;
+        if (needsPassword && !pass) {
+          notify.warning("Password lock verification required.");
+          return;
         }
-        
-        notify.info("Downloading file from secure Telegram storage bot...");
-        await api.downloadSharedFile(token, pass);
-        
-        btn.textContent = "✅ Complete!";
-        notify.success("File download sync complete!");
-        setTimeout(() => {
+
+        const btn = document.getElementById("dl-btn");
+        btn.disabled = true;
+        btn.textContent = "⏳ Extracting Node Payload...";
+
+        try {
+          if (needsPassword) {
+            // Double verify password
+            await api.getSharedFile(token, pass);
+          }
+
+          notify.info("Downloading file from secure Telegram storage bot...");
+          await api.downloadSharedFile(token, pass);
+
+          btn.textContent = "✅ Complete!";
+          notify.success("File download sync complete!");
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = "Download Node ⬇️";
+          }, 3000);
+        } catch (err) {
           btn.disabled = false;
           btn.textContent = "Download Node ⬇️";
-        }, 3000);
-      } catch (err) {
-        btn.disabled = false;
-        btn.textContent = "Download Node ⬇️";
-        notify.error("Payload download transmission interrupted.");
+          notify.error("Payload download transmission interrupted.");
+        }
       }
-    }
 
-    function showError(msg) {
-      document.getElementById('loading-state').classList.add('hidden');
-      document.getElementById('resource-container').classList.add('hidden');
-      
-      const errState = document.getElementById('error-state');
-      errState.classList.remove('hidden');
-      document.getElementById('error-message').textContent = msg;
-    }
+      function showError(msg) {
+        document.getElementById("loading-state").classList.add("hidden");
+        document.getElementById("resource-container").classList.add("hidden");
 
-    function formatBytes(bytes, decimals = 2) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const dm = decimals < 0 ? 0 : decimals;
-      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-    }
-  </script>
-</body>
+        const errState = document.getElementById("error-state");
+        errState.classList.remove("hidden");
+        document.getElementById("error-message").textContent = msg;
+      }
+
+      function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return (
+          parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+        );
+      }
+    </script>
+  </body>
 </html>

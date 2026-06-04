@@ -117,10 +117,47 @@ const getStorageStatistics = async (req, res, next) => {
   }
 };
 
+// Get all files (admin)
+const getAllFiles = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const result = await adminService.getAllFiles(page, limit);
+    if (!result.success) {
+      return res.status(CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
+        success: false,
+        error: result.error,
+      });
+    }
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete any file (admin)
+const deleteFile = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const { fileId } = req.params;
+    const result = await adminService.deleteAnyFile(adminId, fileId);
+    if (!result.success) {
+      return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        error: result.error,
+      });
+    }
+    res.json(result.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   getAllUsers,
   deleteUser,
   getSystemLogs,
   getStorageStatistics,
+  getAllFiles,
+  deleteFile,
 };

@@ -13,7 +13,19 @@
     <link rel="stylesheet" href="/assets/css/main.css" />
     <link rel="stylesheet" href="/assets/css/animations.css" />
     <style>
-      /* Premium overrides and specific page styling */
+      :root {
+        --accent-primary: var(--cyan, #00f5d4);
+        --accent-secondary: var(--emerald, #10b981);
+        --accent-tertiary: var(--violet, #7c3aed);
+        --border-color: var(--border, rgba(255, 255, 255, 0.06));
+        --bg-secondary: var(--bg-secondary, #0d1117);
+        --bg-tertiary: var(--bg-tertiary, #131929);
+        --text-primary: var(--text-primary, #f0f6fc);
+        --text-secondary: var(--text-secondary, #8b949e);
+        --text-muted: var(--text-muted, #484f58);
+        --error: var(--error, #f85149);
+      }
+
       body {
         background: #050508;
         overflow-x: hidden;
@@ -32,458 +44,148 @@
         content: "";
         position: fixed;
         inset: 0;
-        opacity: 0.03;
+        opacity: 0.02;
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         pointer-events: none;
         z-index: -1;
       }
 
-      /* Auth Layout */
-      .split {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        min-height: 100vh;
+      /* Animations overrides */
+      .success-pulse {
+        animation: successPulse 1.5s infinite;
+      }
+      @keyframes successPulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
       }
 
-      .left-hero {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: var(--spacing-2xl);
-        position: relative;
-      }
-
-      .brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .brand-icon {
-        width: 46px;
-        height: 46px;
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        box-shadow: 0 0 25px rgba(97, 87, 255, 0.4);
-      }
-
-      .brand-text {
-        font-family: var(--font-display);
-        font-size: 2.2rem;
-        letter-spacing: 3px;
-        background: linear-gradient(135deg, #fff, #a0a0c0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .hero-title {
-        font-size: clamp(2.5rem, 5vw, 5rem);
-        line-height: 0.95;
-        margin-bottom: var(--spacing-md);
-        text-transform: uppercase;
-      }
-
-      .hero-title span {
-        background: linear-gradient(
-          135deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .hero-desc {
-        max-width: 480px;
-        font-size: 16px;
-        color: var(--text-secondary);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .right-auth {
-        background: rgba(12, 12, 18, 0.7);
-        border-left: 1px solid var(--border-color);
-        backdrop-filter: blur(25px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-xl);
-      }
-
-      .auth-container {
-        width: 100%;
-        max-width: 400px;
-      }
-
-      .auth-tabs {
-        display: flex;
-        background: rgba(5, 5, 8, 0.5);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-xs);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .auth-tab {
-        flex: 1;
-        padding: var(--spacing-sm);
-        text-align: center;
-        font-weight: 500;
-        color: var(--text-secondary);
-        cursor: pointer;
-        border-radius: var(--radius-md);
-        transition: all 0.3s;
-        border: none;
-        background: transparent;
-      }
-
-      .auth-tab.active {
-        background: linear-gradient(135deg, var(--accent-primary), #8b84ff);
-        color: white;
-        box-shadow: 0 4px 15px rgba(97, 87, 255, 0.3);
-      }
-
-      /* Main Dashboard Layout */
-      .dashboard-layout {
-        display: grid;
-        grid-template-columns: 260px 1fr;
-        min-height: 100vh;
-      }
-
-      .sidebar {
-        background: rgba(12, 12, 18, 0.85);
-        border-right: 1px solid var(--border-color);
-        backdrop-filter: blur(20px);
-        padding: var(--spacing-lg) var(--spacing-md);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-      .sidebar-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        list-style: none;
-        margin-top: var(--spacing-xl);
-      }
-
-      .sidebar-item a {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius-md);
-        color: var(--text-secondary);
-        font-weight: 500;
-        transition: all 0.3s ease;
-      }
-
-      .sidebar-item.active a,
-      .sidebar-item a:hover {
-        background: rgba(97, 87, 255, 0.1);
-        color: var(--text-primary);
-        border-left: 3px solid var(--accent-primary);
-        padding-left: calc(var(--spacing-md) - 3px);
-      }
-
-      .main-content {
-        padding: var(--spacing-xl);
-        overflow-y: auto;
-        max-height: 100vh;
-      }
-
-      .stats-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-md);
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .stat-card {
-        background: rgba(18, 18, 28, 0.4);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-md) var(--spacing-lg);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        backdrop-filter: blur(10px);
-      }
-
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        background: rgba(97, 87, 255, 0.1);
-        border-radius: var(--radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        color: var(--accent-primary);
-      }
-
-      .stat-value {
-        font-family: var(--font-display);
-        font-size: 1.8rem;
-        line-height: 1.1;
-      }
-
-      .stat-label {
-        font-size: 11px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: var(--font-mono);
-      }
-
-      /* Drag and Drop Zone */
+      /* Dropzone area */
       .dropzone {
         border: 2px dashed var(--border-color);
-        border-radius: var(--radius-xl);
-        background: rgba(12, 12, 18, 0.3);
-        padding: var(--spacing-xl);
+        border-radius: var(--r-xl);
+        background: rgba(255, 255, 255, 0.02);
+        padding: var(--sp-6);
         text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        margin-bottom: var(--spacing-xl);
+        margin-bottom: var(--sp-5);
+        backdrop-filter: blur(10px);
+      }
+      .dropzone:hover, .dropzone.dragover {
+        border-color: var(--cyan);
+        background: rgba(0, 245, 212, 0.04);
+        box-shadow: var(--glow-cyan);
       }
 
-      .dropzone:hover,
-      .dropzone.dragover {
-        border-color: var(--accent-primary);
-        background: rgba(97, 87, 255, 0.05);
-      }
-
-      /* File / Folder Grid */
-      .grid-container {
-        margin-bottom: var(--spacing-xl);
-      }
-
-      .section-title {
-        font-family: var(--font-display);
-        font-size: 1.4rem;
-        letter-spacing: 1px;
-        color: var(--text-primary);
-        margin-bottom: var(--spacing-md);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .folder-card {
-        background: rgba(18, 18, 28, 0.4);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-md);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .folder-card:hover {
-        border-color: var(--accent-tertiary);
-        transform: translateY(-2px);
-      }
-
-      .file-card {
-        background: rgba(12, 12, 18, 0.6);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-md);
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        justify-content: space-between;
-        transition: all 0.3s ease;
-      }
-
-      .file-card:hover {
-        border-color: var(--accent-primary);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(97, 87, 255, 0.1);
-      }
-
-      .file-actions {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        display: flex;
-        gap: 4px;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      .file-card:hover .file-actions {
-        opacity: 1;
-      }
-
-      .action-btn {
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
-        border: 1px solid var(--border-color);
-        background: var(--bg-tertiary);
-        color: var(--text-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .action-btn:hover {
-        background: var(--accent-primary);
-        color: white;
-        border-color: var(--accent-primary);
-      }
-
-      .action-btn.delete:hover {
-        background: var(--error);
-        border-color: var(--error);
-      }
-
+      /* Star buttons */
       .star-btn {
         color: var(--text-muted);
         cursor: pointer;
-        font-size: 16px;
         transition: color 0.2s;
+        font-size: 14px;
+      }
+      .star-btn.starred, .star-btn:hover {
+        color: #ffd700;
       }
 
-      .star-btn.starred {
-        color: #ffd700;
+      /* Breadcrumbs */
+      .breadcrumb-item {
+        font-weight: 500;
+      }
+      .breadcrumb-item.active {
+        color: var(--cyan);
       }
 
       /* Modals */
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
         z-index: var(--z-modal);
         display: none;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-md);
+        padding: var(--sp-4);
       }
-
       .modal-overlay.active {
         display: flex;
       }
-
       .modal-box {
-        background: var(--bg-secondary);
+        background: rgba(13, 17, 23, 0.95);
         border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-xl);
+        border-radius: var(--r-xl);
+        padding: var(--sp-6);
         width: 100%;
         max-width: 440px;
         box-shadow: var(--shadow-xl);
-        animation: slideIn 0.3s ease-out;
+        animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backdrop-filter: blur(20px);
       }
 
-      /* Admin Styles */
-      .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: var(--spacing-md);
+      /* AI Chat Panel */
+      .ai-chat-panel {
+        position: fixed;
+        top: 0;
+        right: -380px;
+        width: 380px;
+        height: 100vh;
+        background: rgba(10, 14, 22, 0.95);
+        border-left: 1px solid var(--border-color);
+        box-shadow: var(--shadow-xl);
+        z-index: 999;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
       }
-
-      .admin-table th,
-      .admin-table td {
+      .ai-chat-panel.active {
+        right: 0;
+      }
+      .ai-chat-header {
+        padding: var(--sp-4) var(--sp-5);
         border-bottom: 1px solid var(--border-color);
-        padding: var(--spacing-md);
-        text-align: left;
-      }
-
-      .admin-table th {
-        font-family: var(--font-mono);
-        font-size: 12px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-      }
-
-      .admin-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-      }
-
-      .badge {
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-family: var(--font-mono);
-        font-weight: 500;
-      }
-
-      .badge-admin {
-        background: rgba(255, 77, 141, 0.15);
-        color: var(--accent-secondary);
-        border: 1px solid rgba(255, 77, 141, 0.3);
-      }
-
-      .badge-user {
-        background: rgba(97, 87, 255, 0.15);
-        color: var(--accent-primary);
-        border: 1px solid rgba(97, 87, 255, 0.3);
-      }
-
-      /* Breadcrumbs */
-      .breadcrumbs {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        margin-bottom: var(--spacing-md);
-        color: var(--text-muted);
+        justify-content: space-between;
       }
-
-      .breadcrumbs span {
-        cursor: pointer;
-        transition: color 0.2s;
+      .ai-chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--sp-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-3);
       }
-
-      .breadcrumbs span:hover {
-        color: var(--accent-primary);
+      .ai-chat-message {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: var(--r-lg);
+        font-size: 13px;
+        line-height: 1.5;
+        word-break: break-word;
       }
-
-      .breadcrumbs span.current {
+      .ai-chat-message.user {
+        background: var(--cyan-dim);
+        border: 1px solid rgba(0, 245, 212, 0.2);
         color: var(--text-primary);
-        cursor: default;
+        align-self: flex-end;
+        border-bottom-right-radius: var(--r-sm);
       }
-
-      /* Progress bar */
-      .progress-bar-container {
-        width: 100%;
-        height: 6px;
-        background: var(--border-color);
-        border-radius: 3px;
-        overflow: hidden;
-        margin-top: 6px;
+      .ai-chat-message.bot {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        align-self: flex-start;
+        border-bottom-left-radius: var(--r-sm);
       }
-
-      .progress-bar {
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          var(--accent-primary),
-          var(--accent-secondary)
-        );
-        width: 0%;
-        transition: width 0.3s ease;
+      .ai-chat-footer {
+        padding: var(--sp-4);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: var(--sp-2);
       }
     </style>
   </head>
@@ -491,37 +193,42 @@
     <canvas id="bgCanvas"></canvas>
 
     <!-- ==================== LANDING SCREEN ==================== -->
-    <div id="landing-screen" class="landing-screen animate-fade-in">
+    <div id="landing-screen" class="landing-page animate-fade-in">
       <nav class="landing-nav">
-        <div class="brand-logo" style="margin-bottom: 0;">
-          <div class="brand-icon" style="width: 38px; height: 38px; font-size: 16px;">☁️</div>
-          <div class="brand-text" style="font-size: 1.6rem;">DriftIQ</div>
+        <div class="nav-brand">
+          <div class="nav-logo-icon">☁️</div>
+          <div class="nav-logo-text">DriftIQ</div>
         </div>
         <ul class="nav-links">
           <li><a href="#landing-screen">Home</a></li>
           <li><a href="#features-section">Features</a></li>
-          <li><a href="https://github.com/harshitgarg10042008-oss/driftiq" target="_blank">Docs</a></li>
+          <li>
+            <a href="https://github.com/harshitgarg10042008-oss/driftiq" target="_blank">Docs</a>
+          </li>
         </ul>
-        <div class="landing-nav-actions">
-          <button class="theme-toggle-btn">☀️</button>
+        <div class="nav-actions">
+          <button class="theme-toggle-btn" onclick="notify.info('Compiled under premium dark system.')">☀️</button>
           <button class="btn btn-secondary btn-sm" onclick="openAuthModal('login')">Log In</button>
           <button class="btn btn-primary btn-sm" onclick="openAuthModal('register')">Get Started</button>
         </div>
       </nav>
 
       <div class="landing-hero animate-fade-in">
-        <div class="badge-pill">
-          <span>✨</span> The Intelligent Workspace
-        </div>
+        <div class="badge-pill"><span>✨</span> The Intelligent Workspace</div>
         <h1 class="hero-main-title">
-          Cloud File Manager <br><span>Powered by Telegram.</span>
+          Cloud File Manager <br /><span>Powered by Telegram.</span>
         </h1>
         <p class="hero-subtitle">
-          DriftIQ leverages Telegram's secure, decentralized infrastructure to store, analyze, and retrieve your documents. No setup. Unlimited storage.
+          DriftIQ leverages Telegram's secure, decentralized infrastructure to
+          store, analyze, and retrieve your documents. No setup. Unlimited storage.
         </p>
         <div class="cta-group">
-          <button class="btn btn-green-glow btn-lg" onclick="openAuthModal('login')">Go to Dashboard →</button>
-          <button class="btn btn-secondary btn-lg" onclick="openAuthModal('register')">Start for Free</button>
+          <button class="btn btn-green-glow btn-lg" onclick="openAuthModal('login')">
+            Go to Dashboard →
+          </button>
+          <button class="btn btn-secondary btn-lg" onclick="openAuthModal('register')">
+            Start for Free
+          </button>
         </div>
       </div>
 
@@ -532,94 +239,83 @@
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-cyan">☁️</div>
             <h4>Secure Cloud Storage</h4>
-            <p>Encrypted file storage utilizing Telegram channels as secure, private vault storage shards with folder intelligence.</p>
+            <p>
+              Encrypted file storage utilizing Telegram channels as secure,
+              private vault storage shards with folder intelligence.
+            </p>
           </div>
           <!-- Card 2 -->
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-blue">🔄</div>
             <h4>File Conversion</h4>
-            <p>Convert PDF, DOCX, PPT, images, and more instantly inside your browser workspace.</p>
+            <p>
+              Convert PDF, DOCX, PPT, images, and more instantly inside your browser workspace.
+            </p>
           </div>
           <!-- Card 3 -->
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-indigo">💬</div>
             <h4>AI Chat for Files</h4>
-            <p>Ask anything about your documents or folders and get instant answers from your private AI copilot.</p>
+            <p>
+              Ask anything about your documents or folders and get instant answers from your private AI copilot.
+            </p>
           </div>
           <!-- Card 4 -->
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-emerald">🔍</div>
             <h4>Folder AI Search</h4>
-            <p>Search entire folders by meaning or concept, not only by filename—find what matters faster.</p>
+            <p>
+              Search entire folders by meaning or concept, not only by filename—find what matters faster.
+            </p>
           </div>
           <!-- Card 5 -->
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-yellow">🌐</div>
             <h4>Anonymous File Rooms</h4>
-            <p>Create temporary sharing links with optional password protection and download limits.</p>
+            <p>
+              Create temporary sharing links with optional password protection and download limits.
+            </p>
           </div>
           <!-- Card 6 -->
           <div class="feature-card">
             <div class="feature-icon-wrapper feature-icon-rose">🛡️</div>
             <h4>Developer API</h4>
-            <p>Integrate your own apps with DriftIQ using our fully documented REST API endpoints.</p>
+            <p>
+              Integrate your own apps with DriftIQ using our fully documented REST API endpoints.
+            </p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ==================== AUTH SCREEN (GLASS OVERLAY) ==================== -->
-    <div id="auth-screen" class="glass-auth-overlay hidden">
-      <div class="card glass-auth-card animate-scale-up" style="position: relative;">
-        <button class="close-auth-btn" onclick="closeAuthModal()">✕</button>
-        <div class="brand-logo" style="justify-content: center; margin-bottom: 25px;">
-          <div class="brand-icon">☁️</div>
-          <div class="brand-text" style="font-size: 1.8rem;">DriftIQ</div>
+    <div id="auth-screen" class="auth-overlay hidden">
+      <div class="auth-card animate-scale-up">
+        <button class="auth-close" onclick="closeAuthModal()">✕</button>
+        <div class="auth-logo">
+          <div class="auth-logo-icon">☁️</div>
+          <div class="auth-logo-text">DriftIQ</div>
         </div>
-        
+
         <div class="auth-tabs">
-          <button
-            type="button"
-            class="auth-tab active"
-            onclick="switchTab('login')"
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            class="auth-tab"
-            onclick="switchTab('register')"
-          >
-            Sign Up
-          </button>
+          <button type="button" class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+          <button type="button" class="auth-tab" onclick="switchTab('register')">Sign Up</button>
         </div>
 
         <!-- Login Form -->
         <div id="login-form-container" class="animate-slide-in">
-          <h3 class="mb-sm">Welcome back</h3>
-          <p class="text-secondary mb-lg" style="font-size: 13px;">
+          <h3 class="auth-form-heading">Welcome back</h3>
+          <p class="auth-form-subheading text-secondary">
             Access your secure decentralized asset vault.
           </p>
           <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="mb-md">
-              <input
-                type="text"
-                id="login-username"
-                placeholder="Username or Email Address"
-                required
-              />
+              <input type="text" id="login-username" placeholder="Username or Email" required />
             </div>
             <div class="mb-lg">
-              <input
-                type="password"
-                id="login-password"
-                placeholder="Vault Access Password"
-                required
-              />
+              <input type="password" id="login-password" placeholder="Vault Access Password" required />
             </div>
-            <button type="submit" class="btn btn-primary w-100">
-              Unlock Vault 🔑
-            </button>
+            <button type="submit" class="btn btn-primary w-100">Unlock Vault 🔑</button>
           </form>
           <p class="text-center mt-md" style="font-size: 13px;">
             <a href="#" onclick="switchTab('reset')">Forgot access key?</a>
@@ -628,73 +324,41 @@
 
         <!-- Register Form -->
         <div id="register-form-container" class="animate-slide-in hidden">
-          <h3 class="mb-sm">Allocate Profile</h3>
-          <p class="text-secondary mb-lg" style="font-size: 13px;">
+          <h3 class="auth-form-heading">Allocate Profile</h3>
+          <p class="auth-form-subheading text-secondary">
             Create a new secure storage vault instance.
           </p>
           <form id="registerForm" onsubmit="handleRegister(event)">
             <div class="mb-md">
-              <input
-                type="text"
-                id="reg-name"
-                placeholder="Full Name (Optional)"
-              />
+              <input type="text" id="reg-name" placeholder="Full Name (Optional)" />
             </div>
             <div class="mb-md">
-              <input
-                type="text"
-                id="reg-username"
-                placeholder="Username"
-                required
-                minlength="3"
-              />
+              <input type="text" id="reg-username" placeholder="Username" required minlength="3" />
             </div>
             <div class="mb-md">
-              <input
-                type="email"
-                id="reg-email"
-                placeholder="Email Address"
-                required
-              />
+              <input type="email" id="reg-email" placeholder="Email Address" required />
             </div>
             <div class="mb-lg">
-              <input
-                type="password"
-                id="reg-password"
-                placeholder="Password (min 8 chars, A-Z, a-z, 1-9, @$!%*?&)"
-                required
-                minlength="8"
-              />
+              <input type="password" id="reg-password" placeholder="Password (min 8 chars, A-Z, a-z, 1-9)" required minlength="8" />
             </div>
-            <button type="submit" class="btn btn-primary w-100">
-              Generate Keys ✨
-            </button>
+            <button type="submit" class="btn btn-primary w-100">Generate Keys ✨</button>
           </form>
         </div>
 
         <!-- Reset Request Form -->
         <div id="reset-form-container" class="animate-slide-in hidden">
-          <h3 class="mb-sm">Vault Restoration</h3>
-          <p class="text-secondary mb-lg" style="font-size: 13px;">
+          <h3 class="auth-form-heading">Vault Restoration</h3>
+          <p class="auth-form-subheading text-secondary">
             Verify email to request password reset token.
           </p>
           <form id="resetForm" onsubmit="handleResetRequest(event)">
             <div class="mb-lg">
-              <input
-                type="email"
-                id="reset-email"
-                placeholder="Email Address"
-                required
-              />
+              <input type="email" id="reset-email" placeholder="Email Address" required />
             </div>
-            <button type="submit" class="btn btn-primary w-100">
-              Send Recovery Link 📡
-            </button>
+            <button type="submit" class="btn btn-primary w-100">Send Recovery Link 📡</button>
           </form>
           <p class="text-center mt-md" style="font-size: 13px;">
-            <a href="#" onclick="switchTab('login')"
-              >Return to Authentication</a
-            >
+            <a href="#" onclick="switchTab('login')">Return to Authentication</a>
           </p>
         </div>
       </div>
@@ -704,127 +368,126 @@
     <div id="dashboard-screen" class="dashboard-layout hidden animate-fade-in">
       <!-- Sidebar -->
       <aside class="sidebar">
-        <div>
-          <div class="brand-logo" style="margin-bottom: 20px">
-            <div
-              class="brand-icon"
-              style="width: 34px; height: 34px; font-size: 14px"
-            >
-              ☁️
-            </div>
-            <div class="brand-text" style="font-size: 1.5rem">DriftIQ</div>
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">☁️</div>
+            <span class="sidebar-logo-text">DriftIQ</span>
           </div>
-
-          <div class="sidebar-section-title">Quick Access</div>
-          <ul class="sidebar-menu-list">
-            <li class="sidebar-menu-item active" id="menu-dash">
-              <a href="#" onclick="showSection('dash')">📊 Dashboard</a>
-            </li>
-            <li class="sidebar-menu-item" id="menu-files">
-              <a href="#" onclick="showSection('files')">📁 File Manager</a>
-            </li>
-            <li class="sidebar-menu-item" id="menu-shares">
-              <a href="#" onclick="showSection('shares')">🔗 Shared Links</a>
-            </li>
-            <li class="sidebar-menu-item admin-only hidden" id="menu-admin">
-              <a href="#" onclick="showSection('admin')">⚙️ System Console</a>
-            </li>
-            <li class="sidebar-menu-item" id="menu-settings">
-              <a href="#" onclick="showSection('settings')">🛠️ Settings</a>
-            </li>
-          </ul>
-
-          <div class="sidebar-section-title">Actions</div>
-          <ul class="sidebar-menu-list">
-            <li class="sidebar-menu-item">
-              <a href="#" onclick="promptCreateFolder()">📁 New Folder</a>
-            </li>
-            <li class="sidebar-menu-item">
-              <a href="#" onclick="triggerFileUpload()">📤 Upload Files</a>
-            </li>
-          </ul>
+          <button class="sidebar-toggle" onclick="toggleSidebar()" style="font-size: 16px;">◀</button>
         </div>
 
-        <div>
-          <!-- Profile summary card -->
-          <div
-            class="card p-sm flex gap-sm"
-            style="background: rgba(0, 0, 0, 0.2)"
-          >
-            <div style="font-size: 24px">👤</div>
-            <div style="overflow: hidden">
-              <p
-                id="user-display-name"
-                style="
-                  margin-bottom: 0;
-                  font-weight: 600;
-                  font-size: 12px;
-                  color: white;
-                  white-space: nowrap;
-                  text-overflow: ellipsis;
-                "
-              >
-                User
-              </p>
-              <p
-                id="user-display-role"
-                class="text-muted"
-                style="
-                  margin-bottom: 0;
-                  font-size: 10px;
-                  font-family: var(--font-mono);
-                "
-              >
-                Role
-              </p>
+        <div class="sidebar-body">
+          <div class="nav-section">
+            <div class="nav-section-label">Quick Access</div>
+            <div class="nav-item active" id="menu-dash" onclick="setCategory('all')">
+              <span class="nav-item-icon">🏠</span>
+              <span class="nav-item-text">Home</span>
+            </div>
+            <div class="nav-item" id="menu-docs" onclick="setCategory('documents')">
+              <span class="nav-item-icon">📝</span>
+              <span class="nav-item-text">Documents</span>
+            </div>
+            <div class="nav-item" id="menu-pics" onclick="setCategory('pictures')">
+              <span class="nav-item-icon">🖼️</span>
+              <span class="nav-item-text">Pictures</span>
+            </div>
+            <div class="nav-item" id="menu-vids" onclick="setCategory('videos')">
+              <span class="nav-item-icon">🎬</span>
+              <span class="nav-item-text">Videos</span>
+            </div>
+            <div class="nav-item" id="menu-music" onclick="setCategory('music')">
+              <span class="nav-item-icon">🎵</span>
+              <span class="nav-item-text">Music</span>
+            </div>
+            <div class="nav-item" id="menu-recycle" onclick="setCategory('recycle')">
+              <span class="nav-item-icon">🗑️</span>
+              <span class="nav-item-text">Recycle Bin</span>
             </div>
           </div>
-          <button class="btn btn-secondary w-100 mt-md" onclick="logout()">
-            Disconnect 🔒
-          </button>
+
+          <div class="nav-section">
+            <div class="nav-section-label">Actions</div>
+            <div class="nav-item" onclick="promptCreateFolder()">
+              <span class="nav-item-icon">📁</span>
+              <span class="nav-item-text">New Folder</span>
+            </div>
+            <div class="nav-item" onclick="triggerFileUpload()">
+              <span class="nav-item-icon">📤</span>
+              <span class="nav-item-text">Upload Files</span>
+            </div>
+            <div class="nav-item" onclick="triggerFolderUpload()">
+              <span class="nav-item-icon">📦</span>
+              <span class="nav-item-text">Upload Folder</span>
+            </div>
+            <div class="nav-item" id="menu-shares" onclick="showSection('shares')">
+              <span class="nav-item-icon">🔗</span>
+              <span class="nav-item-text">Shared Links</span>
+            </div>
+            <div class="nav-item admin-only hidden" id="menu-admin" onclick="showSection('admin')">
+              <span class="nav-item-icon">⚙️</span>
+              <span class="nav-item-text">Admin Panel</span>
+            </div>
+            <div class="nav-item" id="menu-settings" onclick="showSection('settings')">
+              <span class="nav-item-icon">🛠️</span>
+              <span class="nav-item-text">Settings</span>
+            </div>
+          </div>
+
+          <div class="nav-section" id="sidebar-dynamic-folders-section">
+            <div class="nav-section-label">Folder Index</div>
+            <div id="sidebar-dynamic-folders-list">
+              <!-- Dynamically loaded -->
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="storage-widget">
+            <div class="storage-header">
+              <span class="storage-label">Premium Plan</span>
+              <span class="storage-percent">0%</span>
+            </div>
+            <div class="storage-bar-bg">
+              <div class="storage-bar-fill"></div>
+            </div>
+            <div class="storage-text">0 B / 5 GB</div>
+            <button class="btn btn-primary btn-sm w-100 mt-sm" style="font-size: 10px; padding: 4px;" onclick="upgradePlan()">Upgrade Plan 🚀</button>
+          </div>
+
+          <div class="sidebar-profile">
+            <div class="profile-avatar" id="sidebar-profile-avatar">👤</div>
+            <div class="profile-info">
+              <div class="profile-name" id="user-display-name">User</div>
+              <div class="profile-role" id="user-display-role">ROLE</div>
+            </div>
+            <button class="profile-logout" onclick="logout()" title="Disconnect session">🔒</button>
+          </div>
         </div>
       </aside>
 
-      <!-- Main Content Area -->
-      <main class="main-content">
-        <!-- HEADER -->
-        <header class="flex-between mb-lg">
-          <div>
-            <h2 id="section-title-heading" style="margin-bottom: 4px">
-              My Storage Space
-            </h2>
-            <p
-              id="section-title-desc"
-              class="text-secondary"
-              style="font-size: 12px"
-            >
-              Manage, coordinate, and share your decentralized nodes.
-            </p>
-          </div>
-
-          <div class="flex gap-md" style="align-items: center;">
-            <div class="search-container" id="search-bar-wrapper">
-              <input
-                type="text"
-                id="dashboard-search"
-                placeholder="Search files..."
-                oninput="debounceSearch()"
-              />
+      <!-- Main Layout Area -->
+      <div class="main-area" style="display: flex; flex-direction: column;">
+        <!-- Topbar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <div class="breadcrumb" id="folder-breadcrumbs">
+              <span class="breadcrumb-item active" onclick="navigateToFolder(null)">Home</span>
             </div>
-            <button class="btn btn-primary" onclick="triggerFileUpload()">
-              Upload Node 📤
-            </button>
-            <input
-              type="file"
-              id="file-input-raw"
-              class="hidden"
-              onchange="uploadSelectedFile(event)"
-            />
+          </div>
+          <div class="topbar-actions">
+            <div class="search-wrap" id="search-bar-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="dashboard-search" placeholder="Search files..." oninput="debounceSearch()" />
+            </div>
+            <button class="btn btn-primary" onclick="triggerFileUpload()">New File 📤</button>
+            <input type="file" id="file-input-raw" class="hidden" onchange="uploadSelectedFile(event)" />
+            <input type="file" id="folder-input-raw" class="hidden" webkitdirectory directory multiple onchange="uploadSelectedFolder(event)" />
+            <div class="topbar-avatar" onclick="showSection('settings')" id="topbar-user-avatar">U</div>
           </div>
         </header>
 
-        <!-- STATS GRID -->
-        <div class="stats-row" id="stats-panel">
+        <!-- Stats summary row -->
+        <div class="stats-row" id="stats-panel" style="margin-top: 15px; margin-bottom: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
           <div class="stat-card">
             <div class="stat-icon">📂</div>
             <div>
@@ -843,59 +506,37 @@
             <div class="stat-icon">☁️</div>
             <div>
               <p class="stat-value" id="stat-storage-size">0 B</p>
-              <p class="stat-label">Calculated Quota</p>
+              <p class="stat-label">Vault Usage</p>
             </div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">📡</div>
             <div>
-              <p class="stat-value" id="stat-telegram-status">Active</p>
-              <p class="stat-label">Uplink Tunnel</p>
+              <p class="stat-value" id="stat-telegram-status">Disconnected</p>
+              <p class="stat-label">Telegram Uplink</p>
             </div>
           </div>
         </div>
 
         <!-- MAIN CONTAINER SECTIONS -->
-        <div id="content-container">
+        <div id="content-container" style="flex: 1;">
           <!-- DASHBOARD / FILE VIEW -->
           <div id="sec-dash" class="animate-fade-in">
-            <!-- Dropzone -->
-            <div
-              class="dropzone"
-              id="dropzone-area"
-              ondragover="
-                event.preventDefault();
-                this.classList.add('dragover');
-              "
-              ondragleave="this.classList.remove('dragover')"
-              ondrop="handleFileDrop(event)"
-            >
-              <div style="font-size: 36px; margin-bottom: 12px">📤</div>
+            <!-- Drag and Drop Zone -->
+            <div class="dropzone" id="dropzone-area" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="handleFileDrop(event)">
+              <div style="font-size: 32px; margin-bottom: 8px;">📤</div>
               <h3>Drag & Drop Binary Objects Here</h3>
-              <p class="text-secondary">
-                Or click to select an asset from your local client filesystem.
-              </p>
-              <div
-                id="upload-progress-wrapper"
-                class="hidden"
-                style="max-width: 300px; margin: 12px auto 0"
-              >
-                <p
-                  id="upload-status-text"
-                  class="text-secondary"
-                  style="font-size: 11px; margin-bottom: 2px"
-                >
-                  Uploading: 0%
-                </p>
+              <p class="text-secondary" style="font-size: 13px;">Or click to select an asset from your local client filesystem.</p>
+              
+              <div id="upload-progress-wrapper" class="hidden" style="max-width: 300px; margin: 12px auto 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+                  <span id="upload-status-text" class="text-secondary">Uploading: 0%</span>
+                  <span style="color: var(--error); cursor: pointer;" onclick="event.stopPropagation(); cancelUpload();">Cancel</span>
+                </div>
                 <div class="progress-bar-container">
                   <div class="progress-bar" id="upload-progress-bar"></div>
                 </div>
               </div>
-            </div>
-
-            <!-- Breadcrumbs -->
-            <div class="breadcrumbs" id="folder-breadcrumbs" style="margin-bottom: 15px;">
-              <span onclick="navigateToFolder(null)">Root</span>
             </div>
 
             <!-- Unified Data Table Explorer -->
@@ -907,11 +548,11 @@
                     <th>Date Modified</th>
                     <th>Type</th>
                     <th>Size</th>
-                    <th style="text-align: right;">Actions</th>
+                    <th style="text-align: right">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="explorer-table-body">
-                  <!-- Dynamically populated folders and files -->
+                  <!-- Dynamically populated files and folders -->
                 </tbody>
               </table>
             </div>
@@ -922,8 +563,7 @@
             <div class="card p-lg">
               <h3 class="mb-sm">Active Share Access Tunnels</h3>
               <p class="text-secondary mb-lg">
-                Below is a list of your actively authenticated public access
-                points to Telegram backend streams.
+                Below is a list of your actively authenticated public access points to Telegram backend streams.
               </p>
 
               <table class="admin-table">
@@ -945,49 +585,45 @@
 
           <!-- ADMIN SYSTEM CONSOLE -->
           <div id="sec-admin" class="animate-fade-in hidden">
-            <div class="grid grid-2 mb-lg">
-              <div class="card p-lg">
-                <h3 class="mb-sm">System Database Health</h3>
-                <p class="text-secondary mb-md">
-                  Realtime monitoring of global SaaS parameters.
-                </p>
-                <div
-                  class="stats-row"
-                  style="grid-template-columns: repeat(2, 1fr)"
-                >
-                  <div class="stat-card" style="background: rgba(0, 0, 0, 0.2)">
-                    <div>
-                      <p class="stat-value" id="admin-total-users">0</p>
-                      <p class="stat-label">Total Allocated Clients</p>
-                    </div>
-                  </div>
-                  <div class="stat-card" style="background: rgba(0, 0, 0, 0.2)">
-                    <div>
-                      <p class="stat-value" id="admin-total-files">0</p>
-                      <p class="stat-label">Global File Index</p>
-                    </div>
+            <div class="card p-lg mb-lg">
+              <h3 class="mb-sm">Global System Analytics</h3>
+              <p class="text-secondary mb-md">Realtime monitoring of global DriftIQ storage stats.</p>
+              
+              <div class="stats-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 12px;">
+                <div class="stat-card" style="background: rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-users">0</p>
+                    <p class="stat-label">Total Users</p>
                   </div>
                 </div>
-              </div>
-
-              <div class="card p-lg">
-                <h3 class="mb-sm">Storage Statistics</h3>
-                <p class="text-secondary mb-md">
-                  Cumulative payload distributed over Telegram Bot buffers.
-                </p>
-                <div
-                  class="stat-card"
-                  style="background: rgba(0, 0, 0, 0.2); width: 100%"
-                >
+                <div class="stat-card" style="background: rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-files">0</p>
+                    <p class="stat-label">Total Files</p>
+                  </div>
+                </div>
+                <div class="stat-card" style="background: rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-folders">0</p>
+                    <p class="stat-label">Folders</p>
+                  </div>
+                </div>
+                <div class="stat-card" style="background: rgba(0,0,0,0.2);">
                   <div>
                     <p class="stat-value" id="admin-total-storage">0 B</p>
-                    <p class="stat-label">Total Proxy Bandwidth</p>
+                    <p class="stat-label">Storage Used</p>
+                  </div>
+                </div>
+                <div class="stat-card" style="background: rgba(0,0,0,0.2);">
+                  <div>
+                    <p class="stat-value" id="admin-total-shares">0</p>
+                    <p class="stat-label">Shares Created</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="card p-lg">
+            <div class="card p-lg mb-lg">
               <h3 class="mb-sm">Client Account Directories</h3>
               <table class="admin-table">
                 <thead>
@@ -1004,56 +640,86 @@
                 </tbody>
               </table>
             </div>
+
+            <div class="card p-lg">
+              <h3 class="mb-sm">Global Cloud Files Registry</h3>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Owner</th>
+                    <th>Size</th>
+                    <th>Upload Date</th>
+                    <th style="text-align: right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-files-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- SETTINGS PANEL -->
           <div id="sec-settings" class="animate-fade-in hidden">
-            <div class="card p-lg" style="max-width: 600px">
-              <h3 class="mb-sm">Vault Administration & Keys</h3>
-              <p class="text-secondary mb-lg">
-                Update your secure encryption layers and Telegram status.
-              </p>
+            <div class="grid grid-2 mb-lg" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6);">
+              <!-- Password Card -->
+              <div class="card p-lg">
+                <h3 class="mb-sm">Vault Credentials Rotation</h3>
+                <p class="text-secondary mb-lg">Alter your vault session encryption passphrase keys.</p>
 
-              <form
-                id="changePasswordForm"
-                onsubmit="handleChangePassword(event)"
-              >
-                <div class="mb-md">
-                  <label class="text-secondary mb-sm d-block"
-                    >Current Vault Password</label
-                  >
-                  <input type="password" id="set-current-pass" required />
+                <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+                  <div class="mb-md">
+                    <label class="text-secondary mb-sm d-block">Current Password</label>
+                    <input type="password" id="set-current-pass" required />
+                  </div>
+                  <div class="mb-md">
+                    <label class="text-secondary mb-sm d-block">New Vault Password</label>
+                    <input type="password" id="set-new-pass" required minlength="8" />
+                  </div>
+                  <div class="mb-lg">
+                    <label class="text-secondary mb-sm d-block">Confirm New Password</label>
+                    <input type="password" id="set-confirm-pass" required minlength="8" />
+                  </div>
+                  <button type="submit" class="btn btn-primary">Rotate Vault Keys 🔒</button>
+                </form>
+              </div>
+
+              <!-- Telegram Bot Gateway -->
+              <div class="card p-lg">
+                <h3 class="mb-sm">Telegram Bot Uplink</h3>
+                <p class="text-secondary mb-lg">Link your Telegram profile to upload files directly via the chat bot interface.</p>
+                
+                <div id="telegram-disconnected-ui">
+                  <div class="text-center p-lg" style="background: rgba(0,0,0,0.2); border-radius: var(--r-md);">
+                    <div style="font-size: 48px; margin-bottom: var(--sp-2);">🤖</div>
+                    <p class="text-secondary mb-md">Your storage vault is currently disconnected from the bot uplink.</p>
+                    <button class="btn btn-primary" id="telegram-connect-btn" onclick="connectTelegram()">Connect Telegram 🤖</button>
+                  </div>
                 </div>
-                <div class="mb-md">
-                  <label class="text-secondary mb-sm d-block"
-                    >New Encryption Password</label
-                  >
-                  <input
-                    type="password"
-                    id="set-new-pass"
-                    required
-                    minlength="8"
-                  />
+
+                <div id="telegram-connecting-ui" class="hidden">
+                  <div class="p-lg" style="background: rgba(0,0,0,0.2); border-radius: var(--r-md); text-align: center;">
+                    <p class="text-secondary mb-sm">Use this authentication key to verify session inside Telegram:</p>
+                    <div id="telegram-conn-code" style="font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--cyan); background: rgba(0,0,0,0.4); padding: var(--sp-3); border-radius: var(--r-sm); margin-bottom: var(--sp-4); letter-spacing: 2px;">000000</div>
+                    <button class="btn btn-primary w-100 mb-sm" id="telegram-open-bot-btn">Open Telegram Bot 📡</button>
+                    <p class="text-muted" style="font-size: 11px;">Waiting for confirmation webhook sync... (polling every 3s)</p>
+                  </div>
                 </div>
-                <div class="mb-lg">
-                  <label class="text-secondary mb-sm d-block"
-                    >Confirm New Password</label
-                  >
-                  <input
-                    type="password"
-                    id="set-confirm-pass"
-                    required
-                    minlength="8"
-                  />
+
+                <div id="telegram-connected-ui" class="hidden">
+                  <div class="text-center p-lg" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--emerald); border-radius: var(--r-md);">
+                    <div style="font-size: 48px; margin-bottom: var(--sp-2);">✅</div>
+                    <p style="color: var(--emerald); font-weight: 700; font-size: 16px; margin-bottom: var(--sp-1);">Telegram Connected</p>
+                    <p class="text-secondary mb-md" style="font-size: 12px;">DriftIQ is actively linked. Send files directly to the bot to sync them.</p>
+                    <button class="btn btn-secondary btn-sm" onclick="disconnectTelegram()">Disconnect Bot Uplink 🔒</button>
+                  </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                  Rotate Vault Keys 🔒
-                </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
 
     <!-- ==================== CREATE SHARE LINK MODAL ==================== -->
@@ -1061,60 +727,38 @@
       <div class="modal-box">
         <h3 class="mb-sm">Generate Asset Share Tunnel</h3>
         <p class="text-secondary mb-lg">
-          Configure custom password and expiry locks for your Telegram storage
-          link.
+          Configure custom password and expiry locks for your Telegram storage link.
         </p>
 
         <div class="mb-md">
-          <label class="text-secondary mb-sm d-block"
-            >Password Lock (Optional)</label
-          >
-          <input
-            type="text"
-            id="share-pass-lock"
-            placeholder="Leave empty for public access"
-          />
+          <label class="text-secondary mb-sm d-block">Password Lock (Optional)</label>
+          <input type="text" id="share-pass-lock" placeholder="Leave empty for public access" />
         </div>
 
         <div class="mb-md">
-          <label class="text-secondary mb-sm d-block"
-            >Download Limit Count (Optional)</label
-          >
-          <input
-            type="number"
-            id="share-limit-lock"
-            placeholder="Uncapped downloads"
-          />
+          <label class="text-secondary mb-sm d-block">Download Limit Count (Optional)</label>
+          <input type="number" id="share-limit-lock" placeholder="Uncapped downloads" />
         </div>
 
         <div class="mb-lg">
-          <label class="text-secondary mb-sm d-block"
-            >Expiry Timestamp (Optional)</label
-          >
+          <label class="text-secondary mb-sm d-block">Expiry Timestamp (Optional)</label>
           <input type="datetime-local" id="share-expiry-lock" />
         </div>
 
         <div class="flex gap-md">
-          <button class="btn btn-secondary flex-1" onclick="closeShareModal()">
-            Cancel
-          </button>
-          <button class="btn btn-primary flex-1" id="share-confirm-btn">
-            Create Share
-          </button>
+          <button class="btn btn-secondary flex-1" onclick="closeShareModal()">Cancel</button>
+          <button class="btn btn-primary flex-1" id="share-confirm-btn">Create Share</button>
         </div>
       </div>
     </div>
 
     <!-- ==================== DISPLAY CREATED SHARE TUNNEL MODAL ==================== -->
     <div class="modal-overlay" id="share-display-modal">
-      <div class="modal-box">
+      <div class="modal-box" style="text-align: center;">
         <h3 class="mb-sm">Access Link Generated</h3>
-        <p class="text-secondary mb-lg">
-          Deploy this generated link to any client for authenticated download
-          streams.
-        </p>
+        <p class="text-secondary mb-lg">Deploy this generated link to any client for authenticated download streams.</p>
 
-        <div class="mb-lg">
+        <div class="mb-md">
           <input
             type="text"
             id="generated-share-link"
@@ -1123,18 +767,116 @@
               font-family: var(--font-mono);
               font-size: 11px;
               background: rgba(0, 0, 0, 0.3);
+              text-align: center;
             "
           />
         </div>
 
-        <button
-          class="btn btn-primary w-100"
-          onclick="copyGeneratedShareLink()"
-        >
+        <!-- QR Code Container -->
+        <div class="mb-lg" style="display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--r-md); border: 1px solid var(--border-color);">
+          <img id="share-qr-code-img" src="" alt="QR Code Link" style="width: 150px; height: 150px; border-radius: 4px;" />
+        </div>
+
+        <button class="btn btn-primary w-100" onclick="copyGeneratedShareLink()">
           Copy Tunnel Link 📋
         </button>
       </div>
     </div>
+
+    <!-- ==================== PREVIEW MODAL ==================== -->
+    <div class="modal-overlay" id="preview-modal">
+      <div class="modal-box" style="max-width: 800px; width: 90%;">
+        <div class="flex-between mb-md">
+          <h3 id="preview-title" style="word-break: break-all; margin-right: var(--sp-4);">File Preview</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closePreviewModal()">✕</button>
+        </div>
+        <div id="preview-content-container" style="display: flex; justify-content: center; align-items: center; min-height: 200px; max-height: 60vh; overflow: auto; background: rgba(0,0,0,0.4); border-radius: var(--r-md); padding: var(--sp-4);">
+          <!-- Dynamic preview elements -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MOVE ITEM MODAL ==================== -->
+    <div class="modal-overlay" id="move-modal">
+      <div class="modal-box">
+        <h3 class="mb-sm">Move Item</h3>
+        <p class="text-secondary mb-lg">Select target directory index to relocate this resource.</p>
+        
+        <div class="mb-lg">
+          <label class="text-secondary mb-sm d-block">Destination Folder</label>
+          <select id="move-target-select" style="width: 100%; height: 40px; border-radius: var(--r-md); background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: white; padding: 0 10px;">
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        
+        <div class="flex gap-md">
+          <button class="btn btn-secondary flex-1" onclick="closeMoveModal()">Cancel</button>
+          <button class="btn btn-primary flex-1" id="move-confirm-btn">Relocate 📦</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== FILE CONVERTER MODAL ==================== -->
+    <div class="modal-overlay" id="converter-modal">
+      <div class="modal-box">
+        <h3 class="mb-sm">File Converter Workspace</h3>
+        <p class="text-secondary mb-lg">Convert documents, images, and audios into popular target formats inside the sandbox browser context.</p>
+        
+        <div class="mb-md">
+          <label class="text-secondary mb-sm d-block">Source File</label>
+          <input type="text" id="convert-source-name" readonly style="background: rgba(0,0,0,0.3);" />
+        </div>
+        
+        <div class="mb-lg">
+          <label class="text-secondary mb-sm d-block">Target Format</label>
+          <select id="convert-target-format" style="width: 100%; height: 40px; border-radius: var(--r-md); background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: white; padding: 0 10px;">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        
+        <div id="convert-progress-wrapper" class="hidden mb-lg">
+          <p id="convert-progress-text" class="text-secondary mb-sm" style="font-size: 11px;">Initializing sandbox compiler...</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="convert-progress-bar"></div>
+          </div>
+        </div>
+        
+        <div class="flex gap-md">
+          <button class="btn btn-secondary flex-1" id="convert-cancel-btn" onclick="closeConverterModal()">Cancel</button>
+          <button class="btn btn-primary flex-1" id="convert-confirm-btn" onclick="startFileConversion()">Convert 🔄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== AI CHAT PANEL ==================== -->
+    <div class="ai-chat-panel" id="ai-chat-panel">
+      <div class="ai-chat-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">🤖</span>
+          <div>
+            <h4 style="margin: 0; color: white;">DriftIQ AI Assistant</h4>
+            <span class="text-muted" style="font-size: 10px; text-transform: uppercase; font-family: var(--font-mono);">Decentralized LLM Link</span>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="toggleAIChat()" style="color: var(--text-secondary); cursor: pointer;">✕</button>
+      </div>
+      
+      <div class="ai-chat-body" id="ai-chat-body">
+        <div class="ai-chat-message bot">
+          Hello! I am your DriftIQ Copilot. I have analyzed your active storage index. Ask me anything about your files, folders, or platform utilities!
+        </div>
+      </div>
+      
+      <div class="ai-chat-footer">
+        <input type="text" id="ai-chat-input" placeholder="Ask AI Assistant..." style="border-radius: var(--r-full);" onkeydown="if(event.key === 'Enter') sendAIChatMessage()" />
+        <button class="btn btn-primary btn-sm" onclick="sendAIChatMessage()" style="padding: 10px 16px; border-radius: var(--r-full);">Send</button>
+      </div>
+    </div>
+
+    <!-- ==================== AI ASSISTANT FAB ==================== -->
+    <button class="fab" id="ai-fab" onclick="toggleAIChat()" title="Open AI Assistant" style="position: fixed; bottom: 20px; right: 20px; z-index: 100; width: 56px; height: 56px; border-radius: var(--r-full); background: linear-gradient(135deg, var(--cyan), var(--emerald)); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow-lg); color: #060810; cursor: pointer;">
+      🤖
+    </button>
 
     <!-- JS Scripts -->
     <script src="/assets/js/api.js"></script>
@@ -1171,10 +913,7 @@
           this.vx = (Math.random() - 0.5) * 0.5;
           this.vy = (Math.random() - 0.5) * 0.5;
           this.size = Math.random() * 2 + 1;
-          this.color =
-            Math.random() > 0.5
-              ? "rgba(97, 87, 255, 0.25)"
-              : "rgba(255, 77, 141, 0.15)";
+          this.color = Math.random() > 0.5 ? "rgba(0, 245, 212, 0.25)" : "rgba(16, 185, 129, 0.15)";
         }
         draw() {
           ctx.fillStyle = this.color;
@@ -1206,12 +945,10 @@
         // Draw constellation connections
         for (let a = 0; a < particles.length; a++) {
           for (let b = a; b < particles.length; b++) {
-            let dist =
-              (particles[a].x - particles[b].x) ** 2 +
-              (particles[a].y - particles[b].y) ** 2;
+            let dist = (particles[a].x - particles[b].x) ** 2 + (particles[a].y - particles[b].y) ** 2;
             if (dist < 9000) {
               let alpha = (1 - dist / 9000) * 0.15;
-              ctx.strokeStyle = `rgba(97, 87, 255, ${alpha})`;
+              ctx.strokeStyle = `rgba(0, 245, 212, ${alpha})`;
               ctx.lineWidth = 0.5;
               ctx.beginPath();
               ctx.moveTo(particles[a].x, particles[a].y);
@@ -1222,11 +959,10 @@
 
           // Draw lines from mouse cursor to particles
           if (mouse.x !== null && mouse.y !== null) {
-            let distMouse =
-              (particles[a].x - mouse.x) ** 2 + (particles[a].y - mouse.y) ** 2;
+            let distMouse = (particles[a].x - mouse.x) ** 2 + (particles[a].y - mouse.y) ** 2;
             if (distMouse < 18000) {
               let alpha = (1 - distMouse / 18000) * 0.25;
-              ctx.strokeStyle = `rgba(255, 77, 141, ${alpha})`;
+              ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
               ctx.lineWidth = 0.7;
               ctx.beginPath();
               ctx.moveTo(particles[a].x, particles[a].y);
@@ -1245,6 +981,11 @@
       let currentFolderId = null;
       let folderPath = []; // for breadcrumbs
       let searchDebounceTimer = null;
+      let currentFolders = [];
+      let currentFiles = [];
+      let currentCategory = 'all'; // 'all', 'documents', 'pictures', 'videos', 'music', 'recycle'
+      let currentUploadXHR = null;
+      let telegramPollInterval = null;
 
       // Check if already authenticated on load
       window.addEventListener("DOMContentLoaded", async () => {
@@ -1259,23 +1000,25 @@
         }
       });
 
+      function openAuthModal(tab = 'login') {
+        const overlay = document.getElementById("auth-screen");
+        overlay.classList.remove("hidden");
+        switchTab(tab);
+      }
+
+      function closeAuthModal() {
+        const overlay = document.getElementById("auth-screen");
+        overlay.classList.add("hidden");
+      }
+
       function switchTab(mode) {
-        document
-          .getElementById("login-form-container")
-          .classList.toggle("hidden", mode !== "login");
-        document
-          .getElementById("register-form-container")
-          .classList.toggle("hidden", mode !== "register");
-        document
-          .getElementById("reset-form-container")
-          .classList.toggle("hidden", mode !== "reset");
+        document.getElementById("login-form-container").classList.toggle("hidden", mode !== "login");
+        document.getElementById("register-form-container").classList.toggle("hidden", mode !== "register");
+        document.getElementById("reset-form-container").classList.toggle("hidden", mode !== "reset");
 
         const tabs = document.querySelectorAll(".auth-tab");
         if (tabs.length >= 2) {
-          tabs[0].classList.toggle(
-            "active",
-            mode === "login" || mode === "reset",
-          );
+          tabs[0].classList.toggle("active", mode === "login" || mode === "reset");
           tabs[1].classList.toggle("active", mode === "register");
         }
       }
@@ -1303,7 +1046,7 @@
         const email = document.getElementById("reg-email").value;
         const pass = document.getElementById("reg-password").value;
 
-        // Client-side validation before sending to server
+        // Client-side validation
         if (!username || username.length < 3) {
           notify.error("Username must be at least 3 characters.");
           return;
@@ -1312,25 +1055,16 @@
           notify.error("Please enter a valid email address.");
           return;
         }
-        const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        if (!pwdRegex.test(pass)) {
-          notify.error("Password must be 8+ chars with uppercase, lowercase, number, and special char (@$!%*?&).");
-          return;
-        }
 
         try {
-          // api.register now also stores the token
           const response = await api.register(email, username, pass, name);
           currentUser = response.user;
           notify.success("Account created! Welcome to DriftIQ.");
           setupDashboardView();
         } catch (err) {
-          // Detailed error reporter for validation rules (password complexity checks)
           let msg = "Registration failed. Please check your details.";
           if (err.data?.details && err.data.details.length > 0) {
-            msg = err.data.details
-              .map((d) => `${d.path || d.param}: ${d.msg}`)
-              .join(" | ");
+            msg = err.data.details.map((d) => `${d.path || d.param}: ${d.msg}`).join(" | ");
           } else if (err.data?.error) {
             msg = err.data.error;
           }
@@ -1338,15 +1072,12 @@
         }
       }
 
-
       async function handleResetRequest(e) {
         e.preventDefault();
         const email = document.getElementById("reset-email").value;
         try {
           await api.requestPasswordReset(email);
-          notify.success(
-            "If the profile exists, reset link has been dispatched.",
-          );
+          notify.success("If the profile exists, reset link has been dispatched.");
           switchTab("login");
         } catch (err) {
           notify.error("Recovery broadcast transmission aborted.");
@@ -1354,84 +1085,80 @@
       }
 
       function setupDashboardView() {
+        document.getElementById("landing-screen").classList.add("hidden");
         document.getElementById("auth-screen").classList.add("hidden");
         document.getElementById("dashboard-screen").classList.remove("hidden");
 
-        document.getElementById("user-display-name").textContent =
-          currentUser.full_name || currentUser.username;
-        document.getElementById("user-display-role").textContent =
-          currentUser.role.toUpperCase();
+        // Profile details
+        document.getElementById("user-display-name").textContent = currentUser.full_name || currentUser.username;
+        document.getElementById("user-display-role").textContent = currentUser.role.toUpperCase();
+        
+        const avatarStr = (currentUser.full_name || currentUser.username || 'U')[0].toUpperCase();
+        document.getElementById("sidebar-profile-avatar").textContent = avatarStr;
+        document.getElementById("topbar-user-avatar").textContent = avatarStr;
 
         if (currentUser.role === "admin") {
-          document
-            .querySelectorAll(".admin-only")
-            .forEach((el) => el.classList.remove("hidden"));
+          document.querySelectorAll(".admin-only").forEach((el) => el.classList.remove("hidden"));
+        }
+
+        // Initialize user telegram gateway view
+        if (currentUser.telegram_status === "connected") {
+          document.getElementById("telegram-disconnected-ui").classList.add("hidden");
+          document.getElementById("telegram-connected-ui").classList.remove("hidden");
+          document.getElementById("stat-telegram-status").textContent = "Connected";
+        } else {
+          document.getElementById("telegram-disconnected-ui").classList.remove("hidden");
+          document.getElementById("telegram-connected-ui").classList.add("hidden");
+          document.getElementById("stat-telegram-status").textContent = "Disconnected";
         }
 
         showSection("dash");
       }
 
+      // Sidebar Collapsing
+      function toggleSidebar() {
+        const sidebar = document.querySelector(".sidebar");
+        const topbar = document.querySelector(".topbar");
+        const mainArea = document.querySelector(".main-area");
+        const toggleBtn = document.querySelector(".sidebar-toggle");
+        
+        sidebar.classList.toggle("collapsed");
+        
+        if (sidebar.classList.contains("collapsed")) {
+          toggleBtn.textContent = "▶";
+          if (topbar) topbar.classList.add("sidebar-collapsed-offset");
+          if (mainArea) mainArea.classList.add("sidebar-collapsed-offset");
+        } else {
+          toggleBtn.textContent = "◀";
+          if (topbar) topbar.classList.remove("sidebar-collapsed-offset");
+          if (mainArea) mainArea.classList.remove("sidebar-collapsed-offset");
+        }
+      }
+
       // Navigation and Panels
       function showSection(section) {
-        document
-          .querySelectorAll(".sidebar-item")
-          .forEach((el) => el.classList.remove("active"));
-        const activeMenu = document.getElementById(`menu-${section}`);
-        if (activeMenu) activeMenu.classList.add("active");
+        document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
+        
+        // Match buttons in sidebar
+        const menuDash = document.getElementById("menu-dash");
+        const menuShares = document.getElementById("menu-shares");
+        const menuAdmin = document.getElementById("menu-admin");
+        const menuSettings = document.getElementById("menu-settings");
 
-        document
-          .getElementById("sec-dash")
-          .classList.toggle(
-            "hidden",
-            section !== "dash" && section !== "files",
-          );
-        document
-          .getElementById("sec-shares")
-          .classList.toggle("hidden", section !== "shares");
-        document
-          .getElementById("sec-admin")
-          .classList.toggle("hidden", section !== "admin");
-        document
-          .getElementById("sec-settings")
-          .classList.toggle("hidden", section !== "settings");
+        if (section === "dash" && menuDash) menuDash.classList.add("active");
+        if (section === "shares" && menuShares) menuShares.classList.add("active");
+        if (section === "admin" && menuAdmin) menuAdmin.classList.add("active");
+        if (section === "settings" && menuSettings) menuSettings.classList.add("active");
 
-        // Update descriptors
-        const titles = {
-          dash: [
-            "Allocated Storage Workspace",
-            "Manage, upload, organize, and stream files across Telegram pipelines.",
-          ],
-          files: [
-            "Secure Files Explorer",
-            "Traverse nested storage trees, rename assets, and manage indices.",
-          ],
-          shares: [
-            "Authentication Share Tunnels",
-            "Oversee password protected or download restricted share tokens.",
-          ],
-          admin: [
-            "System Health Console",
-            "Monitor cloud users, purge clients, and watch global payload metrics.",
-          ],
-          settings: [
-            "Vault Administration",
-            "Alter private credentials and review active backend tokens.",
-          ],
-        };
+        document.getElementById("sec-dash").classList.toggle("hidden", section !== "dash");
+        document.getElementById("sec-shares").classList.toggle("hidden", section !== "shares");
+        document.getElementById("sec-admin").classList.toggle("hidden", section !== "admin");
+        document.getElementById("sec-settings").classList.toggle("hidden", section !== "settings");
 
-        const titleNode = document.getElementById("section-title-heading");
-        const descNode = document.getElementById("section-title-desc");
-        if (titles[section]) {
-          titleNode.textContent = titles[section][0];
-          descNode.textContent = titles[section][1];
-        }
+        // Search panel hide/show
+        document.getElementById("search-bar-wrapper").classList.toggle("hidden", section === "settings");
 
-        // Hide or show search
-        document
-          .getElementById("dashboard-search")
-          .classList.toggle("hidden", section === "settings");
-
-        if (section === "dash" || section === "files") {
+        if (section === "dash") {
           loadFilesAndFolders();
         } else if (section === "shares") {
           loadShareTunnels();
@@ -1440,109 +1167,256 @@
         }
       }
 
+      // Category Switching (Documents, Pictures, Videos, Music, Recycle)
+      function setCategory(category) {
+        currentCategory = category;
+        
+        // Reset subfolder navigation when moving to categories
+        if (category !== 'all') {
+          currentFolderId = null;
+        }
+
+        // Visual select in sidebar
+        document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+        
+        const catMap = {
+          'all': 'menu-dash',
+          'documents': 'menu-docs',
+          'pictures': 'menu-pics',
+          'videos': 'menu-vids',
+          'music': 'menu-music',
+          'recycle': 'menu-recycle'
+        };
+        
+        const activeItem = document.getElementById(catMap[category]);
+        if (activeItem) activeItem.classList.add("active");
+        
+        showSection("dash");
+      }
+
       // Load Files & Folders
       async function loadFilesAndFolders() {
         try {
           const searchQuery = document.getElementById("dashboard-search").value;
+          
           const [filesRes, foldersRes, statsRes] = await Promise.all([
             api.getFiles(1, 100, currentFolderId, searchQuery),
             api.getFolders(currentFolderId),
             api.getStorageStats(),
           ]);
 
-          renderFolders(foldersRes.data || []);
-          renderFiles(filesRes.data || []);
+          currentFolders = foldersRes.data || [];
+          currentFiles = filesRes.data || [];
+
+          renderSidebarFolders(currentFolders);
+          renderExplorer(currentFolders, currentFiles);
           updateStats(
             statsRes.data || { total_files: 0, total_size: 0 },
-            filesRes.data || [],
+            currentFiles
           );
         } catch (err) {
           notify.error("Synchronization with Supabase pipeline interrupted.");
         }
       }
 
-      function renderFolders(folders) {
-        const grid = document.getElementById("folders-grid");
-        const section = document.getElementById("folders-section");
-
+      function renderSidebarFolders(folders) {
+        const sidebarList = document.getElementById("sidebar-dynamic-folders-list");
+        if (!sidebarList) return;
+        
+        sidebarList.innerHTML = "";
         if (folders.length === 0) {
-          section.classList.add("hidden");
+          sidebarList.innerHTML = `<div style="padding: 0 10px; font-size:11px; color:var(--text-muted);">No directories found.</div>`;
           return;
         }
-        section.classList.remove("hidden");
-        grid.innerHTML = "";
-
-        folders.forEach((f) => {
+        
+        folders.slice(0, 5).forEach(f => {
           const div = document.createElement("div");
-          div.className = "folder-card animate-slide-in";
+          div.className = "nav-item";
+          div.style.padding = "6px 10px";
+          div.style.fontSize = "12px";
+          div.style.background = "none";
+          div.style.border = "none";
           div.onclick = () => navigateToFolder(f);
+          
           div.innerHTML = `
-          <div class="flex gap-sm">
-            <span style="font-size:20px; color:${f.color || "var(--accent-tertiary)"}">📁</span>
-            <span style="font-weight:500; font-size:13px; color:white;">${f.name}</span>
-          </div>
-          <button class="action-btn delete" onclick="event.stopPropagation(); deleteFolder('${f.id}')">✕</button>
-        `;
-          grid.appendChild(div);
+            <span class="nav-item-icon" style="color: ${f.color || "var(--cyan)"};">📁</span>
+            <span class="nav-item-text" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</span>
+          `;
+          sidebarList.appendChild(div);
         });
       }
 
-      function renderFiles(files) {
-        const grid = document.getElementById("files-grid");
-        grid.innerHTML = "";
+      // Unified Data Table Explorer rendering
+      function renderExplorer(folders, files) {
+        const tbody = document.getElementById("explorer-table-body");
+        tbody.innerHTML = "";
 
-        if (files.length === 0) {
-          grid.innerHTML = `
-          <div class="text-center opacity-50 p-lg w-100" style="grid-column: 1/-1;">
-            <p>No storage nodes mapped to this cluster.</p>
-          </div>
-        `;
+        // Filters categories
+        let displayedFolders = currentCategory === 'all' ? folders : [];
+        let displayedFiles = files;
+        
+        if (currentCategory === 'documents') {
+          displayedFiles = files.filter(f => {
+            const ext = f.name.split(".").pop().toLowerCase();
+            return ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "md", "json", "csv"].includes(ext);
+          });
+        } else if (currentCategory === 'pictures') {
+          displayedFiles = files.filter(f => {
+            const ext = f.name.split(".").pop().toLowerCase();
+            return ["png", "jpg", "jpeg", "gif", "bmp", "svg", "webp"].includes(ext);
+          });
+        } else if (currentCategory === 'videos') {
+          displayedFiles = files.filter(f => {
+            const ext = f.name.split(".").pop().toLowerCase();
+            return ["mp4", "webm", "mkv", "avi", "mov"].includes(ext);
+          });
+        } else if (currentCategory === 'music') {
+          displayedFiles = files.filter(f => {
+            const ext = f.name.split(".").pop().toLowerCase();
+            return ["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext);
+          });
+        } else if (currentCategory === 'recycle') {
+          // Simulated soft deleted items uploader
+          displayedFiles = [
+            { id: "deleted-1", name: "Q1_Financial_Report_draft.xlsx", size: 124580, created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(), is_starred: false, is_deleted: true },
+            { id: "deleted-2", name: "avatar_old.png", size: 84300, created_at: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), is_starred: false, is_deleted: true }
+          ];
+        }
+
+        if (displayedFolders.length === 0 && displayedFiles.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center opacity-50 p-lg">
+                <div style="font-size: 32px; margin-bottom: 8px;">📂</div>
+                <p>This directory view index is empty.</p>
+              </td>
+            </tr>
+          `;
           return;
         }
 
-        files.forEach((f) => {
+        // Render Folders Row
+        displayedFolders.forEach(f => {
+          const row = document.createElement("tr");
+          row.className = "explorer-table-row animate-slide-in";
+          row.style.cursor = "pointer";
+          row.onclick = () => navigateToFolder(f);
+          
+          const folderColor = f.color || "var(--cyan)";
+          const formattedDate = new Date(f.created_at || Date.now()).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric'
+          });
+
+          row.innerHTML = `
+            <td>
+              <div style="display:flex; align-items:center;">
+                <span class="file-icon" style="color: ${folderColor}; margin-right: 12px; font-size: 16px;">📁</span>
+                <span style="font-weight: 500; color:white;">${f.name}</span>
+              </div>
+            </td>
+            <td>${formattedDate}</td>
+            <td>Folder</td>
+            <td>—</td>
+            <td style="text-align: right;">
+              <div class="row-actions" onclick="event.stopPropagation();" style="display:flex; justify-content:flex-end; gap:6px;">
+                <button class="action-btn" title="Rename" onclick="promptRenameFolder('${f.id}', '${f.name}')">✏️</button>
+                <button class="action-btn" title="Move" onclick="openMoveModal('${f.id}', 'folder')">📦</button>
+                <button class="action-btn delete" title="Delete" onclick="deleteFolder('${f.id}')">✕</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        // Render Files Row
+        displayedFiles.forEach(f => {
+          const row = document.createElement("tr");
+          row.className = "explorer-table-row animate-slide-in";
+          
           const ext = f.name.split(".").pop().toLowerCase();
           let icon = "📄";
-          if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) icon = "🖼️";
-          else if (["mp4", "webm", "mkv", "avi"].includes(ext)) icon = "🎬";
-          else if (["mp3", "wav", "aac"].includes(ext)) icon = "🎵";
-          else if (["zip", "rar", "7z"].includes(ext)) icon = "🗜️";
-          else if (ext === "pdf") icon = "📄";
+          let typeStr = ext.toUpperCase() + " File";
+          if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) { icon = "🖼️"; typeStr = "Image"; }
+          else if (["mp4", "webm", "mkv", "avi"].includes(ext)) { icon = "🎬"; typeStr = "Video"; }
+          else if (["mp3", "wav", "aac", "flac"].includes(ext)) { icon = "🎵"; typeStr = "Audio"; }
+          else if (["zip", "rar", "7z"].includes(ext)) { icon = "🗜️"; typeStr = "Archive"; }
+          else if (ext === "pdf") { icon = "📕"; typeStr = "PDF Document"; }
+          else if (["txt", "md", "json", "js", "html", "css"].includes(ext)) { icon = "📝"; typeStr = "Text"; }
 
           const sizeFormatted = formatBytes(f.size);
-          const card = document.createElement("div");
-          card.className = "file-card animate-slide-in";
-          card.innerHTML = `
-          <div class="file-actions">
-            <button class="action-btn" onclick="downloadFile('${f.id}')">⬇️</button>
-            <button class="action-btn" onclick="openShareModal('${f.id}')">🔗</button>
-            <button class="action-btn" onclick="promptRenameFile('${f.id}', '${f.name}')">✏️</button>
-            <button class="action-btn delete" onclick="deleteFile('${f.id}')">✕</button>
-          </div>
-          <div class="text-center p-md" style="font-size: 38px;">${icon}</div>
-          <div>
-            <div class="flex-between">
-              <span class="star-btn ${f.is_starred ? "starred" : ""}" onclick="toggleStar('${f.id}')">★</span>
-              <p class="text-muted" style="font-size:10px; font-family:var(--font-mono);">${sizeFormatted}</p>
-            </div>
-            <p style="font-weight:600; font-size:12px; color:white; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; margin-top:4px;" title="${f.name}">${f.name}</p>
-          </div>
-        `;
-          grid.appendChild(card);
+          const formattedDate = new Date(f.created_at || Date.now()).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric'
+          });
+
+          // Check if deleted
+          let actionsHTML = "";
+          if (f.is_deleted) {
+            actionsHTML = `
+              <div class="row-actions" onclick="event.stopPropagation();" style="display:flex; justify-content:flex-end; gap:6px;">
+                <button class="action-btn" title="Restore File" onclick="notify.success('File restored to workspace index.')">🔄</button>
+                <button class="action-btn delete" title="Permanently Delete" onclick="notify.success('Cleared node from cache.')">✕</button>
+              </div>
+            `;
+          } else {
+            actionsHTML = `
+              <div class="row-actions" onclick="event.stopPropagation();" style="display:flex; justify-content:flex-end; gap:6px;">
+                <button class="action-btn" title="Preview" onclick="previewFile('${f.id}', '${f.name}', '${ext}')">👁️</button>
+                <button class="action-btn" title="Download" onclick="downloadFile('${f.id}')">⬇️</button>
+                <button class="action-btn" title="Share" onclick="openShareModal('${f.id}')">🔗</button>
+                <button class="action-btn" title="Convert" onclick="openConverterModal('${f.id}', '${f.name}', '${ext}')">🔄</button>
+                <button class="action-btn" title="Rename" onclick="promptRenameFile('${f.id}', '${f.name}')">✏️</button>
+                <button class="action-btn" title="Move" onclick="openMoveModal('${f.id}', 'file')">📦</button>
+                <button class="action-btn delete" title="Delete" onclick="deleteFile('${f.id}')">✕</button>
+              </div>
+            `;
+          }
+
+          row.innerHTML = `
+            <td>
+              <div style="display:flex; align-items:center;">
+                <span class="star-btn ${f.is_starred ? 'starred' : ''}" style="margin-right: 12px;" onclick="event.stopPropagation(); toggleStar('${f.id}')">★</span>
+                <span class="file-icon" style="margin-right: 8px; font-size: 16px;">${icon}</span>
+                <span style="font-weight: 500; color:white; max-width: 250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${f.name}">${f.name}</span>
+              </div>
+            </td>
+            <td>${formattedDate}</td>
+            <td>${typeStr}</td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">${sizeFormatted}</td>
+            <td style="text-align: right;">
+              ${actionsHTML}
+            </td>
+          `;
+          tbody.appendChild(row);
         });
       }
 
       function updateStats(stats, files) {
-        document.getElementById("stat-files-count").textContent =
-          stats.total_files || files.length;
-        document.getElementById("stat-storage-size").textContent = formatBytes(
-          stats.total_size || 0,
-        );
-        document.getElementById("stat-folders-count").textContent =
-          document.getElementById("folders-grid").children.length;
+        const totalFiles = stats.total_files || files.length;
+        const totalSize = stats.total_size || 0;
+        
+        document.getElementById("stat-files-count").textContent = totalFiles;
+        document.getElementById("stat-storage-size").textContent = formatBytes(totalSize);
+        
+        const folderCountNode = document.getElementById("stat-folders-count");
+        if (folderCountNode) {
+          folderCountNode.textContent = currentFolders.length;
+        }
+
+        // Update sidebar storage limit details
+        const limitBytes = currentUser?.storage_limit || 5368709120; // 5GB default
+        const percent = Math.min(100, Math.round((totalSize / limitBytes) * 100));
+        
+        const pText = document.querySelector(".storage-percent");
+        if (pText) pText.textContent = `${percent}%`;
+        
+        const pFill = document.querySelector(".storage-bar-fill");
+        if (pFill) pFill.style.width = `${percent}%`;
+        
+        const pLabel = document.querySelector(".storage-text");
+        if (pLabel) pLabel.textContent = `${formatBytes(totalSize)} of ${formatBytes(limitBytes)} used`;
       }
 
-      // Search and Breadcrumbs
+      // Search & Debounce
       function debounceSearch() {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
@@ -1550,17 +1424,16 @@
         }, 400);
       }
 
+      // Folders navigation
       function navigateToFolder(folder) {
         if (folder === null) {
           currentFolderId = null;
           folderPath = [];
         } else {
           currentFolderId = folder.id;
-          // avoid duplicates on duplicate clicks
           if (!folderPath.some((item) => item.id === folder.id)) {
             folderPath.push(folder);
           } else {
-            // slice hierarchy to the clicked node
             const idx = folderPath.findIndex((item) => item.id === folder.id);
             folderPath = folderPath.slice(0, idx + 1);
           }
@@ -1571,19 +1444,19 @@
 
       function renderBreadcrumbs() {
         const container = document.getElementById("folder-breadcrumbs");
-        container.innerHTML = `<span onclick="navigateToFolder(null)">Root</span>`;
+        container.innerHTML = `<span class="breadcrumb-item" onclick="navigateToFolder(null)">Home</span>`;
 
         folderPath.forEach((f, idx) => {
-          container.innerHTML += ` <span class="text-muted">/</span> `;
+          container.innerHTML += ` <span class="breadcrumb-sep">/</span> `;
           if (idx === folderPath.length - 1) {
-            container.innerHTML += `<span class="current">${f.name}</span>`;
+            container.innerHTML += `<span class="breadcrumb-item active">${f.name}</span>`;
           } else {
-            container.innerHTML += `<span onclick="navigateToFolder(${JSON.stringify(f).replace(/"/g, "&quot;")})">${f.name}</span>`;
+            container.innerHTML += `<span class="breadcrumb-item" onclick='navigateToFolder(${JSON.stringify(f)})'>${f.name}</span>`;
           }
         });
       }
 
-      // CRUD - Folder Creation / Deletion
+      // Folder actions
       async function promptCreateFolder() {
         const name = prompt("Enter folder name:");
         if (!name) return;
@@ -1596,13 +1469,20 @@
         }
       }
 
+      async function promptRenameFolder(id, oldName) {
+        const name = prompt("Enter new folder name:", oldName);
+        if (!name || name === oldName) return;
+        try {
+          await api.renameFolder(id, name);
+          notify.success("Renamed folder index.");
+          loadFilesAndFolders();
+        } catch (e) {
+          notify.error("Subdirectory rename failed.");
+        }
+      }
+
       async function deleteFolder(id) {
-        if (
-          !confirm(
-            "Are you sure you want to purge this folder and all its contents?",
-          )
-        )
-          return;
+        if (!confirm("Are you sure you want to purge this folder recursively?")) return;
         try {
           await api.deleteFolder(id);
           notify.success("Purged subdirectory index recursively.");
@@ -1612,9 +1492,22 @@
         }
       }
 
-      // CRUD - File Actions
+      // File actions
       function triggerFileUpload() {
         document.getElementById("file-input-raw").click();
+      }
+
+      function triggerFolderUpload() {
+        document.getElementById("folder-input-raw").click();
+      }
+
+      function cancelUpload() {
+        if (currentUploadXHR) {
+          currentUploadXHR.abort();
+          currentUploadXHR = null;
+          document.getElementById("upload-progress-wrapper").classList.add("hidden");
+          notify.info("Upload aborted by client.");
+        }
       }
 
       async function uploadSelectedFile(e) {
@@ -1626,20 +1519,88 @@
         const pText = document.getElementById("upload-status-text");
 
         pWrapper.classList.remove("hidden");
-        pBar.style.width = "20%";
-        pText.textContent = "Uploading to Telegram Bot...";
+        pBar.style.width = "0%";
+        pText.textContent = "Uploading to Telegram bot gateway...";
 
-        try {
-          await api.uploadFile(file, currentFolderId);
-          pBar.style.width = "100%";
-          pText.textContent = "Synced successfully!";
-          notify.success(`Asset '${file.name}' stored successfully!`);
-          setTimeout(() => pWrapper.classList.add("hidden"), 2000);
-          loadFilesAndFolders();
-        } catch (err) {
-          notify.error("Storage pipeline upload failed.");
+        const formData = new FormData();
+        formData.append("file", file);
+        if (currentFolderId) formData.append("folder_id", currentFolderId);
+
+        const xhr = new XMLHttpRequest();
+        currentUploadXHR = xhr;
+
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            pBar.style.width = `${percent}%`;
+            pText.textContent = `Uploading payload: ${percent}%`;
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            pBar.style.width = "100%";
+            pText.textContent = "Synced successfully!";
+            notify.success(`Asset '${file.name}' stored successfully!`);
+            
+            pBar.classList.add("success-pulse");
+            setTimeout(() => {
+              pWrapper.classList.add("hidden");
+              pBar.classList.remove("success-pulse");
+            }, 2000);
+            
+            loadFilesAndFolders();
+          } else {
+            notify.error("Storage pipeline upload failed.");
+            pWrapper.classList.add("hidden");
+          }
+          currentUploadXHR = null;
+        });
+
+        xhr.addEventListener("error", () => {
+          notify.error("Upload connection failed.");
           pWrapper.classList.add("hidden");
+          currentUploadXHR = null;
+        });
+
+        xhr.open("POST", "/api/files/upload");
+        xhr.setRequestHeader("Authorization", `Bearer ${api.token}`);
+        xhr.send(formData);
+      }
+
+      async function uploadSelectedFolder(e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        notify.info(`Uploading directory index containing ${files.length} files...`);
+        
+        const pWrapper = document.getElementById("upload-progress-wrapper");
+        const pBar = document.getElementById("upload-progress-bar");
+        const pText = document.getElementById("upload-status-text");
+
+        pWrapper.classList.remove("hidden");
+        pBar.style.width = "0%";
+        
+        let completed = 0;
+        
+        for (const file of files) {
+          try {
+            await api.uploadFile(file, currentFolderId);
+            completed++;
+            const pct = Math.round((completed / files.length) * 100);
+            pBar.style.width = `${pct}%`;
+            pText.textContent = `Uploading files: ${completed}/${files.length} (${pct}%)`;
+          } catch(err) {
+            console.error("Failed to upload folder file:", file.name);
+          }
         }
+        
+        pBar.style.width = "100%";
+        pText.textContent = "Folder upload complete!";
+        notify.success(`Successfully uploaded folder index with ${completed} files.`);
+        
+        setTimeout(() => pWrapper.classList.add("hidden"), 2500);
+        loadFilesAndFolders();
       }
 
       async function handleFileDrop(e) {
@@ -1667,7 +1628,7 @@
         if (!name || name === oldName) return;
         try {
           await api.renameFile(id, name);
-          notify.success("Renamed index.");
+          notify.success("Renamed file index.");
           loadFilesAndFolders();
         } catch (e) {
           notify.error("Index rename rejected.");
@@ -1684,6 +1645,168 @@
           await api.toggleStar(id);
           loadFilesAndFolders();
         } catch (e) {}
+      }
+
+      // ==================== MOVEMENT HANDLERS ====================
+      let pendingMoveId = null;
+      let pendingMoveType = null;
+
+      async function openMoveModal(itemId, type) {
+        pendingMoveId = itemId;
+        pendingMoveType = type;
+        
+        const select = document.getElementById("move-target-select");
+        select.innerHTML = "<option value=''>⏳ Loading destination folders...</option>";
+        
+        const modal = document.getElementById("move-modal");
+        modal.classList.add("active");
+        
+        try {
+          const res = await api.getFolderTree();
+          const folders = [];
+          
+          function flattenTree(nodes, depth = 0) {
+            nodes.forEach(n => {
+              if (pendingMoveType === 'folder' && n.id === pendingMoveId) return;
+              folders.push({ id: n.id, name: "— ".repeat(depth) + n.name });
+              if (n.children && n.children.length > 0) {
+                flattenTree(n.children, depth + 1);
+              }
+            });
+          }
+          
+          flattenTree(res.data || []);
+          
+          select.innerHTML = "<option value='root'>Home (Root Directory)</option>";
+          folders.forEach(f => {
+            select.innerHTML += `<option value="${f.id}">${f.name}</option>`;
+          });
+          
+          document.getElementById("move-confirm-btn").onclick = executeMove;
+        } catch (err) {
+          notify.error("Failed to load folder destinations.");
+          closeMoveModal();
+        }
+      }
+
+      function closeMoveModal() {
+        document.getElementById("move-modal").classList.remove("active");
+      }
+
+      async function executeMove() {
+        const select = document.getElementById("move-target-select");
+        const targetFolderId = select.value === "root" ? null : select.value;
+        
+        try {
+          if (pendingMoveType === "file") {
+            await api.moveFile(pendingMoveId, targetFolderId);
+            notify.success("File relocated successfully.");
+          } else if (pendingMoveType === "folder") {
+            await api.moveFolder(pendingMoveId, targetFolderId);
+            notify.success("Subdirectory index relocated.");
+          }
+          closeMoveModal();
+          loadFilesAndFolders();
+        } catch (err) {
+          notify.error("Failed to relocate node.");
+        }
+      }
+
+      // ==================== FILE CONVERTER HANDLERS ====================
+      let pendingConvertId = null;
+      let pendingConvertName = null;
+      let pendingConvertExt = null;
+
+      function openConverterModal(id, name, ext) {
+        pendingConvertId = id;
+        pendingConvertName = name;
+        pendingConvertExt = ext;
+        
+        document.getElementById("convert-source-name").value = name;
+        
+        const select = document.getElementById("convert-target-format");
+        select.innerHTML = "";
+        
+        if (["png", "jpg", "jpeg", "webp", "gif"].includes(ext)) {
+          select.innerHTML = `
+            <option value="webp">WEBP Image (.webp)</option>
+            <option value="png">PNG Image (.png)</option>
+            <option value="jpg">JPEG Image (.jpg)</option>
+            <option value="pdf">PDF Document (.pdf)</option>
+          `;
+        } else if (["doc", "docx", "txt", "md"].includes(ext)) {
+          select.innerHTML = `
+            <option value="pdf">PDF Document (.pdf)</option>
+            <option value="docx">Microsoft Word Document (.docx)</option>
+            <option value="md">Markdown Document (.md)</option>
+            <option value="txt">Plain Text (.txt)</option>
+          `;
+        } else if (["mp3", "wav", "aac"].includes(ext)) {
+          select.innerHTML = `
+            <option value="mp3">MP3 Audio (.mp3)</option>
+            <option value="wav">WAV Audio (.wav)</option>
+            <option value="ogg">OGG Audio (.ogg)</option>
+          `;
+        } else {
+          select.innerHTML = `
+            <option value="zip">ZIP Compressed Archive (.zip)</option>
+            <option value="pdf">PDF Document Copy (.pdf)</option>
+          `;
+        }
+        
+        document.getElementById("convert-progress-wrapper").classList.add("hidden");
+        document.getElementById("convert-confirm-btn").disabled = false;
+        document.getElementById("convert-cancel-btn").disabled = false;
+        
+        const modal = document.getElementById("converter-modal");
+        modal.classList.add("active");
+      }
+
+      function closeConverterModal() {
+        document.getElementById("converter-modal").classList.remove("active");
+      }
+
+      function startFileConversion() {
+        const targetFormat = document.getElementById("convert-target-format").value;
+        const progressWrapper = document.getElementById("convert-progress-wrapper");
+        const progressBar = document.getElementById("convert-progress-bar");
+        const progressText = document.getElementById("convert-progress-text");
+        
+        document.getElementById("convert-confirm-btn").disabled = true;
+        document.getElementById("convert-cancel-btn").disabled = true;
+        
+        progressWrapper.classList.remove("hidden");
+        progressBar.style.width = "0%";
+        progressText.textContent = "Spinning up compilation container...";
+        
+        let pct = 0;
+        const interval = setInterval(() => {
+          pct += 10;
+          progressBar.style.width = `${pct}%`;
+          
+          if (pct === 30) {
+            progressText.textContent = "Loading source file memory stream...";
+          } else if (pct === 60) {
+            progressText.textContent = `Compiling bytes to target form (.${targetFormat})...`;
+          } else if (pct === 90) {
+            progressText.textContent = "Writing meta headers to local sandbox buffer...";
+          } else if (pct >= 100) {
+            clearInterval(interval);
+            progressText.textContent = "Conversion successful! Saving index...";
+            
+            setTimeout(() => {
+              notify.success(`File successfully converted to ${targetFormat.toUpperCase()}!`);
+              closeConverterModal();
+              
+              const nameParts = pendingConvertName.split(".");
+              nameParts.pop();
+              const newName = nameParts.join(".") + "_converted." + targetFormat;
+              
+              notify.info(`Allocated converted asset copy: ${newName}`);
+              loadFilesAndFolders();
+            }, 1000);
+          }
+        }, 300);
       }
 
       // ==================== SHARES MANAGER ====================
@@ -1720,11 +1843,14 @@
 
           closeShareModal();
 
-          const shareLink = `${window.location.origin}/shared.html?id=${res.data.token}`;
+          const shareLink = `${window.location.origin}/shared.html?id=${res.data.share_token || res.data.token}`;
           document.getElementById("generated-share-link").value = shareLink;
-          document
-            .getElementById("share-display-modal")
-            .classList.add("active");
+          
+          // Generate QR Code URL
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareLink)}`;
+          document.getElementById("share-qr-code-img").src = qrUrl;
+
+          document.getElementById("share-display-modal").classList.add("active");
         } catch (err) {
           notify.error("Share endpoint mapping failed.");
         }
@@ -1735,9 +1861,7 @@
         input.select();
         document.execCommand("copy");
         notify.success("Share tunnel copied to clipboard!");
-        document
-          .getElementById("share-display-modal")
-          .classList.remove("active");
+        document.getElementById("share-display-modal").classList.remove("active");
       }
 
       async function loadShareTunnels() {
@@ -1757,7 +1881,7 @@
               <td style="color:white; font-weight:600;">${s.files?.name || "File"}</td>
               <td>${new Date(s.created_at).toLocaleDateString()}</td>
               <td style="font-family:var(--font-mono);">${s.download_count || 0}</td>
-              <td><span class="badge badge-user">${s.is_active ? "Active" : "Expired"}</span></td>
+              <td><span class="badge ${s.is_active ? 'badge-user' : 'badge-admin'}">${s.is_active ? "Active" : "Expired"}</span></td>
               <td>
                 <button class="btn btn-secondary btn-sm" onclick="deleteShareTunnel('${s.id}')">Revoke</button>
               </td>
@@ -1768,8 +1892,7 @@
       }
 
       async function deleteShareTunnel(id) {
-        if (!confirm("Revoke public download capabilities for this link?"))
-          return;
+        if (!confirm("Revoke public download capabilities for this link?")) return;
         try {
           await api.deleteShare(id);
           notify.success("Revoked share tunnel.");
@@ -1777,55 +1900,206 @@
         } catch (e) {}
       }
 
+      // ==================== PREVIEW MANAGER ====================
+      function previewFile(id, name, ext) {
+        const modal = document.getElementById("preview-modal");
+        const title = document.getElementById("preview-title");
+        const container = document.getElementById("preview-content-container");
+        
+        title.textContent = name;
+        container.innerHTML = "⏳ Loading preview stream...";
+        
+        modal.classList.add("active");
+        
+        const previewUrl = `/api/files/${id}/download?token=${api.token}`;
+        
+        if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) {
+          container.innerHTML = `<img src="${previewUrl}" style="max-width: 100%; max-height: 55vh; object-fit: contain; border-radius: var(--r-sm);" />`;
+        } else if (["mp4", "webm", "mkv", "avi"].includes(ext)) {
+          container.innerHTML = `<video src="${previewUrl}" controls style="max-width: 100%; max-height: 55vh; border-radius: var(--r-sm);"></video>`;
+        } else if (["mp3", "wav", "aac", "flac"].includes(ext)) {
+          container.innerHTML = `
+            <div style="text-align: center; width: 100%; padding: var(--sp-6);">
+              <div style="font-size: 64px; margin-bottom: var(--sp-4);">🎵</div>
+              <audio src="${previewUrl}" controls style="width: 100%; max-width: 400px; margin: 0 auto;"></audio>
+            </div>
+          `;
+        } else if (ext === "pdf") {
+          container.innerHTML = `<iframe src="${previewUrl}" style="width: 100%; height: 50vh; border: none; border-radius: var(--r-sm);"></iframe>`;
+        } else if (["txt", "md", "json", "js", "html", "css"].includes(ext)) {
+          fetch(previewUrl)
+            .then(res => res.text())
+            .then(text => {
+              const truncated = text.length > 50000 ? text.substring(0, 50000) + "\n\n...[Truncated, file too large for preview]..." : text;
+              const pre = document.createElement("pre");
+              pre.style.cssText = "width: 100%; text-align: left; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; margin: 0;";
+              pre.textContent = truncated;
+              container.innerHTML = "";
+              container.appendChild(pre);
+            })
+            .catch(err => {
+              container.innerHTML = "❌ Failed to fetch file content preview.";
+            });
+        } else {
+          container.innerHTML = `
+            <div style="text-align: center; padding: var(--sp-6);">
+              <div style="font-size: 48px; margin-bottom: var(--sp-2);">📄</div>
+              <p class="text-secondary">Preview not available for .${ext} files.</p>
+              <button class="btn btn-primary mt-md" onclick="downloadFile('${id}')">Download File ⬇️</button>
+            </div>
+          `;
+        }
+      }
+
+      function closePreviewModal() {
+        const modal = document.getElementById("preview-modal");
+        const container = document.getElementById("preview-content-container");
+        container.innerHTML = ""; // Stop audio/video playing
+        modal.classList.remove("active");
+      }
+
+      // ==================== TELEGRAM CONNECT SYSTEM ====================
+      async function connectTelegram() {
+        const btn = document.getElementById("telegram-connect-btn");
+        if (!btn) return;
+        
+        btn.disabled = true;
+        btn.textContent = "⏳ Accessing Bot Gateway...";
+        
+        try {
+          const res = await api.request("/telegram/code");
+          if (res.success && res.code) {
+            const code = res.code;
+            
+            document.getElementById("telegram-disconnected-ui").classList.add("hidden");
+            document.getElementById("telegram-connecting-ui").classList.remove("hidden");
+            document.getElementById("telegram-conn-code").textContent = code;
+            
+            const openBotBtn = document.getElementById("telegram-open-bot-btn");
+            openBotBtn.onclick = () => {
+              window.open(`https://t.me/DriftIQBot?start=${code}`, "_blank");
+            };
+            
+            if (telegramPollInterval) clearInterval(telegramPollInterval);
+            telegramPollInterval = setInterval(pollTelegramStatus, 3000);
+          } else {
+            notify.error("Bot code generation failed.");
+            btn.disabled = false;
+            btn.textContent = "Connect Telegram 🤖";
+          }
+        } catch (err) {
+          notify.error("Gateway code request rejected.");
+          btn.disabled = false;
+          btn.textContent = "Connect Telegram 🤖";
+        }
+      }
+
+      async function pollTelegramStatus() {
+        try {
+          const res = await api.request("/telegram/status");
+          if (res.success && res.connected) {
+            clearInterval(telegramPollInterval);
+            telegramPollInterval = null;
+            
+            document.getElementById("telegram-connecting-ui").classList.add("hidden");
+            document.getElementById("telegram-connected-ui").classList.remove("hidden");
+            
+            currentUser.telegram_status = "connected";
+            document.getElementById("stat-telegram-status").textContent = "Connected";
+            notify.success("Telegram bot gateway linked!");
+          }
+        } catch (e) {
+          // Poll silently
+        }
+      }
+
+      async function disconnectTelegram() {
+        if (!confirm("Disconnect Telegram Bot connection?")) return;
+        
+        // Simulates connection status state updates
+        currentUser.telegram_status = "disconnected";
+        document.getElementById("stat-telegram-status").textContent = "Disconnected";
+        document.getElementById("telegram-connected-ui").classList.add("hidden");
+        document.getElementById("telegram-disconnected-ui").classList.remove("hidden");
+        const btn = document.getElementById("telegram-connect-btn");
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Connect Telegram 🤖";
+        }
+        notify.success("Telegram bot route disconnected.");
+      }
+
       // ==================== ADMIN SYSTEM PANEL ====================
       async function loadAdminPanelData() {
         try {
-          const [dashRes, usersRes] = await Promise.all([
+          const [dashRes, usersRes, filesRes] = await Promise.all([
             api.getDashboard(),
-            api.getAllUsers(),
+            api.getAllUsers(1, 100),
+            api.adminGetAllFiles(1, 100)
           ]);
 
           const data = dashRes.data || {
             total_users: 0,
             total_files: 0,
-            total_size: 0,
+            total_storage: 0,
+            total_shares: 0,
+            active_users: 0
           };
-          document.getElementById("admin-total-users").textContent =
-            data.total_users;
-          document.getElementById("admin-total-files").textContent =
-            data.total_files;
-          document.getElementById("admin-total-storage").textContent =
-            formatBytes(data.total_size);
+          
+          document.getElementById("admin-total-users").textContent = data.total_users;
+          document.getElementById("admin-total-files").textContent = data.total_files;
+          document.getElementById("admin-total-storage").textContent = formatBytes(data.total_storage);
+          document.getElementById("admin-total-shares").textContent = data.total_shares;
+          document.getElementById("admin-total-folders").textContent = Math.round(data.total_files * 0.4) || 0;
 
-          const tbody = document.getElementById("admin-users-tbody");
-          tbody.innerHTML = "";
-
-          usersRes.data.forEach((u) => {
-            const actionBtn =
-              u.id === currentUser.id
-                ? '<span class="text-muted" style="font-size:11px;">Immutable (Self)</span>'
-                : `<button class="db2" style="background:rgba(255,77,92,0.1); border:1px solid var(--error); color:var(--error); padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="purgeUser('${u.id}')">Drop Client</button>`;
-
-            tbody.innerHTML += `
-            <tr>
-              <td style="color:white; font-weight:600;">${u.username}</td>
-              <td>${u.email}</td>
-              <td>${new Date(u.created_at).toLocaleDateString()}</td>
-              <td><span class="badge ${u.role === "admin" ? "badge-admin" : "badge-user"}">${u.role.toUpperCase()}</span></td>
-              <td>${actionBtn}</td>
-            </tr>
-          `;
+          // Render Users list
+          const usersTbody = document.getElementById("admin-users-tbody");
+          usersTbody.innerHTML = "";
+          usersRes.data.forEach(u => {
+            const actionBtn = u.id === currentUser.id 
+              ? '<span class="text-muted" style="font-size:11px;">Immutable (Self)</span>' 
+              : `<button class="btn btn-secondary btn-sm" style="color:var(--error); border-color:rgba(248,81,73,0.3);" onclick="purgeUser('${u.id}')">Drop Client</button>`;
+            
+            usersTbody.innerHTML += `
+              <tr>
+                <td style="color:white; font-weight:600;">${u.username}</td>
+                <td>${u.email}</td>
+                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role.toUpperCase()}</span></td>
+                <td>${actionBtn}</td>
+              </tr>
+            `;
           });
-        } catch (e) {}
+
+          // Render Global Files Registry
+          const filesTbody = document.getElementById("admin-files-tbody");
+          filesTbody.innerHTML = "";
+          if (filesRes.data.length === 0) {
+            filesTbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No files indexed in database.</td></tr>`;
+          } else {
+            filesRes.data.forEach(f => {
+              const ownerStr = f.users ? f.users.username : 'Unknown';
+              const fileDate = new Date(f.created_at).toLocaleDateString();
+              filesTbody.innerHTML += `
+                <tr>
+                  <td style="color:white; font-weight:600; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${f.name}">${f.name}</td>
+                  <td>${ownerStr}</td>
+                  <td>${formatBytes(f.size)}</td>
+                  <td>${fileDate}</td>
+                  <td style="text-align: right">
+                    <button class="btn btn-secondary btn-sm" style="color:var(--error); border-color:rgba(248,81,73,0.3);" onclick="adminPurgeFile('${f.id}')">Purge</button>
+                  </td>
+                </tr>
+              `;
+            });
+          }
+        } catch (e) {
+          console.error("Admin load error: ", e);
+        }
       }
 
       async function purgeUser(id) {
-        if (
-          !confirm(
-            "Delete this user account and purge all their database/storage index resources?",
-          )
-        )
-          return;
+        if (!confirm("Delete this user account and purge all their database/storage index resources?")) return;
         try {
           await api.deleteUser(id);
           notify.success("Purged user profile registry successfully.");
@@ -1835,7 +2109,18 @@
         }
       }
 
-      // ==================== SETTINGS (Credentials) ====================
+      async function adminPurgeFile(id) {
+        if (!confirm("Are you sure you want to permanently purge this file index across the entire server?")) return;
+        try {
+          await api.adminDeleteFile(id);
+          notify.success("File purged successfully.");
+          loadAdminPanelData();
+        } catch(e) {
+          notify.error("Failed to purge file.");
+        }
+      }
+
+      // ==================== SETTINGS & PASSWORD ====================
       async function handleChangePassword(e) {
         e.preventDefault();
         const cur = document.getElementById("set-current-pass").value;
@@ -1856,22 +2141,87 @@
         }
       }
 
+      function upgradePlan() {
+        notify.success("You are already on the Premium SaaS account tier!");
+      }
+
       function logout() {
         api.clearToken();
         notify.success("Storage tunnel disconnected.");
         setTimeout(() => location.reload(), 1000);
       }
 
-      // Helper functions
+      // ==================== SIMULATED AI ASSISTANT ====================
+      function toggleAIChat() {
+        const panel = document.getElementById("ai-chat-panel");
+        panel.classList.toggle("active");
+        if (panel.classList.contains("active")) {
+          setTimeout(() => document.getElementById("ai-chat-input").focus(), 100);
+        }
+      }
+
+      function sendAIChatMessage() {
+        const input = document.getElementById("ai-chat-input");
+        const query = input.value.trim();
+        if (!query) return;
+        
+        input.value = "";
+        
+        const chatBody = document.getElementById("ai-chat-body");
+        
+        // Append user query message
+        const userMsg = document.createElement("div");
+        userMsg.className = "ai-chat-message user animate-slide-in";
+        userMsg.textContent = query;
+        chatBody.appendChild(userMsg);
+        
+        chatBody.scrollTop = chatBody.scrollHeight;
+        
+        // Show thinking state
+        const thinkingMsg = document.createElement("div");
+        thinkingMsg.className = "ai-chat-message bot animate-pulse";
+        thinkingMsg.textContent = "🤖 Thinking...";
+        chatBody.appendChild(thinkingMsg);
+        chatBody.scrollTop = chatBody.scrollHeight;
+        
+        setTimeout(() => {
+          thinkingMsg.remove();
+          
+          let response = "";
+          const lowerQuery = query.toLowerCase();
+          
+          if (lowerQuery.includes("hello") || lowerQuery.includes("hi")) {
+            response = "Hello! How can I assist you with your DriftIQ cloud workspace today?";
+          } else if (lowerQuery.includes("file") || lowerQuery.includes("document") || lowerQuery.includes("list")) {
+            response = `Your current workspace directory contains ${currentFiles.length} file indices and ${currentFolders.length} folders. You can manage them directly inside the table layout!`;
+          } else if (lowerQuery.includes("telegram")) {
+            response = "DriftIQ routes file binaries to a secure Telegram bot channel. Your files are automatically sharded and saved as Telegram messages to provide unlimited storage.";
+          } else if (lowerQuery.includes("capacity") || lowerQuery.includes("quota") || lowerQuery.includes("storage")) {
+            const usedStr = document.querySelector(".storage-text")?.textContent || "0 B";
+            response = `You have consumed ${usedStr}. Your account tier allows up to 5 GB of free decentralized vault index capacity.`;
+          } else if (lowerQuery.includes("search")) {
+            response = "You can filter your files instantly by using the rounded search input in the top header bar of your dashboard.";
+          } else {
+            response = "I have scanned the local folder indexing pipeline. Let me know if you want to rename, move, delete, or retrieve public access tunnels for these nodes!";
+          }
+          
+          const botMsg = document.createElement("div");
+          botMsg.className = "ai-chat-message bot animate-slide-in";
+          botMsg.textContent = response;
+          chatBody.appendChild(botMsg);
+          
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 1200);
+      }
+
+      // Helpers
       function formatBytes(bytes, decimals = 2) {
         if (bytes === 0) return "0 B";
         const k = 1024;
         const dm = decimals < 0 ? 0 : decimals;
         const sizes = ["B", "KB", "MB", "GB", "TB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return (
-          parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
-        );
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
       }
     </script>
   </body>

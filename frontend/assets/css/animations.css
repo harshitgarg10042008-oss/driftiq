@@ -1,6 +1,15 @@
-/* frontend/assets/css/animations.css */
+/* frontend/assets/css/animations.css — DriftIQ Premium Animations */
 
-@keyframes slideIn {
+/* ============ ENTRY ANIMATIONS ============ */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fade-in-up {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -10,8 +19,27 @@
     transform: translateY(0);
   }
 }
-
-@keyframes slideInLeft {
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes fade-in-right {
   from {
     opacity: 0;
     transform: translateX(-20px);
@@ -21,34 +49,132 @@
     transform: translateX(0);
   }
 }
-
-@keyframes fadeIn {
+@keyframes scale-in {
   from {
     opacity: 0;
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
+/* ============ UTILITY ANIMATION CLASSES ============ */
+.animate-fade-in {
+  animation: fade-in 0.4s ease both;
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease both;
+}
+.animate-fade-in-down {
+  animation: fade-in-down 0.4s ease both;
+}
+.animate-slide-in {
+  animation: slide-in-right 0.35s ease both;
+}
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Stagger children */
+.stagger-children > * {
+  animation: fade-in-up 0.4s ease both;
+}
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0s;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 0.21s;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 0.28s;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+/* ============ HOVER MICRO-INTERACTIONS ============ */
+.hover-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.hover-glow {
+  transition: box-shadow 0.2s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+/* ============ PULSE ANIMATIONS ============ */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
     opacity: 0.5;
   }
 }
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
 }
 
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+.animate-ping {
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* ============ FLOAT ANIMATION ============ */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ============ SPIN ============ */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -57,92 +183,188 @@
     transform: rotate(360deg);
   }
 }
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Animation Classes */
-
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
 .animate-spin {
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-.animate-bounce {
-  animation: bounce 1s ease-in-out infinite;
+/* ============ SHIMMER ============ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
-
-/* Skeleton Loader */
-
-.skeleton {
+.shimmer {
   background: linear-gradient(
     90deg,
-    rgba(97, 87, 255, 0.05) 0%,
-    rgba(97, 87, 255, 0.1) 50%,
-    rgba(97, 87, 255, 0.05) 100%
+    transparent 0%,
+    rgba(0, 245, 212, 0.1) 50%,
+    transparent 100%
   );
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 8px;
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
 }
 
-.skeleton-text {
-  height: 16px;
-  margin-bottom: 8px;
+/* ============ BORDER GLOW ANIMATION ============ */
+@keyframes border-glow {
+  0%,
+  100% {
+    border-color: rgba(0, 245, 212, 0.2);
+    box-shadow: 0 0 10px rgba(0, 245, 212, 0.1);
+  }
+  50% {
+    border-color: rgba(0, 245, 212, 0.5);
+    box-shadow: 0 0 25px rgba(0, 245, 212, 0.3);
+  }
+}
+.animate-border-glow {
+  animation: border-glow 2s ease-in-out infinite;
 }
 
-.skeleton-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+/* ============ CHECKMARK SUCCESS ============ */
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 60;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.check-svg .check-path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: check-draw 0.4s ease 0.2s forwards;
 }
 
-.skeleton-card {
-  height: 200px;
-  border-radius: 12px;
+/* ============ TYPING ANIMATION ============ */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.cursor-blink::after {
+  content: "|";
+  animation: blink 1s step-end infinite;
+  color: var(--cyan);
 }
 
-/* Loading Spinner */
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(97, 87, 255, 0.1);
-  border-top-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* ============ PAGE TRANSITIONS ============ */
+.page-enter {
+  animation: fade-in-up 0.3s ease both;
+}
+.page-exit {
+  animation: fade-in 0.15s ease reverse both;
 }
 
-.spinner-sm {
-  width: 20px;
-  height: 20px;
-  border-width: 2px;
+/* ============ ROW ANIMATIONS ============ */
+.table-row-enter {
+  animation: fade-in-right 0.25s ease both;
 }
 
-.spinner-lg {
-  width: 60px;
-  height: 60px;
-  border-width: 4px;
+/* ============ MODAL ANIMATIONS ============ */
+.modal-enter {
+  animation: scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.modal-exit {
+  animation: scale-in 0.2s ease reverse both;
 }
 
+/* ============ GLITCH EFFECT (Logo hover) ============ */
+@keyframes glitch-1 {
+  0%,
+  95%,
+  100% {
+    transform: translate(0);
+  }
+  96% {
+    transform: translate(-2px, 1px);
+  }
+  97% {
+    transform: translate(2px, -1px);
+  }
+  98% {
+    transform: translate(-1px, 2px);
+  }
+  99% {
+    transform: translate(1px, -2px);
+  }
+}
+.logo-glitch:hover .sidebar-logo-icon {
+  animation: glitch-1 3s ease-in-out infinite;
+}
+
+/* ============ NEON TEXT GLOW ============ */
+.neon-cyan {
+  color: var(--cyan);
+  text-shadow:
+    0 0 10px rgba(0, 245, 212, 0.5),
+    0 0 20px rgba(0, 245, 212, 0.3);
+}
+.neon-emerald {
+  color: var(--emerald);
+  text-shadow:
+    0 0 10px rgba(16, 185, 129, 0.5),
+    0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* ============ PROGRESS ANIMATION ============ */
+@keyframes progress-stripe {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 0;
+  }
+}
+.progress-animated {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.08) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.08) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 40px 40px;
+  animation: progress-stripe 0.8s linear infinite;
+}
+
+/* ============ RIPPLE EFFECT ============ */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+.ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle,
+    rgba(0, 245, 212, 0.15) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.ripple:active::after {
+  opacity: 1;
+}
+
+/* ============ DRAG OVER ANIMATION ============ */
+@keyframes dash-spin {
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+.dropzone.drag-over svg {
+  animation: dash-spin 0.5s linear infinite;
+}

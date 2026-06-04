@@ -3,8 +3,12 @@
 const express = require("express");
 const { supabase } = require("../config/database");
 const logger = require("../utils/logger");
+const { auth } = require("../middleware/auth");
 
 const router = express.Router();
+
+// In-memory registry for pending Telegram code-linking requests
+const pendingConnections = new Map();
 
 // Webhook endpoint
 router.post("/webhook", async (req, res) => {
@@ -14,6 +18,39 @@ router.post("/webhook", async (req, res) => {
 
     const message = update.message || update.channel_post;
     if (!message) {
+      return res.status(200).json({ success: true });
+    }
+
+    // Handle Start message for account connections
+    const text = message.text || "";
+    if (text.startsWith("/start ")) {
+      const code = text.split(" ")[1];
+      const userId = pendingConnections.get(code);
+      if (userId) {
+        // Connect user in database
+        const { error: updateErr } = await supabase
+          .from("users")
+          .update({ telegram_status: "connected" })
+          .eq("id", userId);
+        
+        if (updateErr) {
+          logger.error("Failed to update user telegram status: " + updateErr.message);
+        } else {
+          pendingConnections.delete(code);
+          
+          // Send a message back to the user via Telegram Bot API
+          const { BOT_TOKEN } = require("../config/telegram");
+          const axios = require("axios");
+          try {
+            await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              chat_id: message.chat.id,
+              text: "✅ DriftIQ connected successfully! You can now send files here to upload them to your vault."
+            });
+          } catch (e) {
+            logger.error("Failed to send telegram confirmation message: " + e.message);
+          }
+        }
+      }
       return res.status(200).json({ success: true });
     }
 
@@ -103,8 +140,49 @@ router.post("/webhook", async (req, res) => {
   }
 });
 
-// Setup/Verification helper route (Admin only status)
+// Generate Telegram connection code for individual user (JWT Auth required)
+router.get("/code", auth, (req, res) => {
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  pendingConnections.set(code, req.user.id);
+  // Link expires in 5 minutes
+  setTimeout(() => pendingConnections.delete(code), 5 * 60 * 1000);
+  
+  res.json({
+    success: true,
+    code
+  });
+});
+
+// Setup/Verification helper route (Admin only status OR user connection status if auth header is present)
 router.get("/status", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const jwt = require("jsonwebtoken");
+    const CONSTANTS = require("../config/constants");
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, CONSTANTS.JWT_SECRET);
+      
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("telegram_status")
+        .eq("id", decoded.id)
+        .single();
+
+      if (error || !user) {
+        return res.status(404).json({ success: false, error: "User not found" });
+      }
+
+      return res.json({
+        success: true,
+        connected: user.telegram_status === "connected",
+        status: user.telegram_status
+      });
+    } catch (err) {
+      return res.status(401).json({ success: false, error: "Invalid token" });
+    }
+  }
+
   try {
     const { BOT_TOKEN, CHANNEL_ID } = require("../config/telegram");
     const response = await require("axios").get(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);

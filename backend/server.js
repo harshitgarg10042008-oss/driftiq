@@ -86,6 +86,14 @@ const startServer = async () => {
       process.exit(1);
     }
 
+    // Ensure admin user exists
+    try {
+      const { checkAndCreateAdmin } = require("./utils/adminInit");
+      await checkAndCreateAdmin();
+    } catch (adminInitErr) {
+      logger.error("Admin user auto-creation failed: " + adminInitErr.message);
+    }
+
     app.listen(PORT, async () => {
       logger.info(`Server running on http://localhost:${PORT}`);
       console.log("🚀 DriftIQ Server started successfully!");
