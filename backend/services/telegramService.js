@@ -1,6 +1,7 @@
 // backend/services/telegramService.js
 
 const axios = require("axios");
+const FormData = require("form-data");
 const {
   BOT_TOKEN,
   CHANNEL_ID,
@@ -15,8 +16,10 @@ const TELEGRAM_BASE_URL = `${TELEGRAM_API_URL}/bot${BOT_TOKEN}`;
 const uploadFileToTelegram = async (fileBuffer, fileName, mimeType) => {
   try {
     const formData = new FormData();
-    const blob = new Blob([fileBuffer], { type: mimeType });
-    formData.append("document", blob, fileName);
+    formData.append("document", fileBuffer, {
+      filename: fileName,
+      contentType: mimeType,
+    });
     formData.append("chat_id", CHANNEL_ID);
     formData.append("caption", fileName);
 
@@ -24,9 +27,7 @@ const uploadFileToTelegram = async (fileBuffer, fileName, mimeType) => {
       `${TELEGRAM_BASE_URL}/sendDocument`,
       formData,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: formData.getHeaders(),
       },
     );
 
@@ -53,29 +54,12 @@ const uploadFileToTelegram = async (fileBuffer, fileName, mimeType) => {
 };
 
 // Download file from Telegram
-const downloadFileFromTelegram = async (telegramMessageId) => {
+const downloadFileFromTelegram = async (telegramFileId) => {
   try {
-    // Get file info
-    const response = await axios.get(`${TELEGRAM_BASE_URL}/getMessage`, {
-      params: {
-        chat_id: CHANNEL_ID,
-        message_id: telegramMessageId,
-      },
-    });
-
-    if (!response.data.ok) {
-      return { success: false, error: "Failed to get file info" };
-    }
-
-    const document = response.data.result?.document;
-    if (!document) {
-      return { success: false, error: "Document not found" };
-    }
-
-    // Get file path
+    // Get file path using the stored Telegram file_id
     const fileResponse = await axios.get(`${TELEGRAM_BASE_URL}/getFile`, {
       params: {
-        file_id: document.file_id,
+        file_id: telegramFileId,
       },
     });
 
@@ -83,7 +67,10 @@ const downloadFileFromTelegram = async (telegramMessageId) => {
       return { success: false, error: "Failed to get file path" };
     }
 
-    const filePath = fileResponse.data.result.file_path;
+    const filePath = fileResponse.data.result?.file_path;
+    if (!filePath) {
+      return { success: false, error: "Telegram file path not available" };
+    }
 
     // Download file
     const downloadResponse = await axios.get(
@@ -93,7 +80,7 @@ const downloadFileFromTelegram = async (telegramMessageId) => {
       },
     );
 
-    logger.info(`File downloaded from Telegram: ${telegramMessageId}`);
+    logger.info(`File downloaded from Telegram: ${telegramFileId}`);
 
     return {
       success: true,

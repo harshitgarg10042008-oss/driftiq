@@ -125,7 +125,7 @@ const downloadSharedFile = async (req, res, next) => {
 
     // Download from Telegram
     const downloadResult = await telegramService.downloadFileFromTelegram(
-      fileData.telegram_message_id,
+      fileData.telegram_file_id || fileData.telegram_message_id,
     );
 
     if (!downloadResult.success) {

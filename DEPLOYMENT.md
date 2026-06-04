@@ -6,7 +6,7 @@
 - [ ] Database schema created in Supabase
 - [ ] Telegram bot token valid and bot in channel
 - [ ] All API endpoints tested locally
-- [ ] Frontend pages created and integrated
+- [x] Frontend pages created and integrated
 - [ ] Security headers configured
 - [ ] CORS origins updated
 - [ ] Git repository created and committed

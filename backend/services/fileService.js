@@ -17,6 +17,7 @@ const uploadFile = async (
   mimeType,
   folderId = null,
   telegramMessageId = null,
+  telegramFileId = null,
 ) => {
   try {
     // Check storage limit
@@ -51,6 +52,7 @@ const uploadFile = async (
           mime_type: mimeType,
           size: fileSize,
           telegram_message_id: telegramMessageId,
+          telegram_file_id: telegramFileId,
           created_at: new Date().toISOString(),
         },
       ])

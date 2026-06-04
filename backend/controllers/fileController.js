@@ -58,7 +58,8 @@ const uploadFile = async (req, res, next) => {
       fileSize,
       mimeType,
       folder_id || null,
-      telegramResult.data.telegram_message_id
+      telegramResult.data.telegram_message_id,
+      telegramResult.data.telegram_file_id,
     );
 
     if (!fileResult.success) {
@@ -154,7 +155,7 @@ const downloadFile = async (req, res, next) => {
 
     // Download from Telegram
     const downloadResult = await telegramService.downloadFileFromTelegram(
-      file.telegram_message_id
+      file.telegram_file_id || file.telegram_message_id
     );
 
     if (!downloadResult.success) {

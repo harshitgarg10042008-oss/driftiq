@@ -114,6 +114,26 @@ window.addEventListener("DOMContentLoaded", async () => {
       api.clearToken();
     }
   }
+
+  document.getElementById("login-btn")?.addEventListener("click", () => openAuthModal("login"));
+  document.getElementById("register-btn")?.addEventListener("click", () => openAuthModal("register"));
+  document.getElementById("goto-dashboard-btn")?.addEventListener("click", async () => {
+    if (api.token) {
+      if (!currentUser) {
+        try {
+          currentUser = await api.getProfile();
+        } catch (e) {
+          api.clearToken();
+          openAuthModal("login");
+          return;
+        }
+      }
+      setupDashboardView();
+    } else {
+      openAuthModal("login");
+    }
+  });
+  document.getElementById("start-free-btn")?.addEventListener("click", () => openAuthModal("register"));
 });
 
 function openAuthModal(tab = 'login') {
@@ -841,7 +861,7 @@ async function createShareLink() {
 
     closeShareModal();
 
-    const shareLink = `${window.location.origin}/shared.html?id=${res.data.share_token || res.data.token}`;
+    const shareLink = `${window.location.origin}/shared.html?token=${res.data.share_token || res.data.token}`;
     document.getElementById("generated-share-link").value = shareLink;
     
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shareLink)}`;
