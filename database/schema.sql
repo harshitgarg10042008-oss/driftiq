@@ -3,18 +3,7 @@
 -- Run this in Supabase SQL Editor (supabase.com → SQL Editor)
 -- ============================================================
 
--- STEP 1: Make sure storage_stats table exists with correct schema
-CREATE TABLE IF NOT EXISTS storage_stats (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  total_files INTEGER DEFAULT 0,
-  total_size BIGINT DEFAULT 0,
-  total_shares INTEGER DEFAULT 0,
-  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_storage_stats_user_id ON storage_stats(user_id);
-
--- STEP 2: Make sure all required tables exist
+-- STEP 1: Make sure all required tables exist (users must be first)
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -34,6 +23,17 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   deleted_at TIMESTAMP WITH TIME ZONE
 );
+
+CREATE TABLE IF NOT EXISTS storage_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  total_files INTEGER DEFAULT 0,
+  total_size BIGINT DEFAULT 0,
+  total_shares INTEGER DEFAULT 0,
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_storage_stats_user_id ON storage_stats(user_id);
+
 
 CREATE TABLE IF NOT EXISTS folders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
