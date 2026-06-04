@@ -303,7 +303,7 @@ async function loadFilesAndFolders() {
     const searchQuery = searchInput ? searchInput.value : "";
     
     const [filesRes, foldersRes, statsRes] = await Promise.all([
-      api.getFiles(1, 100, currentFolderId, searchQuery),
+      api.getFiles(1, 100, currentFolderId, searchQuery, currentCategory === 'recycle'),
       api.getFolders(currentFolderId),
       api.getStorageStats(),
     ]);
@@ -364,10 +364,7 @@ function renderExplorer(folders, files) {
   } else if (currentCategory === 'music') {
     displayedFiles = files.filter(f => ["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(f.name.split(".").pop().toLowerCase()));
   } else if (currentCategory === 'recycle') {
-    displayedFiles = [
-      { id: "deleted-1", name: "Q1_Financial_Report_draft.xlsx", size: 124580, created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(), is_starred: false, is_deleted: true },
-      { id: "deleted-2", name: "avatar_old.png", size: 84300, created_at: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), is_starred: false, is_deleted: true }
-    ];
+    // files are already filtered by the backend if isDeleted is true
   }
 
   if (displayedFolders.length === 0 && displayedFiles.length === 0) {
@@ -429,11 +426,11 @@ function renderExplorer(folders, files) {
     const formattedDate = new Date(f.created_at || Date.now()).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
     let actionsHTML = "";
-    if (f.is_deleted) {
+    if (f.deleted_at) {
       actionsHTML = `
         <div class="row-actions" onclick="event.stopPropagation();">
-          <button class="action-btn" title="Restore File" onclick="notify.success('File restored to workspace index.')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></button>
-          <button class="action-btn delete" title="Permanently Delete" onclick="notify.success('Cleared node from cache.')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          <button class="action-btn" title="Restore File" onclick="restoreFileUI('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></button>
+          <button class="action-btn delete" title="Permanently Delete" onclick="purgeFileUI('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
         </div>
       `;
     } else {
@@ -689,13 +686,34 @@ async function handleFileDrop(e) {
 }
 
 async function deleteFile(id) {
-  if (!confirm("Purge this binary object from storage index?")) return;
+  if (!confirm("Move this file to the recycle bin?")) return;
   try {
     await api.deleteFile(id);
-    notify.success("Asset index purged successfully.");
+    notify.success("File moved to recycle bin.");
     loadFilesAndFolders();
   } catch (e) {
-    notify.error("Failed to purge asset.");
+    notify.error("Failed to move file to recycle bin.");
+  }
+}
+
+async function restoreFileUI(id) {
+  try {
+    await api.restoreFile(id);
+    notify.success("File restored successfully.");
+    loadFilesAndFolders();
+  } catch (e) {
+    notify.error("Failed to restore file.");
+  }
+}
+
+async function purgeFileUI(id) {
+  if (!confirm("Are you sure you want to permanently delete this file? This action cannot be undone.")) return;
+  try {
+    await api.purgeFile(id);
+    notify.success("File permanently deleted.");
+    loadFilesAndFolders();
+  } catch (e) {
+    notify.error("Failed to permanently delete file.");
   }
 }
 
@@ -788,102 +806,7 @@ async function executeMove() {
   }
 }
 
-// ==================== FILE CONVERTER HANDLERS ====================
-let pendingConvertId = null;
-let pendingConvertName = null;
-let pendingConvertExt = null;
-
-function openConverterModal(id, name, ext) {
-  pendingConvertId = id;
-  pendingConvertName = name;
-  pendingConvertExt = ext;
-  
-  document.getElementById("convert-source-name").value = name;
-  
-  const select = document.getElementById("convert-target-format");
-  select.innerHTML = "";
-  
-  if (["png", "jpg", "jpeg", "webp", "gif"].includes(ext)) {
-    select.innerHTML = `
-      <option value="webp">WEBP Image (.webp)</option>
-      <option value="png">PNG Image (.png)</option>
-      <option value="jpg">JPEG Image (.jpg)</option>
-      <option value="pdf">PDF Document (.pdf)</option>
-    `;
-  } else if (["doc", "docx", "txt", "md"].includes(ext)) {
-    select.innerHTML = `
-      <option value="pdf">PDF Document (.pdf)</option>
-      <option value="docx">Microsoft Word Document (.docx)</option>
-      <option value="md">Markdown Document (.md)</option>
-      <option value="txt">Plain Text (.txt)</option>
-    `;
-  } else if (["mp3", "wav", "aac"].includes(ext)) {
-    select.innerHTML = `
-      <option value="mp3">MP3 Audio (.mp3)</option>
-      <option value="wav">WAV Audio (.wav)</option>
-      <option value="ogg">OGG Audio (.ogg)</option>
-    `;
-  } else {
-    select.innerHTML = `
-      <option value="zip">ZIP Compressed Archive (.zip)</option>
-      <option value="pdf">PDF Document Copy (.pdf)</option>
-    `;
-  }
-  
-  document.getElementById("convert-progress-wrapper").classList.add("hidden");
-  document.getElementById("convert-confirm-btn").disabled = false;
-  document.getElementById("convert-cancel-btn").disabled = false;
-  
-  const modal = document.getElementById("converter-modal");
-  modal.classList.add("active");
-}
-
-function closeConverterModal() {
-  document.getElementById("converter-modal").classList.remove("active");
-}
-
-function startFileConversion() {
-  const targetFormat = document.getElementById("convert-target-format").value;
-  const progressWrapper = document.getElementById("convert-progress-wrapper");
-  const progressBar = document.getElementById("convert-progress-bar");
-  const progressText = document.getElementById("convert-progress-text");
-  
-  document.getElementById("convert-confirm-btn").disabled = true;
-  document.getElementById("convert-cancel-btn").disabled = true;
-  
-  progressWrapper.classList.remove("hidden");
-  progressBar.style.width = "0%";
-  progressText.textContent = "Spinning up compilation container...";
-  
-  let pct = 0;
-  const interval = setInterval(() => {
-    pct += 10;
-    progressBar.style.width = `${pct}%`;
-    
-    if (pct === 30) {
-      progressText.textContent = "Loading source file memory stream...";
-    } else if (pct === 60) {
-      progressText.textContent = `Compiling bytes to target form (.${targetFormat})...`;
-    } else if (pct === 90) {
-      progressText.textContent = "Writing meta headers to local sandbox buffer...";
-    } else if (pct >= 100) {
-      clearInterval(interval);
-      progressText.textContent = "Conversion successful! Saving index...";
-      
-      setTimeout(() => {
-        notify.success(`File successfully converted to ${targetFormat.toUpperCase()}!`);
-        closeConverterModal();
-        
-        const nameParts = pendingConvertName.split(".");
-        nameParts.pop();
-        const newName = nameParts.join(".") + "_converted." + targetFormat;
-        
-        notify.info(`Allocated converted asset copy: ${newName}`);
-        loadFilesAndFolders();
-      }, 1000);
-    }
-  }, 300);
-}
+// Converter functionality removed.
 
 // ==================== SHARES MANAGER ====================
 let pendingShareFileId = null;
@@ -1208,7 +1131,7 @@ async function handleChangePassword(e) {
 }
 
 function upgradePlan() {
-  notify.success("You are already on the Premium SaaS account tier!");
+  // Logic removed
 }
 
 function logout() {
@@ -1217,66 +1140,7 @@ function logout() {
   setTimeout(() => location.reload(), 1000);
 }
 
-// ==================== SIMULATED AI ASSISTANT ====================
-function toggleAIChat() {
-  const panel = document.getElementById("ai-chat-panel");
-  panel.classList.toggle("active");
-  if (panel.classList.contains("active")) {
-    setTimeout(() => document.getElementById("ai-chat-input").focus(), 100);
-  }
-}
-
-function sendAIChatMessage() {
-  const input = document.getElementById("ai-chat-input");
-  const query = input.value.trim();
-  if (!query) return;
-  
-  input.value = "";
-  
-  const chatBody = document.getElementById("ai-chat-body");
-  
-  const userMsg = document.createElement("div");
-  userMsg.className = "ai-chat-message user animate-slide-in";
-  userMsg.textContent = query;
-  chatBody.appendChild(userMsg);
-  
-  chatBody.scrollTop = chatBody.scrollHeight;
-  
-  const thinkingMsg = document.createElement("div");
-  thinkingMsg.className = "ai-chat-message bot animate-pulse";
-  thinkingMsg.textContent = "🤖 Thinking...";
-  chatBody.appendChild(thinkingMsg);
-  chatBody.scrollTop = chatBody.scrollHeight;
-  
-  setTimeout(() => {
-    thinkingMsg.remove();
-    
-    let response = "";
-    const lowerQuery = query.toLowerCase();
-    
-    if (lowerQuery.includes("hello") || lowerQuery.includes("hi")) {
-      response = "Hello! How can I assist you with your DriftIQ cloud workspace today?";
-    } else if (lowerQuery.includes("file") || lowerQuery.includes("document") || lowerQuery.includes("list")) {
-      response = `Your current workspace directory contains ${currentFiles.length} file indices and ${currentFolders.length} folders. You can manage them directly inside the table layout!`;
-    } else if (lowerQuery.includes("telegram")) {
-      response = "DriftIQ routes file binaries to a secure Telegram bot channel. Your files are automatically sharded and saved as Telegram messages to provide unlimited storage.";
-    } else if (lowerQuery.includes("capacity") || lowerQuery.includes("quota") || lowerQuery.includes("storage")) {
-      const usedStr = document.querySelector(".storage-text")?.textContent || "0 B";
-      response = `You have consumed ${usedStr}. Your account tier allows up to 5 GB of free decentralized vault index capacity.`;
-    } else if (lowerQuery.includes("search")) {
-      response = "You can filter your files instantly by using the rounded search input in the top header bar of your dashboard.";
-    } else {
-      response = "I have scanned the local folder indexing pipeline. Let me know if you want to rename, move, delete, or retrieve public access tunnels for these nodes!";
-    }
-    
-    const botMsg = document.createElement("div");
-    botMsg.className = "ai-chat-message bot animate-slide-in";
-    botMsg.textContent = response;
-    chatBody.appendChild(botMsg);
-    
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }, 1200);
-}
+// AI Assistant functionality removed.
 
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return "0 B";

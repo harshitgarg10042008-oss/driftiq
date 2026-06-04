@@ -103,6 +103,7 @@ const getUserFiles = async (
   limit = 20,
   folderId = null,
   searchQuery = null,
+  isDeleted = false
 ) => {
   try {
     const { offset, limit: finalLimit } = getPaginationParams(page, limit);
@@ -111,14 +112,18 @@ const getUserFiles = async (
       .from("files")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
-      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .range(offset, offset + finalLimit - 1);
 
-    if (folderId) {
-      query = query.eq("folder_id", folderId);
+    if (isDeleted) {
+      query = query.not("deleted_at", "is", null);
     } else {
-      query = query.is("folder_id", null); // Only root files
+      query = query.is("deleted_at", null);
+      if (folderId) {
+        query = query.eq("folder_id", folderId);
+      } else {
+        query = query.is("folder_id", null); // Only root files
+      }
     }
 
     if (searchQuery) {
@@ -434,6 +439,100 @@ const toggleStarFile = async (userId, fileId) => {
   }
 };
 
+// Restore file (undo soft delete)
+const restoreFile = async (userId, fileId) => {
+  try {
+    const { data: file, error: getError } = await supabase
+      .from("files")
+      .select("*")
+      .eq("id", fileId)
+      .eq("user_id", userId)
+      .not("deleted_at", "is", null)
+      .single();
+
+    if (getError || !file) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.FILE_NOT_FOUND };
+    }
+
+    // Restore file
+    const { error } = await supabase
+      .from("files")
+      .update({ deleted_at: null })
+      .eq("id", fileId);
+
+    if (error) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+    }
+
+    // Update user storage
+    const { data: user } = await supabase
+      .from("users")
+      .select("storage_used")
+      .eq("id", userId)
+      .single();
+
+    await supabase
+      .from("users")
+      .update({ storage_used: (user?.storage_used || 0) + file.size })
+      .eq("id", userId);
+
+    // Update storage stats
+    const { data: stats } = await supabase
+      .from("storage_stats")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    await supabase
+      .from("storage_stats")
+      .update({
+        total_files: (stats?.total_files || 0) + 1,
+        total_size: (stats?.total_size || 0) + file.size,
+        last_updated: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+
+    logger.info(`File restored: ${fileId}`);
+
+    return { success: true, data: { message: "File restored successfully" } };
+  } catch (error) {
+    logger.error("Restore file error:", error);
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+  }
+};
+
+// Hard delete file (permanent)
+const hardDeleteFile = async (userId, fileId) => {
+  try {
+    const { data: file, error: getError } = await supabase
+      .from("files")
+      .select("*")
+      .eq("id", fileId)
+      .eq("user_id", userId)
+      .single();
+
+    if (getError || !file) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.FILE_NOT_FOUND };
+    }
+
+    // Delete from DB completely
+    const { error } = await supabase
+      .from("files")
+      .delete()
+      .eq("id", fileId);
+
+    if (error) {
+      return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+    }
+
+    logger.info(`File permanently deleted: ${fileId}`);
+    return { success: true, data: { message: "File permanently deleted" } };
+  } catch (error) {
+    logger.error("Hard delete file error:", error);
+    return { success: false, error: CONSTANTS.ERROR_MESSAGES.INTERNAL_ERROR };
+  }
+};
+
 module.exports = {
   uploadFile,
   getUserFiles,
@@ -444,4 +543,6 @@ module.exports = {
   getStorageStats,
   searchFiles,
   toggleStarFile,
+  restoreFile,
+  hardDeleteFile,
 };

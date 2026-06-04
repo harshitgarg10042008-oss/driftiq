@@ -155,10 +155,11 @@ class API {
     return response.json();
   }
 
-  async getFiles(page = 1, limit = 20, folderId = null, search = null) {
+  async getFiles(page = 1, limit = 20, folderId = null, search = null, isDeleted = false) {
     let endpoint = `/files?page=${page}&limit=${limit}`;
     if (folderId) endpoint += `&folder_id=${folderId}`;
     if (search) endpoint += `&search=${encodeURIComponent(search)}`;
+    if (isDeleted) endpoint += `&is_deleted=true`;
 
     return this.request(endpoint);
   }
@@ -187,6 +188,14 @@ class API {
 
   async deleteFile(fileId) {
     return this.request(`/files/${fileId}`, { method: "DELETE" });
+  }
+
+  async restoreFile(fileId) {
+    return this.request(`/files/${fileId}/restore`, { method: "PATCH" });
+  }
+
+  async purgeFile(fileId) {
+    return this.request(`/files/${fileId}/purge`, { method: "DELETE" });
   }
 
   async getStorageStats() {

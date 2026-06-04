@@ -81,14 +81,15 @@ const uploadFile = async (req, res, next) => {
 const getFiles = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 20, folder_id, search } = req.query;
+    const { page = 1, limit = 20, folder_id, search, is_deleted } = req.query;
 
     const result = await fileService.getUserFiles(
       userId,
       page,
       limit,
       folder_id,
-      search
+      search,
+      is_deleted === 'true'
     );
 
     if (!result.success) {
@@ -324,6 +325,48 @@ const toggleStar = async (req, res, next) => {
   }
 };
 
+// Restore file
+const restoreFile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { fileId } = req.params;
+
+    const result = await fileService.restoreFile(userId, fileId);
+
+    if (!result.success) {
+      return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        error: result.error,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Hard delete file
+const hardDeleteFile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { fileId } = req.params;
+
+    const result = await fileService.hardDeleteFile(userId, fileId);
+
+    if (!result.success) {
+      return res.status(CONSTANTS.STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        error: result.error,
+      });
+    }
+
+    res.json(result.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadFile,
   getFiles,
@@ -335,4 +378,6 @@ module.exports = {
   getStorageStats,
   searchFiles,
   toggleStar,
+  restoreFile,
+  hardDeleteFile,
 };

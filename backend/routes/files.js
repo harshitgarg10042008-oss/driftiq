@@ -69,4 +69,10 @@ router.get("/stats/usage", fileController.getStorageStats);
 // Toggle star
 router.patch("/:fileId/star", fileController.toggleStar);
 
+// Restore file
+router.patch("/:fileId/restore", fileController.restoreFile);
+
+// Purge file
+router.delete("/:fileId/purge", fileController.hardDeleteFile);
+
 module.exports = router;
