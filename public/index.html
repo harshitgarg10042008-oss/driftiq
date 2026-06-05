@@ -53,15 +53,24 @@
   <!-- ==================== AUTH SCREEN ==================== -->
   <div id="auth-screen" class="auth-overlay hidden">
     <div class="auth-card animate-scale-up">
+<<<<<<< HEAD
       <button id="auth-close-btn" class="auth-close" data-action="close-auth">✕</button>
+=======
+      <button class="auth-close" id="auth-close-btn">✕</button>
+>>>>>>> dbb0cd18408d9b0d7a9c9035ffbcd596ecc39608
       <div class="auth-logo">
         <div class="auth-logo-icon">☁️</div>
         <div class="auth-logo-text">DriftIQ</div>
       </div>
 
       <div class="auth-tabs">
+<<<<<<< HEAD
         <button type="button" id="auth-tab-login" class="auth-tab active" data-action="switch-tab" data-mode="login">Sign In</button>
         <button type="button" id="auth-tab-register" class="auth-tab" data-action="switch-tab" data-mode="register">Sign Up</button>
+=======
+        <button type="button" class="auth-tab active" id="login-tab-btn">Sign In</button>
+        <button type="button" class="auth-tab" id="register-tab-btn">Sign Up</button>
+>>>>>>> dbb0cd18408d9b0d7a9c9035ffbcd596ecc39608
       </div>
 
       <!-- LOGIN FORM -->
@@ -74,7 +83,11 @@
           <div class="mb-lg">
             <div class="flex justify-between items-center mb-sm">
               <label class="text-secondary" style="font-size: 12px; font-weight: 500;">Password</label>
+<<<<<<< HEAD
               <a href="#" class="text-cyan font-medium" style="font-size: 12px;" data-action="switch-tab" data-mode="reset">Forgot?</a>
+=======
+              <a href="#" id="forgot-btn" class="text-cyan font-medium" style="font-size: 12px;">Forgot?</a>
+>>>>>>> dbb0cd18408d9b0d7a9c9035ffbcd596ecc39608
             </div>
             <input type="password" id="login-password" required placeholder="••••••••" />
           </div>
@@ -557,6 +570,7 @@
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/notifications.js"></script>
   <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/events.js"></script>
 </body>
 
 </html>
