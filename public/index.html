@@ -53,20 +53,20 @@
   <!-- ==================== AUTH SCREEN ==================== -->
   <div id="auth-screen" class="auth-overlay hidden">
     <div class="auth-card animate-scale-up">
-      <button class="auth-close" onclick="closeAuthModal()">✕</button>
+      <button id="auth-close-btn" class="auth-close" data-action="close-auth">✕</button>
       <div class="auth-logo">
         <div class="auth-logo-icon">☁️</div>
         <div class="auth-logo-text">DriftIQ</div>
       </div>
 
       <div class="auth-tabs">
-        <button type="button" class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-        <button type="button" class="auth-tab" onclick="switchTab('register')">Sign Up</button>
+        <button type="button" id="auth-tab-login" class="auth-tab active" data-action="switch-tab" data-mode="login">Sign In</button>
+        <button type="button" id="auth-tab-register" class="auth-tab" data-action="switch-tab" data-mode="register">Sign Up</button>
       </div>
 
       <!-- LOGIN FORM -->
       <div id="login-form-container">
-        <form id="loginForm" onsubmit="handleLogin(event)">
+        <form id="loginForm">
           <div class="mb-md">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Username</label>
             <input type="text" id="login-username" required placeholder="Enter your username" />
@@ -74,8 +74,7 @@
           <div class="mb-lg">
             <div class="flex justify-between items-center mb-sm">
               <label class="text-secondary" style="font-size: 12px; font-weight: 500;">Password</label>
-              <a href="#" class="text-cyan font-medium" style="font-size: 12px;"
-                onclick="switchTab('reset')">Forgot?</a>
+              <a href="#" class="text-cyan font-medium" style="font-size: 12px;" data-action="switch-tab" data-mode="reset">Forgot?</a>
             </div>
             <input type="password" id="login-password" required placeholder="••••••••" />
           </div>
@@ -85,7 +84,7 @@
 
       <!-- REGISTER FORM -->
       <div id="register-form-container" class="hidden">
-        <form id="registerForm" onsubmit="handleRegister(event)">
+        <form id="registerForm">
           <div class="mb-md">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Full Name</label>
             <input type="text" id="reg-name" required placeholder="John Doe" />
@@ -110,13 +109,13 @@
       <div id="reset-form-container" class="hidden">
         <p class="text-secondary mb-md text-center" style="font-size: 13px;">Enter your email to receive a secure
           recovery key.</p>
-        <form id="resetForm" onsubmit="handleResetRequest(event)">
+        <form id="resetForm">
           <div class="mb-lg">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Email Address</label>
             <input type="email" id="reset-email" required placeholder="john@example.com" />
           </div>
           <button type="submit" class="btn btn-primary w-100 mb-md">Transmit Recovery Link</button>
-          <button type="button" class="btn btn-secondary w-100" onclick="switchTab('login')">Return to Login</button>
+          <button type="button" class="btn btn-secondary w-100" data-action="switch-tab" data-mode="login">Return to Login</button>
         </form>
       </div>
     </div>
@@ -133,29 +132,29 @@
 
       <div class="sidebar-content">
         <div class="sidebar-section-title mt-0">Workspace</div>
-        <div class="nav-item active" id="menu-dash" onclick="setCategory('all')">
+        <div class="nav-item active" id="menu-dash" data-action="set-category" data-category="all">
           <span class="nav-item-icon">📂</span> All Files
         </div>
-        <div class="nav-item" id="menu-shares" onclick="showSection('shares')">
+        <div class="nav-item" id="menu-shares" data-action="show-section" data-section="shares">
           <span class="nav-item-icon">🔗</span> Share Tunnels
         </div>
 
         <div class="sidebar-section-title">Actions</div>
-        <button class="btn btn-secondary w-100 mb-sm" onclick="promptCreateFolder()">New Folder</button>
-        <button class="btn btn-secondary w-100 mb-sm" onclick="triggerFileUpload()">Upload Files</button>
-        <button class="btn btn-secondary w-100" onclick="triggerFolderUpload()">Upload Folder</button>
+        <button class="btn btn-secondary w-100 mb-sm" data-action="create-folder">New Folder</button>
+        <button class="btn btn-secondary w-100 mb-sm" data-action="upload-files">Upload Files</button>
+        <button class="btn btn-secondary w-100" data-action="upload-folder">Upload Folder</button>
 
         <div class="sidebar-section-title">Categories</div>
-        <div class="nav-item" id="menu-docs" onclick="setCategory('documents')">
+        <div class="nav-item" id="menu-docs" data-action="set-category" data-category="documents">
           <span class="nav-item-icon text-cyan">📄</span> Documents
         </div>
-        <div class="nav-item" id="menu-pics" onclick="setCategory('pictures')">
+        <div class="nav-item" id="menu-pics" data-action="set-category" data-category="pictures">
           <span class="nav-item-icon text-emerald">🖼️</span> Pictures
         </div>
-        <div class="nav-item" id="menu-vids" onclick="setCategory('videos')">
+        <div class="nav-item" id="menu-vids" data-action="set-category" data-category="videos">
           <span class="nav-item-icon text-red">🎬</span> Media
         </div>
-        <div class="nav-item" id="menu-recycle" onclick="setCategory('recycle')">
+        <div class="nav-item" id="menu-recycle" data-action="set-category" data-category="recycle">
           <span class="nav-item-icon text-secondary">🗑️</span> Recycle Bin
         </div>
 
@@ -163,10 +162,10 @@
         <div id="sidebar-dynamic-folders-list"></div>
 
         <div class="sidebar-section-title">System</div>
-        <div class="nav-item admin-only hidden" id="menu-admin" onclick="showSection('admin')">
+        <div class="nav-item admin-only hidden" id="menu-admin" data-action="show-section" data-section="admin">
           <span class="nav-item-icon">🛡️</span> Admin Panel
         </div>
-        <div class="nav-item" id="menu-settings" onclick="showSection('settings')">
+        <div class="nav-item" id="menu-settings" data-action="show-section" data-section="settings">
           <span class="nav-item-icon">⚙️</span> Settings
         </div>
       </div>
@@ -201,7 +200,7 @@
       <!-- TOPBAR -->
       <header class="topbar">
         <div class="flex items-center gap-md w-100">
-          <button class="sidebar-toggle btn-icon" onclick="toggleSidebar()">
+          <button id="sidebar-toggle-btn" class="sidebar-toggle btn-icon" data-action="toggle-sidebar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -215,13 +214,12 @@
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" id="dashboard-search" placeholder="Search files, folders..." class="w-100"
-              onkeyup="debounceSearch()" />
+            <input type="text" id="dashboard-search" placeholder="Search files, folders..." class="w-100" />
           </div>
         </div>
 
         <div class="flex items-center gap-md">
-          <button class="btn btn-secondary btn-sm" onclick="triggerFileUpload()">
+          <button class="btn btn-secondary btn-sm" data-action="upload-files">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -230,9 +228,9 @@
             </svg>
             Upload Files
           </button>
-          <button class="btn btn-secondary btn-sm" onclick="triggerFolderUpload()">Upload Folder</button>
-          <button class="btn btn-primary btn-sm" onclick="promptCreateFolder()">+ New Folder</button>
-          <div class="user-profile-btn" onclick="showSection('settings')">
+          <button class="btn btn-secondary btn-sm" data-action="upload-folder">Upload Folder</button>
+          <button class="btn btn-primary btn-sm" data-action="create-folder">+ New Folder</button>
+          <div class="user-profile-btn" data-action="show-section" data-section="settings">
             <div id="topbar-user-avatar" class="avatar" style="width: 24px; height: 24px; font-size: 11px;">U</div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               class="text-secondary">
@@ -249,14 +247,13 @@
             <h2 class="mb-sm">File Explorer</h2>
             <div id="folder-breadcrumbs" style="font-size: 13px;"></div>
           </div>
-          <div class="flex gap-sm">
-            <button class="btn btn-secondary btn-sm" onclick="loadFilesAndFolders()" title="Refresh">🔄</button>
+            <div class="flex gap-sm">
+            <button class="btn btn-secondary btn-sm" data-action="refresh" title="Refresh">🔄</button>
           </div>
         </div>
 
         <!-- Dropzone -->
-        <div class="dropzone" id="dropzone-area" ondragover="event.preventDefault(); this.classList.add('dragover')"
-          ondragleave="this.classList.remove('dragover')" ondrop="handleFileDrop(event)" onclick="triggerFileUpload()">
+        <div class="dropzone" id="dropzone-area">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
             stroke-linecap="round" stroke-linejoin="round" class="text-cyan mb-sm">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -266,9 +263,8 @@
           <p class="font-medium">Drag & drop files here</p>
           <p class="text-secondary" style="font-size: 12px; margin-top: 4px;">or click to browse local computer</p>
         </div>
-        <input type="file" id="file-input-raw" class="hidden" onchange="uploadSelectedFile(event)" />
-        <input type="file" id="folder-input-raw" webkitdirectory directory multiple class="hidden"
-          onchange="uploadSelectedFolder(event)" />
+        <input type="file" id="file-input-raw" class="hidden" />
+        <input type="file" id="folder-input-raw" webkitdirectory directory multiple class="hidden" />
 
         <!-- Table -->
         <div class="table-container">
@@ -336,8 +332,7 @@
               Telegram gateway to enable unlimited shard storage mapping.</p>
 
             <div id="telegram-disconnected-ui">
-              <button class="btn btn-primary" id="telegram-connect-btn" onclick="connectTelegram()">Connect Telegram
-                Gateway 🤖</button>
+              <button class="btn btn-primary" id="telegram-connect-btn" data-action="connect-telegram">Connect Telegram Gateway 🤖</button>
             </div>
 
             <div id="telegram-connecting-ui" class="hidden">
@@ -363,7 +358,7 @@
                     <div class="text-secondary" style="font-size: 12px;">Storage pipeline routed via Bot Gateway</div>
                   </div>
                 </div>
-                <button class="btn btn-outline btn-sm text-red" onclick="disconnectTelegram()">Disconnect</button>
+                <button class="btn btn-outline btn-sm text-red" data-action="disconnect-telegram">Disconnect</button>
               </div>
             </div>
           </div>
@@ -372,7 +367,7 @@
           <div
             style="background: rgba(15,15,20,0.4); border: 1px solid var(--border-color); border-radius: var(--r-lg); padding: var(--sp-6);">
             <h3 class="mb-md">Rotate Encryption Key (Password)</h3>
-            <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+            <form id="changePasswordForm">
               <div class="mb-md">
                 <label class="text-secondary d-block mb-sm" style="font-size: 12px;">Current Password</label>
                 <input type="password" id="set-current-pass" required />
@@ -393,8 +388,7 @@
           <div
             style="background: rgba(15,15,20,0.4); border: 1px solid var(--border-color); border-radius: var(--r-lg); padding: var(--sp-6);">
             <h3 class="mb-md text-red">Danger Zone</h3>
-            <button class="btn btn-outline btn-sm text-red w-100 mb-sm" onclick="logout()">Terminate Storage Tunnel (Log
-              Out)</button>
+            <button class="btn btn-outline btn-sm text-red w-100 mb-sm" data-action="logout">Terminate Storage Tunnel (Log Out)</button>
           </div>
         </div>
       </section>
@@ -476,7 +470,7 @@
   <div id="upload-progress-wrapper" class="upload-progress-wrapper hidden">
     <div class="flex justify-between items-center mb-sm">
       <span id="upload-status-text" class="font-medium" style="font-size: 13px;">Uploading...</span>
-      <button class="btn-icon" style="width: 20px; height: 20px; font-size: 12px;" onclick="cancelUpload()">✕</button>
+      <button id="cancel-upload-btn" class="btn-icon" style="width: 20px; height: 20px; font-size: 12px;" data-action="cancel-upload">✕</button>
     </div>
     <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: var(--r-full); overflow: hidden;">
       <div id="upload-progress-bar"
@@ -489,7 +483,7 @@
     <div class="auth-card" style="max-width: 800px; width: 90%; padding: var(--sp-6);">
       <div class="flex justify-between items-center mb-md">
         <h3 id="preview-title" style="word-break: break-all; margin-right: var(--sp-4);">File Preview</h3>
-        <button class="btn-icon" onclick="closePreviewModal()">✕</button>
+        <button class="btn-icon" data-action="close-preview">✕</button>
       </div>
       <div id="preview-content-container" class="flex items-center justify-center"
         style="min-height: 200px; background: rgba(0,0,0,0.4); border-radius: var(--r-md); border: 1px solid var(--border-color); padding: var(--sp-4);">
@@ -507,7 +501,7 @@
         <select id="move-target-select"></select>
       </div>
       <div class="flex gap-md">
-        <button class="btn btn-secondary w-100" onclick="closeMoveModal()">Cancel</button>
+        <button class="btn btn-secondary w-100" data-action="close-move">Cancel</button>
         <button class="btn btn-primary w-100" id="move-confirm-btn">Move</button>
       </div>
     </div>
@@ -532,7 +526,7 @@
         <input type="datetime-local" id="share-expiry-lock" />
       </div>
       <div class="flex gap-md">
-        <button class="btn btn-secondary w-100" onclick="closeShareModal()">Cancel</button>
+        <button class="btn btn-secondary w-100" data-action="close-share">Cancel</button>
         <button class="btn btn-primary w-100" id="share-confirm-btn">Create Link</button>
       </div>
     </div>
@@ -553,7 +547,7 @@
         <img id="share-qr-code-img" src="" alt="QR Code Link"
           style="width: 150px; height: 150px; border-radius: var(--r-sm);" />
       </div>
-      <button class="btn btn-primary w-100" onclick="copyGeneratedShareLink()">Copy Tunnel Link 📋</button>
+      <button class="btn btn-primary w-100" data-action="copy-share">Copy Tunnel Link 📋</button>
     </div>
   </div>
 

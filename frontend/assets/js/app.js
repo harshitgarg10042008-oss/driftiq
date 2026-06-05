@@ -115,6 +115,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Primary buttons
   document.getElementById("login-btn")?.addEventListener("click", () => openAuthModal("login"));
   document.getElementById("register-btn")?.addEventListener("click", () => openAuthModal("register"));
   document.getElementById("goto-dashboard-btn")?.addEventListener("click", async () => {
@@ -134,6 +135,90 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
   document.getElementById("start-free-btn")?.addEventListener("click", () => openAuthModal("register"));
+
+  // Forms
+  document.getElementById("loginForm")?.addEventListener("submit", handleLogin);
+  document.getElementById("registerForm")?.addEventListener("submit", handleRegister);
+  document.getElementById("resetForm")?.addEventListener("submit", handleResetRequest);
+  document.getElementById("changePasswordForm")?.addEventListener("submit", handleChangePassword);
+
+  // Auth modal controls
+  document.getElementById("auth-close-btn")?.addEventListener("click", closeAuthModal);
+  document.getElementById("auth-tab-login")?.addEventListener("click", () => switchTab('login'));
+  document.getElementById("auth-tab-register")?.addEventListener("click", () => switchTab('register'));
+
+  // Search
+  document.getElementById("dashboard-search")?.addEventListener("keyup", debounceSearch);
+
+  // Dropzone and file inputs
+  const dropzone = document.getElementById("dropzone-area");
+  dropzone?.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+  dropzone?.addEventListener("dragleave", () => { dropzone.classList.remove("dragover"); });
+  dropzone?.addEventListener("drop", (e) => { e.preventDefault(); handleFileDrop(e); });
+  dropzone?.addEventListener("click", () => document.getElementById("file-input-raw")?.click());
+
+  document.getElementById("file-input-raw")?.addEventListener("change", uploadSelectedFile);
+  document.getElementById("folder-input-raw")?.addEventListener("change", uploadSelectedFolder);
+
+  // Global action delegation (data-action)
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+    const action = el.dataset.action;
+    switch (action) {
+      case 'switch-tab':
+        switchTab(el.dataset.mode);
+        break;
+      case 'set-category':
+        setCategory(el.dataset.category);
+        break;
+      case 'show-section':
+        showSection(el.dataset.section);
+        break;
+      case 'create-folder':
+        promptCreateFolder();
+        break;
+      case 'upload-files':
+        triggerFileUpload();
+        break;
+      case 'upload-folder':
+        triggerFolderUpload();
+        break;
+      case 'toggle-sidebar':
+        toggleSidebar();
+        break;
+      case 'refresh':
+        loadFilesAndFolders();
+        break;
+      case 'connect-telegram':
+        connectTelegram();
+        break;
+      case 'disconnect-telegram':
+        disconnectTelegram();
+        break;
+      case 'close-preview':
+        closePreviewModal();
+        break;
+      case 'close-move':
+        closeMoveModal();
+        break;
+      case 'close-share':
+        closeShareModal();
+        break;
+      case 'copy-share':
+        copyGeneratedShareLink();
+        break;
+      case 'cancel-upload':
+        cancelUpload();
+        break;
+      case 'close-auth':
+        closeAuthModal();
+        break;
+      case 'logout':
+        logout();
+        break;
+    }
+  });
 });
 
 function openAuthModal(tab = 'login') {
@@ -418,10 +503,10 @@ function renderExplorer(folders, files) {
       <td class="text-secondary">Folder</td>
       <td class="text-secondary">—</td>
       <td style="text-align: right;">
-        <div class="row-actions" onclick="event.stopPropagation();">
-          <button class="action-btn" title="Rename" onclick="promptRenameFolder('${f.id}', '${f.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-          <button class="action-btn" title="Move" onclick="openMoveModal('${f.id}', 'folder')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
-          <button class="action-btn delete" title="Delete" onclick="deleteFolder('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <div class="row-actions" data-stop="true">
+          <button class="action-btn" title="Rename" data-action="rename-folder" data-id="${f.id}" data-name="${f.name}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+          <button class="action-btn" title="Move" data-action="open-move" data-id="${f.id}" data-type="folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
+          <button class="action-btn delete" title="Delete" data-action="delete-folder" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
         </div>
       </td>
     `;
@@ -448,20 +533,20 @@ function renderExplorer(folders, files) {
     let actionsHTML = "";
     if (f.deleted_at) {
       actionsHTML = `
-        <div class="row-actions" onclick="event.stopPropagation();">
-          <button class="action-btn" title="Restore File" onclick="restoreFileUI('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></button>
-          <button class="action-btn delete" title="Permanently Delete" onclick="purgeFileUI('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <div class="row-actions" data-stop="true">
+          <button class="action-btn" title="Restore File" data-action="restore-file" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></button>
+          <button class="action-btn delete" title="Permanently Delete" data-action="purge-file" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
         </div>
       `;
     } else {
       actionsHTML = `
-        <div class="row-actions" onclick="event.stopPropagation();">
-          <button class="action-btn" title="Preview" onclick="previewFile('${f.id}', '${f.name}', '${ext}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
-          <button class="action-btn" title="Download" onclick="downloadFile('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
-          <button class="action-btn" title="Share" onclick="openShareModal('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button>
-          <button class="action-btn" title="Rename" onclick="promptRenameFile('${f.id}', '${f.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-          <button class="action-btn" title="Move" onclick="openMoveModal('${f.id}', 'file')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
-          <button class="action-btn delete" title="Delete" onclick="deleteFile('${f.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+        <div class="row-actions" data-stop="true">
+          <button class="action-btn" title="Preview" data-action="preview-file" data-id="${f.id}" data-name="${f.name}" data-ext="${ext}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+          <button class="action-btn" title="Download" data-action="download-file" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+          <button class="action-btn" title="Share" data-action="open-share" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></button>
+          <button class="action-btn" title="Rename" data-action="rename-file" data-id="${f.id}" data-name="${f.name}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+          <button class="action-btn" title="Move" data-action="open-move" data-id="${f.id}" data-type="file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
+          <button class="action-btn delete" title="Delete" data-action="delete-file" data-id="${f.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
         </div>
       `;
     }
@@ -472,7 +557,7 @@ function renderExplorer(folders, files) {
     row.innerHTML = `
       <td>
         <div class="flex items-center gap-md">
-          <svg class="star-btn cursor-pointer" onclick="event.stopPropagation(); toggleStar('${f.id}')" width="16" height="16" viewBox="0 0 24 24" fill="${starFill}" stroke="${starColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <svg class="star-btn cursor-pointer" data-stop="true" data-action="toggle-star" data-id="${f.id}" width="16" height="16" viewBox="0 0 24 24" fill="${starFill}" stroke="${starColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           <div class="file-icon flex items-center justify-center text-secondary">${icon}</div>
           <span style="font-weight: 500; color:var(--text-primary); max-width: 250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${f.name}">${f.name}</span>
         </div>
@@ -536,14 +621,14 @@ function navigateToFolder(folder) {
 function renderBreadcrumbs() {
   const container = document.getElementById("folder-breadcrumbs");
   if(!container) return;
-  container.innerHTML = `<span class="breadcrumb-item cursor-pointer text-secondary hover-cyan" onclick="navigateToFolder(null)">Home</span>`;
+  container.innerHTML = `<span class="breadcrumb-item cursor-pointer text-secondary hover-cyan" data-action="navigate-home">Home</span>`;
 
   folderPath.forEach((f, idx) => {
     container.innerHTML += ` <span class="breadcrumb-sep text-muted mx-xs">/</span> `;
     if (idx === folderPath.length - 1) {
       container.innerHTML += `<span class="breadcrumb-item active text-cyan font-medium">${f.name}</span>`;
     } else {
-      container.innerHTML += `<span class="breadcrumb-item cursor-pointer text-secondary hover-cyan" onclick='navigateToFolder(${JSON.stringify(f)})'>${f.name}</span>`;
+      container.innerHTML += `<span class="breadcrumb-item cursor-pointer text-secondary hover-cyan" data-action="navigate-folder" data-id="${f.id}">${f.name}</span>`;
     }
   });
 }
@@ -901,7 +986,7 @@ async function loadShareTunnels() {
         <td style="font-family:var(--font-mono);" class="text-secondary">${s.download_count || 0}</td>
         <td><span class="badge ${s.is_active ? 'badge-emerald' : 'badge-red'}">${s.is_active ? "Active" : "Expired"}</span></td>
         <td style="text-align: right;">
-          <button class="btn btn-outline btn-sm text-red" onclick="deleteShareTunnel('${s.id}')">Revoke</button>
+          <button class="btn btn-outline btn-sm text-red" data-action="revoke-share" data-id="${s.id}">Revoke</button>
         </td>
       </tr>
     `;
@@ -963,7 +1048,7 @@ function previewFile(id, name, ext) {
       <div style="text-align: center; padding: var(--sp-6);">
         <div style="font-size: 48px; margin-bottom: var(--sp-2);">📄</div>
         <p class="text-secondary mb-md">Preview not available for .${ext} files.</p>
-        <button class="btn btn-primary" onclick="downloadFile('${id}')">Download File ⬇️</button>
+        <button class="btn btn-primary" data-action="download-file" data-id="${id}">Download File ⬇️</button>
       </div>
     `;
   }
@@ -1068,7 +1153,7 @@ async function loadAdminPanelData() {
     usersRes.data.forEach(u => {
       const actionBtn = u.id === currentUser.id 
         ? '<span class="text-muted" style="font-size:11px;">Immutable (Self)</span>' 
-        : `<button class="btn btn-outline btn-sm text-red" onclick="purgeUser('${u.id}')">Drop Client</button>`;
+        : `<button class="btn btn-outline btn-sm text-red" data-action="purge-user" data-id="${u.id}">Drop Client</button>`;
       
       usersTbody.innerHTML += `
         <tr class="explorer-table-row animate-slide-in">
@@ -1096,7 +1181,7 @@ async function loadAdminPanelData() {
             <td class="text-secondary" style="font-family:var(--font-mono);">${formatBytes(f.size)}</td>
             <td class="text-secondary">${fileDate}</td>
             <td style="text-align: right">
-              <button class="btn btn-outline btn-sm text-red" onclick="adminPurgeFile('${f.id}')">Purge</button>
+              <button class="btn btn-outline btn-sm text-red" data-action="admin-purge-file" data-id="${f.id}">Purge</button>
             </td>
           </tr>
         `;
