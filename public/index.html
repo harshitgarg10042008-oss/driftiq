@@ -53,20 +53,20 @@
   <!-- ==================== AUTH SCREEN ==================== -->
   <div id="auth-screen" class="auth-overlay hidden">
     <div class="auth-card animate-scale-up">
-      <button class="auth-close" onclick="closeAuthModal()">✕</button>
+      <button class="auth-close" id="auth-close-btn">✕</button>
       <div class="auth-logo">
         <div class="auth-logo-icon">☁️</div>
         <div class="auth-logo-text">DriftIQ</div>
       </div>
 
       <div class="auth-tabs">
-        <button type="button" class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-        <button type="button" class="auth-tab" onclick="switchTab('register')">Sign Up</button>
+        <button type="button" class="auth-tab active" id="login-tab-btn">Sign In</button>
+        <button type="button" class="auth-tab" id="register-tab-btn">Sign Up</button>
       </div>
 
       <!-- LOGIN FORM -->
       <div id="login-form-container">
-        <form id="loginForm" onsubmit="handleLogin(event)">
+        <form id="loginForm">
           <div class="mb-md">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Username</label>
             <input type="text" id="login-username" required placeholder="Enter your username" />
@@ -74,8 +74,7 @@
           <div class="mb-lg">
             <div class="flex justify-between items-center mb-sm">
               <label class="text-secondary" style="font-size: 12px; font-weight: 500;">Password</label>
-              <a href="#" class="text-cyan font-medium" style="font-size: 12px;"
-                onclick="switchTab('reset')">Forgot?</a>
+              <a href="#" id="forgot-btn" class="text-cyan font-medium" style="font-size: 12px;">Forgot?</a>
             </div>
             <input type="password" id="login-password" required placeholder="••••••••" />
           </div>
@@ -85,7 +84,7 @@
 
       <!-- REGISTER FORM -->
       <div id="register-form-container" class="hidden">
-        <form id="registerForm" onsubmit="handleRegister(event)">
+        <form id="registerForm">
           <div class="mb-md">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Full Name</label>
             <input type="text" id="reg-name" required placeholder="John Doe" />
@@ -110,7 +109,7 @@
       <div id="reset-form-container" class="hidden">
         <p class="text-secondary mb-md text-center" style="font-size: 13px;">Enter your email to receive a secure
           recovery key.</p>
-        <form id="resetForm" onsubmit="handleResetRequest(event)">
+        <form id="resetForm">
           <div class="mb-lg">
             <label class="text-secondary d-block mb-sm" style="font-size: 12px; font-weight: 500;">Email Address</label>
             <input type="email" id="reset-email" required placeholder="john@example.com" />
@@ -563,6 +562,7 @@
   <script src="/assets/js/api.js"></script>
   <script src="/assets/js/notifications.js"></script>
   <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/events.js"></script>
 </body>
 
 </html>
