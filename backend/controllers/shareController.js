@@ -108,46 +108,47 @@ const downloadSharedFile = async (req, res, next) => {
         error: "Share token required",
       });
 
-    // Get shared file details
-    const shareResult = await shareService.getSharedFile(token, password);
+      // Get shared file details
+      const shareResult = await shareService.getSharedFile(token, password);
 
-    if (!shareResult.success) {
-      const statusCode = shareResult.needsPassword
-        ? CONSTANTS.STATUS_CODES.UNAUTHORIZED
-        : CONSTANTS.STATUS_CODES.NOT_FOUND;
-      return res.status(statusCode).json({
-        success: false,
-        error: shareResult.error,
+      if (!shareResult.success) {
+        const statusCode = shareResult.needsPassword
+          ? CONSTANTS.STATUS_CODES.UNAUTHORIZED
+          : CONSTANTS.STATUS_CODES.NOT_FOUND;
+        return res.status(statusCode).json({
+          success: false,
+          error: shareResult.error,
+        });
+      }
+
+      const fileData = shareResult.data;
+
+      // Download from Telegram
+      const downloadResult = await telegramService.downloadFileFromTelegram(
+        fileData.telegram_file_id || fileData.telegram_message_id,
+      );
+
+      if (!downloadResult.success) {
+        return res.status(CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
+          success: false,
+          error: "Failed to download file",
+        });
+      }
+
+      // Log download
+      await shareService.logDownload(
+        fileData.share_id || token,
+        req.ip,
+        req.get("user-agent"),
+      );
+
+      // Send file
+      res.set({
+        "Content-Type": fileData.mime_type,
+        "Content-Disposition": `attachment; filename="${fileData.file_name}"`,
       });
+      res.send(downloadResult.data);
     }
-
-    const fileData = shareResult.data;
-
-    // Download from Telegram
-    const downloadResult = await telegramService.downloadFileFromTelegram(
-      fileData.telegram_file_id || fileData.telegram_message_id,
-    );
-
-    if (!downloadResult.success) {
-      return res.status(CONSTANTS.STATUS_CODES.SERVER_ERROR).json({
-        success: false,
-        error: "Failed to download file",
-      });
-    }
-
-    // Log download
-    await shareService.logDownload(
-      fileData.share_id || token,
-      req.ip,
-      req.get("user-agent"),
-    );
-
-    // Send file
-    res.set({
-      "Content-Type": fileData.mime_type,
-      "Content-Disposition": `attachment; filename="${fileData.file_name}"`,
-    });
-    res.send(downloadResult.data);
   } catch (error) {
     next(error);
   }
