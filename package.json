@@ -9,6 +9,7 @@
     "start:backend": "npm run start:dev --workspace=apps/backend",
     "start:frontend": "npm run dev --workspace=apps/frontend",
     "build": "npm run build --workspaces",
-    "install:all": "npm install --legacy-peer-deps"
+    "install:all": "npm install --legacy-peer-deps",
+    "postinstall": "npm run build"
   }
 }
