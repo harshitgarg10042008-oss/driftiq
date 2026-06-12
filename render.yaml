@@ -1,13 +1,19 @@
 services:
   - type: web
-    name: driftiq
+    name: driftiq-backend
     env: node
-    plan: free
-    buildCommand: npm install
-    startCommand: node server.js
-    autoDeploy: true
+    buildCommand: npm install && cd apps/backend && npm run build
+    startCommand: cd apps/backend && npm run start:prod
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: PORT
-        value: 3000
+        value: 4000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
