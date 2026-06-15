@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, User, Shield, Lock, HardDrive, Smartphone, Copy, Check, ExternalLink } from 'lucide-react';
+import { ChevronLeft, User, Shield, Lock, HardDrive, Smartphone, Copy, Check} from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../lib/api';
 import { useToast } from '../components/ui/Toast';

@@ -1,8 +1,9 @@
+///<reference types="vite/client" />
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Download, Lock, FileText, Shield, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Download, Lock, Shield, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { formatBytes, getMimeIcon } from '../lib/utils';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || '/api';

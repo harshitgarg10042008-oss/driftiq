@@ -1,3 +1,4 @@
+///<reference types="vite/client" />
 import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -25,7 +26,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token');
 
         const { data } = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refreshToken });
-        
+
         useAuthStore.getState().setTokens(data.access_token, data.refresh_token);
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
         return api(originalRequest);
