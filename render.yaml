@@ -3,32 +3,44 @@ services:
   - type: web
     name: driftiq-backend
     env: node
-    buildCommand: npm install
-    startCommand: npm run start:prod:backend
+    rootDir: apps/backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main.js
     envVars:
       - key: PORT
         value: 4000
+      - key: NODE_ENV
+        value: production
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
       - key: FRONTEND_URL
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: TELEGRAM_STORAGE_CHAT_ID
+        sync: false
+      - key: TELEGRAM_WEBHOOK_URL
+        sync: false
       - key: TELEGRAM_WEBHOOK_SECRET
         sync: false
       - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
         sync: false
 
   # Frontend Static Site
   - type: web
     name: driftiq-frontend
     env: static
-    buildCommand: npm install
-    staticPublishPath: apps/frontend/dist
+    rootDir: apps/frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL
         fromService:
