@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 import { Link } from 'react-router-dom';
 import {
   ChevronRight, Upload, FolderPlus, Download, Trash2, Eye,
-  Star, Edit3, Move, Search, Grid, List, HardDrive, Shield, RefreshCw, LogOut
+  Star, Edit3, Move, Search, Grid, List, HardDrive, Shield, RefreshCw, LogOut, Link as LinkIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../ui/Modal';
@@ -13,6 +13,7 @@ import { useToast } from '../ui/Toast';
 import { formatBytes, formatDate, getMimeIcon } from '../../lib/utils';
 import api from '../../lib/api';
 import { FilePreviewModal } from './FilePreviewModal';
+import { ShareModal } from './ShareModal';
 
 type Section = 'drive' | 'starred' | 'trash';
 
@@ -38,9 +39,10 @@ export function FileExplorer() {
   const [newFolderName, setNewFolderName] = useState('');
   const [moveModal, setMoveModal] = useState<{ id: string; type: 'file' | 'folder' } | null>(null);
   const [moveToFolderId, setMoveToFolderId] = useState<string | null>(null);
+  const [shareModal, setShareModal] = useState<{ id: string; name: string } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: any; type: 'file' | 'folder' } | null>(null);
   const [previewFile, setPreviewFile] = useState<any | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [stats, setStats] = useState<{ storageUsed: number, storageLimit: number } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -72,16 +74,26 @@ export function FileExplorer() {
     }
   }, [currentFolderId, currentSection, setFiles, setFolders, toast]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const { data } = await api.get('/files/stats');
+      setStats(data);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     fetchContents();
+    fetchStats();
     setSelectedId(null);
-  }, [fetchContents]);
+  }, [fetchContents, fetchStats]);
 
   // WebSocket for real-time Telegram sync
   useEffect(() => {
     // Socket.io connects directly to backend (not through Vite proxy)
-    const wsUrl = import.meta.env.VITE_BACKEND_URL
-      ? import.meta.env.VITE_BACKEND_URL.replace('/api', '')
+    const wsUrl = (import.meta as any).env.VITE_BACKEND_URL
+      ? (import.meta as any).env.VITE_BACKEND_URL.replace('/api', '')
       : 'http://localhost:4000';
 
     const socket = io(wsUrl, {
@@ -130,21 +142,23 @@ export function FileExplorer() {
       if (file.webkitRelativePath) {
         const parts = file.webkitRelativePath.split('/');
         parts.pop(); // Remove the file name itself
-        
+
         if (parts.length > 0) {
           let parentId = currentFolderId || null;
           let currentPath = '';
 
           for (const part of parts) {
             currentPath = currentPath ? `${currentPath}/${part}` : part;
-            
+
             if (!createdFolders.has(currentPath)) {
               try {
                 const { data } = await api.post('/folders', { name: part, parentId });
                 createdFolders.set(currentPath, data.id);
                 // If it's a root-level new folder (created in the current view), add it to UI
                 if (!parentId) {
-                  setFolders(prev => [...prev, data]);
+                  // Get fresh folders to avoid stale closure
+                  const currentFolders = useFileStore.getState().folders;
+                  setFolders([...currentFolders, data]);
                 }
               } catch (err) {
                 console.error('Error creating nested folder:', err);
@@ -152,7 +166,7 @@ export function FileExplorer() {
             }
             parentId = createdFolders.get(currentPath)!;
           }
-          
+
           if (parentId) {
             targetFolderId = parentId;
           }
@@ -174,11 +188,12 @@ export function FileExplorer() {
         toast.show(`Failed to upload "${file.name}": ${err.response?.data?.message || err.message}`, 'error');
       }
     }
-    
+
     // Refresh contents if we uploaded folders to ensure UI is completely in sync
     if (createdFolders.size > 0) {
       fetchContents();
     }
+    fetchStats(); // Update storage after upload
   };
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
@@ -207,9 +222,22 @@ export function FileExplorer() {
       await api.delete(endpoint);
       toast.show(currentSection === 'trash' ? 'Permanently deleted' : 'Moved to trash', 'success');
       fetchContents();
+      fetchStats();
       if (selectedId === id) setSelectedId(null);
     } catch (err: any) {
       toast.show(err.response?.data?.message || 'Delete failed', 'error');
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    try {
+      await api.delete('/files/trash/empty');
+      toast.show('Trash emptied successfully', 'success');
+      fetchContents();
+      fetchStats();
+      setSelectedId(null);
+    } catch (err: any) {
+      toast.show(err.response?.data?.message || 'Failed to empty trash', 'error');
     }
   };
 
@@ -291,10 +319,10 @@ export function FileExplorer() {
 
   return (
     <div className="flex w-full h-full bg-zinc-950 text-zinc-100 overflow-hidden">
-      
+
       {/* LEFT SIDEBAR (Unified App Layout) */}
       <div className="w-64 bg-zinc-950 border-r border-white/5 flex flex-col shrink-0 relative z-20">
-        
+
         {/* Logo Area */}
         <div className="h-20 flex items-center px-6 shrink-0 border-b border-white/5">
           <Link to="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-indigo-500 tracking-tight">
@@ -325,6 +353,29 @@ export function FileExplorer() {
             <Trash2 className="w-4 h-4 mr-3" />
             Trash
           </button>
+        </div>
+
+        {/* Storage Bar Widget */}
+        <div className="p-4 border-t border-white/5">
+          <Link to="/settings" className="block p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300">Storage</span>
+              <span className="text-xs font-medium text-zinc-500">
+                {stats ? `${((stats.storageUsed / stats.storageLimit) * 100).toFixed(0)}%` : '...'}
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5 mb-2">
+              {stats && (
+                <div
+                  className="h-full bg-violet-500 transition-all duration-1000 ease-out"
+                  style={{ width: `${Math.min(100, (stats.storageUsed / stats.storageLimit) * 100)}%` }}
+                ></div>
+              )}
+            </div>
+            <div className="text-xs text-zinc-500 text-center">
+              {stats ? `${formatBytes(stats.storageUsed)} of ${formatBytes(stats.storageLimit)}` : 'Loading...'}
+            </div>
+          </Link>
         </div>
 
         {/* User Profile Area at Bottom */}
@@ -421,8 +472,22 @@ export function FileExplorer() {
                 </div>
               </div>
             )}
+
+            {currentSection === 'trash' && (
+              <button onClick={handleEmptyTrash} className="flex items-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-lg transition border border-red-500/20 text-sm font-medium">
+                <Trash2 className="w-4 h-4" /> <span>Empty Trash</span>
+              </button>
+            )}
           </div>
         </div>
+
+        {currentSection === 'trash' && (
+          <div className="bg-zinc-900/50 border-b border-white/5 py-3 px-8 text-center">
+            <p className="text-sm text-zinc-400 font-medium">
+              Items in trash are deleted forever after 30 days.
+            </p>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -430,7 +495,7 @@ export function FileExplorer() {
           </div>
         ) : (
           <div className={`flex-1 overflow-y-auto p-8 ${viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 auto-rows-min' : 'flex flex-col gap-2 max-w-5xl mx-auto w-full'}`}>
-            
+
             {/* Display Folders First */}
             {searchResults === null && folders.map((folder: any) => (
               viewMode === 'grid' ? (
@@ -482,7 +547,7 @@ export function FileExplorer() {
                   <div className="text-5xl mb-4 transform transition-transform group-hover:-translate-y-1">{getMimeIcon(file.mime_type)}</div>
                   <span className="truncate w-full text-center text-sm font-medium text-zinc-300 group-hover:text-zinc-100">{file.name}</span>
                   <span className="text-xs text-zinc-500 mt-1.5 font-medium">{formatBytes(file.size)}</span>
-                  
+
                   {currentSection !== 'trash' && (
                     <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={(e) => { e.stopPropagation(); handleStar(file.id, file.is_starred); }} className="p-1.5 bg-zinc-900/90 rounded-md hover:bg-zinc-800 transition shadow-sm border border-white/10">
@@ -503,7 +568,7 @@ export function FileExplorer() {
                   <span className="flex-1 truncate text-sm font-medium text-zinc-300 group-hover:text-zinc-100">{file.name}</span>
                   <span className="text-xs text-zinc-500 font-medium w-24 text-right mr-6">{formatBytes(file.size)}</span>
                   <span className="text-xs text-zinc-500 font-medium w-32 text-right mr-6">{formatDate(file.created_at)}</span>
-                  
+
                   {currentSection !== 'trash' && (
                     <button onClick={(e) => { e.stopPropagation(); handleStar(file.id, file.is_starred); }} className="p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/10 rounded-md">
                       <Star className={`w-4 h-4 ${file.is_starred ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-500'}`} />
@@ -581,8 +646,13 @@ export function FileExplorer() {
                       <Edit3 className="w-4 h-4 mr-2" /> Rename
                     </button>
                   )}
+                  {currentSection !== 'trash' && selectedFile && (
+                    <button onClick={() => setShareModal({ id: selectedId!, name: selectedFile.name })} className="flex items-center justify-center py-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-xl transition text-sm font-medium border border-white/5">
+                      <LinkIcon className="w-4 h-4 mr-2" /> Share
+                    </button>
+                  )}
                   {currentSection !== 'trash' && (
-                    <button onClick={() => setMoveModal({ id: selectedId!, type: selectedFile ? 'file' : 'folder' })} className="flex items-center justify-center py-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-xl transition text-sm font-medium border border-white/5">
+                    <button onClick={() => setMoveModal({ id: selectedId!, type: selectedFile ? 'file' : 'folder' })} className="col-span-2 flex items-center justify-center py-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 rounded-xl transition text-sm font-medium border border-white/5">
                       <Move className="w-4 h-4 mr-2" /> Move
                     </button>
                   )}
@@ -631,6 +701,9 @@ export function FileExplorer() {
                     <button className="w-full flex items-center px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition text-left" onClick={() => { handleDownload(contextMenu.item.id); setContextMenu(null); }}>
                       <Download className="w-4 h-4 mr-3 text-zinc-500" /> Download
                     </button>
+                    <button className="w-full flex items-center px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition text-left" onClick={() => { setShareModal({ id: contextMenu.item.id, name: contextMenu.item.name }); setContextMenu(null); }}>
+                      <LinkIcon className="w-4 h-4 mr-3 text-zinc-500" /> Share
+                    </button>
                     <button className="w-full flex items-center px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition text-left" onClick={() => { handleStar(contextMenu.item.id, contextMenu.item.is_starred); setContextMenu(null); }}>
                       <Star className={`w-4 h-4 mr-3 ${contextMenu.item.is_starred ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-500'}`} /> {contextMenu.item.is_starred ? 'Unstar' : 'Star'}
                     </button>
@@ -639,7 +712,7 @@ export function FileExplorer() {
                 <div className="border-t border-white/5 my-2" />
               </>
             )}
-            
+
             {currentSection === 'trash' && contextMenu.type === 'file' && (
               <button className="w-full flex items-center px-4 py-2 text-sm hover:bg-emerald-500/10 transition text-left text-emerald-400" onClick={() => { handleRestore(contextMenu.item.id); setContextMenu(null); }}>
                 <RefreshCw className="w-4 h-4 mr-3" /> Restore
@@ -716,12 +789,22 @@ export function FileExplorer() {
       </Modal>
 
       {/* File Preview Modal */}
-      <FilePreviewModal 
-        isOpen={!!previewFile} 
-        onClose={() => setPreviewFile(null)} 
-        file={previewFile} 
-        onDownload={handleDownload} 
+      <FilePreviewModal
+        isOpen={!!previewFile}
+        onClose={() => setPreviewFile(null)}
+        file={previewFile}
+        onDownload={handleDownload}
       />
+
+      {/* Share Modal */}
+      {shareModal && (
+        <ShareModal
+          isOpen={!!shareModal}
+          onClose={() => setShareModal(null)}
+          fileId={shareModal.id}
+          fileName={shareModal.name}
+        />
+      )}
 
     </div>
   );

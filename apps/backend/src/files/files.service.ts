@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import axios from 'axios';
 import FormData from 'form-data';
@@ -20,6 +20,18 @@ export class FilesService {
 
     if (!botToken || !chatId) {
       throw new InternalServerErrorException('Telegram bot not configured');
+    }
+
+    // Check storage limit before uploading
+    const { data: storageUser } = await this.supabase
+      .getClient()
+      .from('users')
+      .select('storage_used, storage_limit')
+      .eq('id', userId)
+      .single();
+
+    if (storageUser && storageUser.storage_used + fileBuffer.length > storageUser.storage_limit) {
+      throw new ForbiddenException('Storage limit exceeded');
     }
 
     // Upload file to Telegram
@@ -58,11 +70,9 @@ export class FilesService {
 
     if (error) throw new InternalServerErrorException(error.message);
 
-    // Update storage_used on user
+    // Atomically increment storage_used via RPC (avoids read-modify-write race condition)
     await this.supabase.getClient()
-      .from('users')
-      .update({ storage_used: await this.getUserStorageUsed(userId) + fileBuffer.length })
-      .eq('id', userId);
+      .rpc('increment_storage_used', { user_id: userId, bytes: fileBuffer.length });
 
     return file;
   }
@@ -125,6 +135,7 @@ export class FilesService {
       .select('*')
       .eq('id', fileId)
       .eq('user_id', userId)
+      .eq('is_deleted', false)
       .maybeSingle();
 
     if (error) throw new InternalServerErrorException(error.message);
@@ -215,6 +226,39 @@ export class FilesService {
 
     if (error) throw new InternalServerErrorException(error.message);
     return data || [];
+  }
+
+  async emptyTrash(userId: string) {
+    // 1. Find all deleted files to calculate size
+    const { data: filesToDelete, error: fetchError } = await this.supabase
+      .getClient()
+      .from('files')
+      .select('id, size')
+      .eq('user_id', userId)
+      .eq('is_deleted', true);
+
+    if (fetchError) throw new InternalServerErrorException(fetchError.message);
+    if (!filesToDelete || filesToDelete.length === 0) return { success: true, count: 0 };
+
+    const totalSizeToFree = filesToDelete.reduce((acc, f) => acc + Number(f.size), 0);
+
+    // 2. Delete the files from DB
+    const { error: deleteError } = await this.supabase
+      .getClient()
+      .from('files')
+      .delete()
+      .eq('user_id', userId)
+      .eq('is_deleted', true);
+
+    if (deleteError) throw new InternalServerErrorException(deleteError.message);
+
+    // 3. Decrement storage_used by passing a negative byte value to the RPC
+    if (totalSizeToFree > 0) {
+      await this.supabase.getClient()
+        .rpc('increment_storage_used', { user_id: userId, bytes: -totalSizeToFree });
+    }
+
+    return { success: true, count: filesToDelete.length };
   }
 
   async getStarred(userId: string) {

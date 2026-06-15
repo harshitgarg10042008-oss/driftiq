@@ -21,8 +21,9 @@ export default function Register() {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/register', { email, username, fullName, password });
-      setAuth({ id: 'temp', email, role: 'user' }, data.access_token, data.refresh_token);
-      const me = await api.get('/auth/me');
+      const me = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${data.access_token}` },
+      });
       setAuth(me.data, data.access_token, data.refresh_token);
       navigate('/');
     } catch (err: any) {

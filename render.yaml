@@ -1,9 +1,10 @@
 services:
+  # Backend API Service
   - type: web
     name: driftiq-backend
     env: node
-    buildCommand: npm install && cd apps/backend && npm run build
-    startCommand: cd apps/backend && npm run start:prod
+    buildCommand: npm install
+    startCommand: npm run start:prod:backend
     envVars:
       - key: PORT
         value: 4000
@@ -17,3 +18,20 @@ services:
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+
+  # Frontend Static Site
+  - type: web
+    name: driftiq-frontend
+    env: static
+    buildCommand: npm install
+    staticPublishPath: apps/frontend/dist
+    envVars:
+      - key: VITE_BACKEND_URL
+        fromService:
+          type: web
+          name: driftiq-backend
+          envVarKey: RENDER_EXTERNAL_URL

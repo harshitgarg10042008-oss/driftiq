@@ -53,7 +53,8 @@ export class AdminController {
   async getFiles(
     @Query('page') page = '1',
     @Query('limit') limit = '50',
+    @Query('search') search = '',
   ) {
-    return this.adminService.getAdminFiles(Number(page), Number(limit));
+    return this.adminService.getAdminFiles(Number(page), Number(limit), search);
   }
 }

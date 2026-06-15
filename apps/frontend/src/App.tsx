@@ -10,6 +10,9 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const ShareView = lazy(() => import('./pages/ShareView'))
 
+const Settings = lazy(() => import('./pages/Settings'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
   const { user, isAuthenticated } = useAuthStore();
   if (!isAuthenticated()) return <Navigate to="/login" replace />;
@@ -45,6 +48,17 @@ export default function App() {
           />
 
           <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <div className="flex flex-1 h-full overflow-hidden">
+                  <Settings />
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/admin"
             element={
               <ProtectedRoute adminOnly>
@@ -55,7 +69,7 @@ export default function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </div>

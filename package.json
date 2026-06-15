@@ -8,6 +8,7 @@
     "start": "echo \"Monorepo: Please open two terminals. Run 'npm run start:backend' in one, and 'npm run start:frontend' in the other.\"",
     "start:backend": "npm run start:dev --workspace=apps/backend",
     "start:frontend": "npm run dev --workspace=apps/frontend",
+    "start:prod:backend": "npm run start:prod --workspace=apps/backend",
     "build": "npm run build --workspaces",
     "install:all": "npm install --legacy-peer-deps",
     "postinstall": "npm run build"

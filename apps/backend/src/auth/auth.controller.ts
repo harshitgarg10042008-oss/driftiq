@@ -17,24 +17,6 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  @Get('debug-register')
-  async debugRegister() {
-    try {
-      return await this.authService.register({
-        email: `test_${Date.now()}@test.com`,
-        username: `test_${Date.now()}`,
-        password: 'password123',
-        fullName: 'Debug User'
-      });
-    } catch (e: any) {
-      return { 
-        debug_error: e.message, 
-        debug_stack: e.stack, 
-        debug_response: e.response 
-      };
-    }
-  }
-
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {

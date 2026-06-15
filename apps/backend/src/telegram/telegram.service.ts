@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
+import { UsersService } from '../users/users.service';
 import axios from 'axios';
 
 @Injectable()
@@ -10,14 +11,35 @@ export class TelegramService {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly realtimeGateway: RealtimeGateway,
+    private readonly usersService: UsersService,
   ) {}
 
   async handleWebhook(update: any) {
+    const telegramUserId = update.message?.from?.id?.toString();
+    if (!telegramUserId) return { status: 'ignored' };
+
+    // Handle text commands
+    if (update.message?.text?.startsWith('/link ')) {
+      const code = update.message.text.replace('/link ', '').trim();
+      try {
+        const user = await this.usersService.linkTelegramByCode(code, telegramUserId);
+        if (user) {
+          await this.sendTelegramMessage(telegramUserId, '✅ Account successfully linked! You can now send files here to upload them directly to DriftIQ.');
+          return { status: 'linked' };
+        } else {
+          await this.sendTelegramMessage(telegramUserId, '❌ Invalid or expired link code. Please generate a new one from your Settings page.');
+          return { status: 'invalid_code' };
+        }
+      } catch (err) {
+        await this.sendTelegramMessage(telegramUserId, '❌ Failed to link account due to an internal error.');
+        return { status: 'error' };
+      }
+    }
+
     if (!update.message || !update.message.document) {
       return { status: 'ignored' };
     }
 
-    const telegramUserId = update.message.from.id.toString();
     const document = update.message.document;
 
     // 1. Map telegram_user_id to Website User

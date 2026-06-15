@@ -53,21 +53,5 @@ async function bootstrap() {
   const port = process.env.PORT || 4000;
   await app.listen(port);
   console.log(`✅ DriftIQ Backend running on: http://localhost:${port}/api`);
-
-  // DEBUG HOOK: Fetch debug-register after 3 seconds and save to file
-  setTimeout(() => {
-    const http = require('http');
-    const fs = require('fs');
-    http.get(`http://localhost:${port}/api/auth/debug-register`, (res) => {
-      let data = '';
-      res.on('data', (c) => data += c);
-      res.on('end', () => {
-        fs.writeFileSync('c:\\Users\\vishe\\OneDrive\\Desktop\\Samyak\\project\\driftiq\\apps\\backend\\debug-result-absolute.json', data);
-        console.log('✅ Wrote debug-result-absolute.json');
-      });
-    }).on('error', (e) => {
-      fs.writeFileSync('c:\\Users\\vishe\\OneDrive\\Desktop\\Samyak\\project\\driftiq\\apps\\backend\\debug-result-absolute.json', JSON.stringify({ error: e.message }));
-    });
-  }, 3000);
 }
 bootstrap();

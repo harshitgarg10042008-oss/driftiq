@@ -47,6 +47,11 @@ export class FilesController {
     return this.filesService.getDeleted(req.user.id);
   }
 
+  @Delete('trash/empty')
+  async emptyTrash(@Request() req) {
+    return this.filesService.emptyTrash(req.user.id);
+  }
+
   @Get('search')
   async search(@Request() req, @Query('q') query: string) {
     return this.filesService.search(req.user.id, query || '');

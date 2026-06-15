@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Download, Lock, FileText, Shield, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { formatBytes, getMimeIcon } from '../lib/utils';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || '/api';
 
 export default function ShareView() {
   const { token } = useParams();

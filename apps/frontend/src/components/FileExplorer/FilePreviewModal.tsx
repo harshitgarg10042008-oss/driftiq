@@ -12,6 +12,10 @@ interface FilePreviewModalProps {
 }
 
 export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePreviewModalProps) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState(false);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -20,25 +24,32 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
     return () => window.removeEventListener('keydown', handleEsc);
   }, [onClose]);
 
-  if (!isOpen || !file) return null;
-
-  const isImage = file.mime_type?.startsWith('image/');
-  const isVideo = file.mime_type?.startsWith('video/');
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [error, setError] = useState(false);
+  const isImage = file?.mime_type?.startsWith('image/');
+  const isVideo = file?.mime_type?.startsWith('video/');
+  const isPdf = file?.mime_type === 'application/pdf';
+  const isText = file?.mime_type?.startsWith('text/') || file?.mime_type?.includes('json') || file?.mime_type?.includes('xml') || file?.mime_type?.includes('javascript');
 
   useEffect(() => {
+    if (!isOpen || !file) return;
     let objectUrl: string | null = null;
-    
+    setPreviewUrl(null);
+    setTextContent(null);
+    setPreviewError(false);
+
     const fetchPreview = async () => {
-      if (!file || (!isImage && !isVideo)) return;
+      if (!isImage && !isVideo && !isPdf && !isText) return;
       try {
         const response = await api.get(`/files/${file.id}/stream`, { responseType: 'blob' });
-        objectUrl = window.URL.createObjectURL(new Blob([response.data]));
-        setPreviewUrl(objectUrl);
+        
+        if (isText) {
+          const text = await response.data.text();
+          setTextContent(text);
+        } else {
+          objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: file.mime_type }));
+          setPreviewUrl(objectUrl);
+        }
       } catch {
-        setError(true);
+        setPreviewError(true);
       }
     };
 
@@ -47,7 +58,7 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
     return () => {
       if (objectUrl) window.URL.revokeObjectURL(objectUrl);
     };
-  }, [file, isImage, isVideo]);
+  }, [isOpen, file, isImage, isVideo, isPdf, isText]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-zinc-950/90 backdrop-blur-sm">
@@ -89,7 +100,7 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
 
         {/* Content */}
         <div className="flex-1 overflow-auto flex items-center justify-center bg-zinc-950/50 min-h-[300px] p-8">
-          {error ? (
+          {previewError ? (
              <div className="flex flex-col items-center justify-center text-zinc-500 text-center">
                <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file.mime_type)}</div>
                <p className="text-lg font-semibold text-zinc-300 mb-2">Preview unavailable</p>
@@ -109,7 +120,17 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
               controls
               className="max-w-full max-h-[65vh] rounded-xl shadow-lg"
             />
-          ) : (isImage || isVideo) && !previewUrl ? (
+          ) : isPdf && previewUrl ? (
+            <iframe
+              src={`${previewUrl}#toolbar=0`}
+              title={file.name}
+              className="w-full h-full min-h-[65vh] rounded-xl bg-white shadow-lg border-0"
+            />
+          ) : isText && textContent !== null ? (
+            <div className="w-full h-full max-h-[65vh] overflow-auto bg-zinc-900 border border-white/10 rounded-xl p-4 custom-scrollbar text-left">
+              <pre className="text-xs text-zinc-300 font-mono whitespace-pre-wrap">{textContent}</pre>
+            </div>
+          ) : (isImage || isVideo || isPdf || isText) && !previewUrl && textContent === null ? (
             <div className="animate-pulse text-zinc-500">Loading preview...</div>
           ) : (
             <div className="flex flex-col items-center justify-center text-zinc-500 text-center">

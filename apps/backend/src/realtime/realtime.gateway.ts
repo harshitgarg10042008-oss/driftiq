@@ -9,7 +9,8 @@ import { Injectable } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: ['http://localhost:3000', 'http://localhost:5173', process.env.FRONTEND_URL].filter(Boolean),
+    credentials: true,
   },
 })
 @Injectable()
@@ -30,7 +31,14 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   handleDisconnect(client: Socket) {
-    // Cleanup if needed
+    // Remove disconnected socket from userSockets map to prevent memory leaks
+    for (const [userId, socketId] of this.userSockets.entries()) {
+      if (socketId === client.id) {
+        this.userSockets.delete(userId);
+        console.log(`User ${userId} disconnected from WS`);
+        break;
+      }
+    }
   }
 
   // Called by the Telegram Service when a new file arrives via webhook

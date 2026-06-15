@@ -28,7 +28,16 @@ export const useAuthStore = create<AuthStore>()(
       setAuth: (user, accessToken, refreshToken) => set({ user, accessToken, refreshToken }),
       setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
-      isAuthenticated: () => !!get().accessToken,
+      isAuthenticated: () => {
+        const token = get().accessToken;
+        if (!token) return false;
+        try {
+          const { exp } = JSON.parse(atob(token.split('.')[1]));
+          return exp * 1000 > Date.now();
+        } catch {
+          return false;
+        }
+      },
     }),
     {
       name: 'driftiq-auth',

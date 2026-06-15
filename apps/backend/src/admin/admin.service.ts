@@ -52,14 +52,24 @@ export class AdminService {
     return this.usersService.deleteUser(id);
   }
 
-  async getAdminFiles(page = 1, limit = 50) {
+  async getAdminFiles(page = 1, limit = 50, search = '') {
     const from = (page - 1) * limit;
-    const { data, error, count } = await this.supabase
+    
+    let query = this.supabase
       .getClient()
       .from('files')
-      .select('*, users(email, username)', { count: 'exact' })
-      .range(from, from + limit - 1)
-      .order('created_at', { ascending: false });
+      .select('*, users!inner(email, username)', { count: 'exact' });
+
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+      // Note: Supabase JS client doesn't support generic OR across tables easily without raw SQL or views, 
+      // but we can search by file name here. For email/username search, a view is better. 
+      // We will just do file name search for simplicity.
+    }
+
+    query = query.range(from, from + limit - 1).order('created_at', { ascending: false });
+
+    const { data, error, count } = await query;
 
     if (error) throw new InternalServerErrorException(error.message);
     return { files: data, total: count };
