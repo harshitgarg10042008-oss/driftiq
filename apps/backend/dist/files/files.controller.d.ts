@@ -8,6 +8,10 @@ export declare class FilesController {
     findAll(req: any, folderId?: string): Promise<any[]>;
     getStarred(req: any): Promise<any[]>;
     getDeleted(req: any): Promise<any[]>;
+    emptyTrash(req: any): Promise<{
+        success: boolean;
+        count: number;
+    }>;
     search(req: any, query: string): Promise<any[]>;
     getStats(req: any): Promise<{
         storageUsed: any;

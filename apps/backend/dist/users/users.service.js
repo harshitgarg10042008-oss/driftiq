@@ -127,6 +127,47 @@ let UsersService = class UsersService {
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
     }
+    async generateTelegramLinkCode(userId) {
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
+        const { error } = await this.supabase
+            .getClient()
+            .from('users')
+            .update({
+            telegram_link_code: code,
+            telegram_link_code_expires_at: expiresAt
+        })
+            .eq('id', userId);
+        if (error)
+            throw new common_1.InternalServerErrorException('Failed to generate link code');
+        return code;
+    }
+    async linkTelegramByCode(code, telegramUserId) {
+        const { data: user, error } = await this.supabase
+            .getClient()
+            .from('users')
+            .select('id, telegram_link_code_expires_at')
+            .eq('telegram_link_code', code)
+            .single();
+        if (error || !user)
+            return null;
+        if (new Date(user.telegram_link_code_expires_at) < new Date()) {
+            return null;
+        }
+        const { error: updateError } = await this.supabase
+            .getClient()
+            .from('users')
+            .update({
+            telegram_user_id: telegramUserId,
+            telegram_status: 'connected',
+            telegram_link_code: null,
+            telegram_link_code_expires_at: null
+        })
+            .eq('id', user.id);
+        if (updateError)
+            throw new common_1.InternalServerErrorException('Failed to link account');
+        return user;
+    }
     async findAll(page = 1, limit = 20, search = '') {
         let query = this.supabase
             .getClient()

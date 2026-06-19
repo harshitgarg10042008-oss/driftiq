@@ -52,14 +52,17 @@ let AdminService = class AdminService {
     async deleteUser(id) {
         return this.usersService.deleteUser(id);
     }
-    async getAdminFiles(page = 1, limit = 50) {
+    async getAdminFiles(page = 1, limit = 50, search = '') {
         const from = (page - 1) * limit;
-        const { data, error, count } = await this.supabase
+        let query = this.supabase
             .getClient()
             .from('files')
-            .select('*, users(email, username)', { count: 'exact' })
-            .range(from, from + limit - 1)
-            .order('created_at', { ascending: false });
+            .select('*, users!inner(email, username)', { count: 'exact' });
+        if (search) {
+            query = query.ilike('name', `%${search}%`);
+        }
+        query = query.range(from, from + limit - 1).order('created_at', { ascending: false });
+        const { data, error, count } = await query;
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
         return { files: data, total: count };

@@ -43,8 +43,8 @@ let AdminController = class AdminController {
     async deleteUser(id) {
         return this.adminService.deleteUser(id);
     }
-    async getFiles(page = '1', limit = '50') {
-        return this.adminService.getAdminFiles(Number(page), Number(limit));
+    async getFiles(page = '1', limit = '50', search = '') {
+        return this.adminService.getAdminFiles(Number(page), Number(limit), search);
     }
 };
 exports.AdminController = AdminController;
@@ -102,8 +102,9 @@ __decorate([
     (0, common_1.Get)('files'),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('search')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getFiles", null);
 exports.AdminController = AdminController = __decorate([

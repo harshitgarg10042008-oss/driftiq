@@ -18,6 +18,8 @@ export declare class UsersService {
     setResetToken(id: string, token: string): Promise<void>;
     clearResetToken(id: string): Promise<void>;
     linkTelegram(userId: string, telegramUserId: string): Promise<void>;
+    generateTelegramLinkCode(userId: string): Promise<string>;
+    linkTelegramByCode(code: string, telegramUserId: string): Promise<any>;
     findAll(page?: number, limit?: number, search?: string): Promise<{
         users: {
             id: any;

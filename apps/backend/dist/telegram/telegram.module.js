@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const telegram_controller_1 = require("./telegram.controller");
 const telegram_service_1 = require("./telegram.service");
 const realtime_module_1 = require("../realtime/realtime.module");
+const users_module_1 = require("../users/users.module");
 let TelegramModule = class TelegramModule {
 };
 exports.TelegramModule = TelegramModule;
 exports.TelegramModule = TelegramModule = __decorate([
     (0, common_1.Module)({
-        imports: [realtime_module_1.RealtimeModule],
+        imports: [realtime_module_1.RealtimeModule, users_module_1.UsersModule],
         controllers: [telegram_controller_1.TelegramController],
         providers: [telegram_service_1.TelegramService],
         exports: [telegram_service_1.TelegramService],

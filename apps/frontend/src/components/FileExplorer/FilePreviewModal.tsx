@@ -39,13 +39,13 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
     const fetchPreview = async () => {
       if (!isImage && !isVideo && !isPdf && !isText) return;
       try {
-        const response = await api.get(`/files/${file.id}/stream`, { responseType: 'blob' });
-        
+        const response = await api.get(`/files/${file?.id}/stream`, { responseType: 'blob' });
+
         if (isText) {
           const text = await response.data.text();
           setTextContent(text);
         } else {
-          objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: file.mime_type }));
+          objectUrl = window.URL.createObjectURL(new Blob([response.data], { type: file?.mime_type }));
           setPreviewUrl(objectUrl);
         }
       } catch {
@@ -59,6 +59,8 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
       if (objectUrl) window.URL.revokeObjectURL(objectUrl);
     };
   }, [isOpen, file, isImage, isVideo, isPdf, isText]);
+
+  if (!isOpen || !file) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-zinc-950/90 backdrop-blur-sm">
@@ -75,14 +77,14 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
       >
         {/* Header */}
         <div className="flex items-center gap-4 px-6 py-4 border-b border-white/5 shrink-0">
-          <div className="text-2xl shrink-0">{getMimeIcon(file.mime_type)}</div>
+          <div className="text-2xl shrink-0">{getMimeIcon(file?.mime_type)}</div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-zinc-100 truncate">{file.name}</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">{formatBytes(file.size)}</p>
+            <h3 className="text-sm font-semibold text-zinc-100 truncate">{file?.name}</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">{formatBytes(file?.size)}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button
-              onClick={() => onDownload(file.id)}
+              onClick={() => onDownload(file?.id)}
               className="btn-ghost"
               title="Download"
             >
@@ -101,17 +103,17 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
         {/* Content */}
         <div className="flex-1 overflow-auto flex items-center justify-center bg-zinc-950/50 min-h-[300px] p-8">
           {previewError ? (
-             <div className="flex flex-col items-center justify-center text-zinc-500 text-center">
-               <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file.mime_type)}</div>
-               <p className="text-lg font-semibold text-zinc-300 mb-2">Preview unavailable</p>
-               <button onClick={() => onDownload(file.id)} className="btn-secondary mt-4">
-                 <Download className="w-4 h-4 mr-2" /> Download
-               </button>
-             </div>
+            <div className="flex flex-col items-center justify-center text-zinc-500 text-center">
+              <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file?.mime_type)}</div>
+              <p className="text-lg font-semibold text-zinc-300 mb-2">Preview unavailable</p>
+              <button onClick={() => onDownload(file?.id)} className="btn-secondary mt-4">
+                <Download className="w-4 h-4 mr-2" /> Download
+              </button>
+            </div>
           ) : isImage && previewUrl ? (
             <img
               src={previewUrl}
-              alt={file.name}
+              alt={file?.name}
               className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-lg"
             />
           ) : isVideo && previewUrl ? (
@@ -123,22 +125,22 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
           ) : isPdf && previewUrl ? (
             <iframe
               src={`${previewUrl}#toolbar=0`}
-              title={file.name}
+              title={file?.name}
               className="w-full h-full min-h-[65vh] rounded-xl bg-white shadow-lg border-0"
             />
           ) : isText && textContent !== null ? (
-            <div className="w-full h-full max-h-[65vh] overflow-auto bg-zinc-900 border border-white/10 rounded-xl p-4 custom-scrollbar text-left">
+            <div className="w-full h-full max-h-[65vh] overflow-auto bg-zinc-900 border border-white/10 rounded-xl p-4 text-left">
               <pre className="text-xs text-zinc-300 font-mono whitespace-pre-wrap">{textContent}</pre>
             </div>
           ) : (isImage || isVideo || isPdf || isText) && !previewUrl && textContent === null ? (
             <div className="animate-pulse text-zinc-500">Loading preview...</div>
           ) : (
             <div className="flex flex-col items-center justify-center text-zinc-500 text-center">
-              <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file.mime_type)}</div>
+              <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file?.mime_type)}</div>
               <p className="text-lg font-semibold text-zinc-300 mb-2">No preview available</p>
               <p className="text-sm text-zinc-500 mb-8">This file type cannot be previewed in the browser.</p>
               <button
-                onClick={() => onDownload(file.id)}
+                onClick={() => onDownload(file?.id)}
                 className="btn-secondary"
               >
                 <Download className="w-4 h-4" /> Download to view

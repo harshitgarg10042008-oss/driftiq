@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @layer base {
   :root {
     --color-brand: #7c3aed;
@@ -28,8 +30,8 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -44,11 +46,11 @@
 
 @layer components {
   .btn-primary {
-    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all duration-150 shadow-sm;
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl transition-all duration-150 shadow-md shadow-violet-500/20;
   }
 
   .btn-secondary {
-    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-300 font-medium text-sm rounded-xl transition-all duration-150;
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/[0.08] text-zinc-300 font-medium text-sm rounded-xl transition-all duration-150;
   }
 
   .btn-ghost {
@@ -56,11 +58,11 @@
   }
 
   .input-field {
-    @apply w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-500 text-sm outline-none focus:ring-1 focus:ring-violet-500 focus:border-transparent transition-all duration-150;
+    @apply w-full bg-zinc-900 border border-white/[0.08] rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 text-sm outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all duration-150;
   }
 
   .card {
-    @apply bg-white/[0.03] border border-white/5 rounded-2xl;
+    @apply bg-white/[0.02] border border-white/[0.06] rounded-2xl;
   }
 
   .card-elevated {
@@ -68,6 +70,88 @@
   }
 
   .label {
-    @apply block text-xs font-medium text-zinc-400 mb-1.5 tracking-wide uppercase;
+    @apply block text-xs font-semibold text-zinc-500 mb-1.5 tracking-wide uppercase;
   }
+
+  /* Glass card */
+  .glass {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl;
+  }
+}
+
+@layer utilities {
+  /* Animated gradient text */
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  /* Smooth fade in */
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+  }
+
+  /* Float up animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(3deg); }
+  66%       { transform: translateY(-6px) rotate(-2deg); }
+}
+
+/* Particle glow pulse */
+@keyframes particle-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50%       { opacity: 0.3;  transform: scale(1.05); }
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.07) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Button shimmer sweep */
+@keyframes shimmer-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer-btn:hover {
+  background-size: 200% auto;
+  animation: shimmer-sweep 3s linear infinite;
+}
+
+/* Float Up */
+@keyframes floatUp {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; transform: translateY(80vh) scale(1); }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
 }

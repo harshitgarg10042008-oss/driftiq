@@ -35,6 +35,9 @@ let FilesController = class FilesController {
     async getDeleted(req) {
         return this.filesService.getDeleted(req.user.id);
     }
+    async emptyTrash(req) {
+        return this.filesService.emptyTrash(req.user.id);
+    }
     async search(req, query) {
         return this.filesService.search(req.user.id, query || '');
     }
@@ -104,6 +107,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], FilesController.prototype, "getDeleted", null);
+__decorate([
+    (0, common_1.Delete)('trash/empty'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "emptyTrash", null);
 __decorate([
     (0, common_1.Get)('search'),
     __param(0, (0, common_1.Request)()),

@@ -78,13 +78,13 @@ export default function Settings() {
       <div className="flex-1 flex flex-col min-w-0 max-w-4xl mx-auto w-full">
         {/* Header */}
         <div className="h-20 flex items-center px-8 shrink-0 border-b border-white/5 sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
-          <Link to="/" className="flex items-center text-zinc-400 hover:text-zinc-100 transition mr-4">
+          <Link to="/dashboard" className="flex items-center text-zinc-400 hover:text-zinc-100 transition mr-4">
             <ChevronLeft className="w-5 h-5 mr-1" /> Back
           </Link>
           <h1 className="text-xl font-semibold">Account Settings</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8">
           <div className="space-y-8">
             
             {/* Profile Section */}

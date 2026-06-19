@@ -40,7 +40,7 @@ export declare class AdminController {
     deleteUser(id: string): Promise<{
         success: boolean;
     }>;
-    getFiles(page?: string, limit?: string): Promise<{
+    getFiles(page?: string, limit?: string, search?: string): Promise<{
         files: any[];
         total: number;
     }>;

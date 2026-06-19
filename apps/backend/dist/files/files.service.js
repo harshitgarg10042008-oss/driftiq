@@ -209,6 +209,32 @@ let FilesService = class FilesService {
             throw new common_1.InternalServerErrorException(error.message);
         return data || [];
     }
+    async emptyTrash(userId) {
+        const { data: filesToDelete, error: fetchError } = await this.supabase
+            .getClient()
+            .from('files')
+            .select('id, size')
+            .eq('user_id', userId)
+            .eq('is_deleted', true);
+        if (fetchError)
+            throw new common_1.InternalServerErrorException(fetchError.message);
+        if (!filesToDelete || filesToDelete.length === 0)
+            return { success: true, count: 0 };
+        const totalSizeToFree = filesToDelete.reduce((acc, f) => acc + Number(f.size), 0);
+        const { error: deleteError } = await this.supabase
+            .getClient()
+            .from('files')
+            .delete()
+            .eq('user_id', userId)
+            .eq('is_deleted', true);
+        if (deleteError)
+            throw new common_1.InternalServerErrorException(deleteError.message);
+        if (totalSizeToFree > 0) {
+            await this.supabase.getClient()
+                .rpc('increment_storage_used', { user_id: userId, bytes: -totalSizeToFree });
+        }
+        return { success: true, count: filesToDelete.length };
+    }
     async getStarred(userId) {
         const { data, error } = await this.supabase
             .getClient()

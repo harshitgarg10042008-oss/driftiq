@@ -24,6 +24,10 @@ export declare class FilesService {
     }>;
     restore(userId: string, fileId: string): Promise<any>;
     getDeleted(userId: string): Promise<any[]>;
+    emptyTrash(userId: string): Promise<{
+        success: boolean;
+        count: number;
+    }>;
     getStarred(userId: string): Promise<any[]>;
     search(userId: string, query: string): Promise<any[]>;
     getStorageStats(userId: string): Promise<{

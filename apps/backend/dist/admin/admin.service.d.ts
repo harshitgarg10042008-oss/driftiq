@@ -42,7 +42,7 @@ export declare class AdminService {
     deleteUser(id: string): Promise<{
         success: boolean;
     }>;
-    getAdminFiles(page?: number, limit?: number): Promise<{
+    getAdminFiles(page?: number, limit?: number, search?: string): Promise<{
         files: any[];
         total: number;
     }>;

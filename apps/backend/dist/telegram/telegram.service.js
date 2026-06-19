@@ -17,18 +17,40 @@ exports.TelegramService = void 0;
 const common_1 = require("@nestjs/common");
 const supabase_service_1 = require("../supabase/supabase.service");
 const realtime_gateway_1 = require("../realtime/realtime.gateway");
+const users_service_1 = require("../users/users.service");
 const axios_1 = __importDefault(require("axios"));
 let TelegramService = TelegramService_1 = class TelegramService {
-    constructor(supabase, realtimeGateway) {
+    constructor(supabase, realtimeGateway, usersService) {
         this.supabase = supabase;
         this.realtimeGateway = realtimeGateway;
+        this.usersService = usersService;
         this.logger = new common_1.Logger(TelegramService_1.name);
     }
     async handleWebhook(update) {
+        const telegramUserId = update.message?.from?.id?.toString();
+        if (!telegramUserId)
+            return { status: 'ignored' };
+        if (update.message?.text?.startsWith('/link ')) {
+            const code = update.message.text.replace('/link ', '').trim();
+            try {
+                const user = await this.usersService.linkTelegramByCode(code, telegramUserId);
+                if (user) {
+                    await this.sendTelegramMessage(telegramUserId, '✅ Account successfully linked! You can now send files here to upload them directly to DriftIQ.');
+                    return { status: 'linked' };
+                }
+                else {
+                    await this.sendTelegramMessage(telegramUserId, '❌ Invalid or expired link code. Please generate a new one from your Settings page.');
+                    return { status: 'invalid_code' };
+                }
+            }
+            catch (err) {
+                await this.sendTelegramMessage(telegramUserId, '❌ Failed to link account due to an internal error.');
+                return { status: 'error' };
+            }
+        }
         if (!update.message || !update.message.document) {
             return { status: 'ignored' };
         }
-        const telegramUserId = update.message.from.id.toString();
         const document = update.message.document;
         const { data: user, error: userError } = await this.supabase
             .getClient()
@@ -118,6 +140,7 @@ exports.TelegramService = TelegramService;
 exports.TelegramService = TelegramService = TelegramService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [supabase_service_1.SupabaseService,
-        realtime_gateway_1.RealtimeGateway])
+        realtime_gateway_1.RealtimeGateway,
+        users_service_1.UsersService])
 ], TelegramService);
 //# sourceMappingURL=telegram.service.js.map
