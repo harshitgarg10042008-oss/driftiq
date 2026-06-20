@@ -18,7 +18,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     const existing = await this.usersService.findByEmail(dto.email);
@@ -48,22 +48,22 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.usersService.findByEmail(dto.email);
+    // Try find by email first, then by username
+    let user = await this.usersService.findByEmail(dto.email);
+    if (!user) {
+      user = await this.usersService.findByUsername(dto.email);
+    }
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
     if (!user.is_active) {
       throw new UnauthorizedException('Account is disabled. Contact support.');
     }
-
     const isMatch = await bcrypt.compare(dto.password, user.password_hash);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Update last_login
     await this.usersService.updateLastLogin(user.id);
-
     return this.generateTokens(user.id, user.email, user.role);
   }
 
@@ -134,7 +134,7 @@ export class AuthService {
     }
 
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-    
+
     try {
       await axios.post(
         'https://api.resend.com/emails',
@@ -185,6 +185,22 @@ export class AuthService {
     } catch {
       throw new BadRequestException('Invalid or expired reset token');
     }
+  }
+
+  async getTelegramLinkCode(userId: string) {
+    const code = 'DQ-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    await this.usersService.setTelegramLinkCode(userId, code, expires);
+    return { code };
+  }
+
+  async getTelegramStatus(userId: string) {
+    const user = await this.usersService.findById(userId);
+    return {
+      connected: user?.telegramconnected === true || user?.telegram_status === 'connected',
+      status: (user?.telegramconnected || user?.telegram_status === 'connected') ? 'connected' : 'pending',
+    };
   }
 
   private async generateTokens(userId: string, email: string, role: string) {

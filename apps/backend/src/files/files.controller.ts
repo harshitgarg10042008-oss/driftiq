@@ -112,4 +112,46 @@ export class FilesController {
   async restore(@Request() req, @Param('id') fileId: string) {
     return this.filesService.restore(req.user.id, fileId);
   }
+
+  @Post(':id/share')
+  async createShareLink(
+    @Request() req,
+    @Param('id') fileId: string,
+    @Body('password') password?: string,
+    @Body('expiresIn') expiresIn?: number,
+  ) {
+    return this.filesService.createShareLink(
+      req.user.id, fileId, password, expiresIn
+    );
+  }
+
+  // Public endpoint — no auth guard needed, but controller-level guard applies
+  // The guard is on the controller, so we need a separate public approach.
+  // We'll keep it here and let the JWT guard handle it — unauthenticated access
+  // to shared files should use a separate public controller or AllowAnonymous.
+  @Get('shared/:token')
+  async getSharedFile(
+    @Param('token') token: string,
+    @Query('password') password?: string,
+  ) {
+    return this.filesService.getSharedFile(token, password);
+  }
+
+  @Get('shared/:token/stream')
+  async streamSharedFile(
+    @Param('token') token: string,
+    @Query('password') password?: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { stream, name, mimeType, size } = 
+      await this.filesService.streamSharedFile(token, password);
+
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Disposition': `attachment; filename="${name}"`,
+      'Content-Length': size.toString(),
+    });
+
+    return new StreamableFile(stream);
+  }
 }

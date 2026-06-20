@@ -60,4 +60,16 @@ export class AuthController {
   async getProfile(@Request() req) {
     return req.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('telegram-link-code')
+  async getTelegramLinkCode(@Request() req) {
+    return this.authService.getTelegramLinkCode(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('telegram-status')
+  async getTelegramStatus(@Request() req) {
+    return this.authService.getTelegramStatus(req.user.id);
+  }
 }

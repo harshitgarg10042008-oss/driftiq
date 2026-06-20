@@ -1,9 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Loader2, ArrowLeft, CheckCircle, HardDrive, Zap, Shield } from 'lucide-react';
+import { User, Lock, ArrowRight, Loader2, ArrowLeft, CheckCircle, Zap, Shield, HardDrive } from 'lucide-react';
+
+/* ─── Floating Particles ───────────────────────────────────────────────── */
+interface Particle {
+  id: number;
+  color: string;
+  size: number;
+  left: number;
+  duration: number;
+  delay: number;
+}
+
+const PARTICLE_COLORS = ['bg-violet-500', 'bg-indigo-500', 'bg-[#2AABEE]', 'bg-pink-500', 'bg-emerald-500'];
+
+function FloatingParticles() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    const generated = Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+      size: Math.random() * 4 + 2,
+      left: Math.random() * 100,
+      duration: Math.random() * 12 + 8,
+      delay: Math.random() * 15,
+    }));
+    setParticles(generated);
+  }, []);
+
+  return (
+    <>
+      <style>{`
+        @keyframes floatUp {
+          0% { transform: translateY(100vh) scale(0); opacity: 0; }
+          10% { opacity: 1; transform: translateY(80vh) scale(1); }
+          90% { opacity: 1; }
+          100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
+        }
+      `}</style>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {particles.map((p) => (
+          <div
+            key={p.id}
+            className={`absolute rounded-full opacity-60 ${p.color}`}
+            style={{
+              width: p.size,
+              height: p.size,
+              left: `${p.left}%`,
+              bottom: '-20px',
+              animation: `floatUp ${p.duration}s linear infinite`,
+              animationDelay: `${p.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
 
 /* ─── Floating shape (decorative) ─────────────────────────────────────── */
 function FloatingShape({ className }: { className?: string }) {
@@ -74,14 +131,25 @@ export default function Login() {
         <FloatingShape className="absolute bottom-36 left-24 w-10 h-10 rounded-xl border border-violet-400/20 bg-violet-500/10 backdrop-blur-sm" />
         <FloatingShape className="absolute top-1/2 right-16 w-8 h-8 rounded-lg border border-indigo-400/20 bg-indigo-500/10 backdrop-blur-sm" />
 
+        {/* Floating particles */}
+        <FloatingParticles />
+
         {/* Content */}
         <div className="relative z-10 flex flex-col h-full p-14">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-xl shadow-violet-500/30">
-              <HardDrive className="w-4.5 h-4.5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-zinc-100 tracking-tight">DriftIQ</span>
+            <img
+              src="/logo-icon.png"
+              alt="DriftIQ"
+              className="h-8 w-8 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span className="font-black italic text-xl tracking-tight select-none">
+              <span className="text-white">Drift</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+            </span>
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
@@ -145,172 +213,185 @@ export default function Login() {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-10">
-            <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg" />
-            <span className="text-lg font-bold text-zinc-100 tracking-tight">DriftIQ</span>
+            <img
+              src="/logo-icon.png"
+              alt="DriftIQ"
+              className="h-7 w-7 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span className="font-black italic text-lg tracking-tight select-none">
+              <span className="text-white">Drift</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+            </span>
           </div>
 
-          <AnimatePresence mode="wait">
-            {/* ── LOGIN VIEW ─────────────────────────────────────────── */}
-            {view === 'login' && (
-              <motion.div
-                key="login"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-1">Sign in</h1>
-                <p className="text-sm text-zinc-500 mb-8">Welcome back. Enter your credentials to continue.</p>
-
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <label className="label">Email</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="email"
-                        required
-                        placeholder="you@example.com"
-                        className="input-field pl-10 focus:ring-violet-500"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="label mb-0">Password</label>
-                      <button
-                        type="button"
-                        onClick={() => { setView('forgot'); setError(''); }}
-                        className="text-xs text-violet-400 hover:text-violet-300 font-medium transition"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        className="input-field pl-10"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-primary w-full mt-2 py-3 disabled:opacity-60 disabled:cursor-not-allowed group"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        Continue
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                <p className="mt-6 text-center text-sm text-zinc-500">
-                  Don&apos;t have an account?{' '}
-                  <Link to="/register" className="text-violet-400 hover:text-violet-300 font-medium transition">
-                    Create one free
-                  </Link>
-                </p>
-              </motion.div>
-            )}
-
-            {/* ── FORGOT PASSWORD ────────────────────────────────────── */}
-            {view === 'forgot' && (
-              <motion.div
-                key="forgot"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                <button
-                  type="button"
-                  onClick={() => { setView('login'); setError(''); }}
-                  className="flex items-center text-sm text-zinc-500 hover:text-zinc-300 mb-6 transition"
+          {/* Glassmorphism card */}
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 backdrop-blur-sm">
+            <AnimatePresence mode="wait">
+              {/* ── LOGIN VIEW ─────────────────────────────────────────── */}
+              {view === 'login' && (
+                <motion.div
+                  key="login"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-1" /> Back to login
-                </button>
-                <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-1">Reset Password</h1>
-                <p className="text-sm text-zinc-500 mb-8">Enter your email and we&apos;ll send you a reset link.</p>
+                  <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-1">Sign in</h1>
+                  <p className="text-sm text-zinc-500 mb-8">Welcome back. Enter your credentials to continue.</p>
 
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">
-                    {error}
-                  </div>
-                )}
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
 
-                <form onSubmit={handleForgotPassword} className="space-y-4">
-                  <div>
-                    <label className="label">Email</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      <input
-                        type="email"
-                        required
-                        placeholder="you@example.com"
-                        className="input-field pl-10"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                      <label className="label">Email or Username</label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="you@example.com or @username"
+                          className="input-field pl-10 focus:ring-violet-500"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
 
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="label mb-0">Password</label>
+                        <button
+                          type="button"
+                          onClick={() => { setView('forgot'); setError(''); }}
+                          className="text-xs text-violet-400 hover:text-violet-300 font-medium transition"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="password"
+                          required
+                          placeholder="••••••••"
+                          className="input-field pl-10"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="btn-primary w-full mt-2 py-3 disabled:opacity-60 disabled:cursor-not-allowed group"
+                    >
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          Continue
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        </>
+                      )}
+                    </button>
+                  </form>
+
+                  <p className="mt-6 text-center text-sm text-zinc-500">
+                    Don&apos;t have an account?{' '}
+                    <Link to="/register" className="text-violet-400 hover:text-violet-300 font-medium transition">
+                      Create one free
+                    </Link>
+                  </p>
+                </motion.div>
+              )}
+
+              {/* ── FORGOT PASSWORD ────────────────────────────────────── */}
+              {view === 'forgot' && (
+                <motion.div
+                  key="forgot"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <button
-                    type="submit"
-                    disabled={loading || !email}
-                    className="btn-primary w-full mt-2 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                    type="button"
+                    onClick={() => { setView('login'); setError(''); }}
+                    className="flex items-center text-sm text-zinc-500 hover:text-zinc-300 mb-6 transition"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Send Reset Link'}
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to login
                   </button>
-                </form>
-              </motion.div>
-            )}
+                  <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-1">Reset Password</h1>
+                  <p className="text-sm text-zinc-500 mb-8">Enter your email and we&apos;ll send you a reset link.</p>
 
-            {/* ── FORGOT SUCCESS ─────────────────────────────────────── */}
-            {view === 'forgot-success' && (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.25 }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-8 h-8" />
-                </div>
-                <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-2">Check your email</h1>
-                <p className="text-sm text-zinc-500 mb-8">
-                  If an account exists for <span className="text-zinc-300">{email}</span>, we&apos;ve sent instructions to reset your password.
-                </p>
-                <button onClick={() => setView('login')} className="btn-secondary w-full py-3">
-                  Return to Login
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div>
+                      <label className="label">Email</label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="you@example.com"
+                          className="input-field pl-10"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading || !email}
+                      className="btn-primary w-full mt-2 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Send Reset Link'}
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* ── FORGOT SUCCESS ─────────────────────────────────────── */}
+              {view === 'forgot-success' && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-center"
+                >
+                  <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="w-8 h-8" />
+                  </div>
+                  <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-2">Check your email</h1>
+                  <p className="text-sm text-zinc-500 mb-8">
+                    If an account exists for <span className="text-zinc-300">{email}</span>, we&apos;ve sent instructions to reset your password.
+                  </p>
+                  <button onClick={() => setView('login')} className="btn-secondary w-full py-3">
+                    Return to Login
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </div>

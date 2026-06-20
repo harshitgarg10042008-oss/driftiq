@@ -6,12 +6,15 @@ export function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
-export function formatDate(dateStr: string): string {
-  return new Intl.DateTimeFormat('en-US', {
+export function formatDate(date: string | null | undefined): string {
+  if (!date) return '—';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-IN', {
+    day: '2-digit',
     month: 'short',
-    day: 'numeric',
     year: 'numeric',
-  }).format(new Date(dateStr));
+  });
 }
 
 export function getMimeIcon(mimeType: string): string {

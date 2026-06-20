@@ -101,11 +101,11 @@ export default function Register() {
         >
           <div className="flex items-center gap-3 border-b border-white/5 pb-3">
             <div className="h-8 w-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400">
-               <HardDrive className="w-4 h-4" />
+              <HardDrive className="w-4 h-4" />
             </div>
             <div>
-               <div className="h-2 w-24 rounded bg-white/20 mb-1.5" />
-               <div className="h-2 w-12 rounded bg-white/10" />
+              <div className="h-2 w-24 rounded bg-white/20 mb-1.5" />
+              <div className="h-2 w-12 rounded bg-white/10" />
             </div>
           </div>
           <div className="mt-3 space-y-2">

@@ -1,267 +1,265 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Copy, ExternalLink, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle, Copy, Check, Zap, Loader2 } from 'lucide-react';
 import api from '../lib/api';
-import { useAuthStore } from '../store/useAuthStore';
 
-/* ─── Step indicator ─────────────────────────────────────────────────── */
-interface StepProps {
-  number: number;
-  done: boolean;
-  active: boolean;
-}
-
-function StepIndicator({ number, done, active }: StepProps) {
-  return (
-    <div className="relative">
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 ${
-          done
-            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-            : active
-            ? 'bg-gradient-to-br from-[#7C3AED] to-[#A855F7] text-white shadow-lg shadow-violet-500/30'
-            : 'bg-white/5 border border-white/10 text-zinc-500'
-        }`}
-      >
-        <AnimatePresence mode="wait">
-          {done ? (
-            <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400 }}>
-              <Check className="w-5 h-5" />
-            </motion.span>
-          ) : (
-            <motion.span key="num" initial={{ scale: 0 }} animate={{ scale: 1 }}>{number}</motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-      {active && !done && (
-        <span className="absolute inset-0 rounded-full border-2 border-violet-500/40 animate-ping" />
-      )}
-    </div>
-  );
-}
-
-/* ─── Copy button ─────────────────────────────────────────────────────── */
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const el = document.createElement('textarea');
-      el.value = text;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleCopy}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-        copied
-          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-          : 'bg-[#7C3AED]/10 text-[#C084FC] border border-[#7C3AED]/20 hover:bg-[#7C3AED]/20'
-      }`}
-    >
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-      {copied ? 'Copied! ✓' : 'Copy'}
-    </button>
-  );
-}
+type Step = 1 | 2 | 3;
 
 export default function TelegramConnect() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
-
-  const [linkCode, setLinkCode] = useState<string | null>(null);
-  const [loadingCode, setLoadingCode] = useState(true);
-  const [codeError, setCodeError] = useState('');
+  const [step, setStep] = useState<Step>(1);
+  const [linkCode, setLinkCode] = useState('');
+  const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [polling, setPolling] = useState(false);
-  const [step, setStep] = useState(1);
+  const [loadingCode, setLoadingCode] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const BOT_USERNAME = (import.meta as any).env?.VITE_TELEGRAM_BOT_USERNAME || 'DriftIQBot';
-
+  // Fetch link code when entering step 2
   useEffect(() => {
-    const fetchCode = async () => {
+    if (step !== 2) return;
+    setLoadingCode(true);
+    api.get('/auth/telegram-link-code')
+      .then(({ data }) => setLinkCode(data?.code || ''))
+      .catch(() => setLinkCode('ERROR'))
+      .finally(() => setLoadingCode(false));
+  }, [step]);
+
+  // Poll for telegram status in step 3
+  useEffect(() => {
+    if (step !== 3) return;
+
+    pollRef.current = setInterval(async () => {
       try {
-        setLoadingCode(true);
-        const { data } = await api.get('/auth/telegram-link-code');
-        setLinkCode(data?.code ?? data);
-      } catch (err: any) {
-        setCodeError(err?.response?.data?.message || 'Could not fetch link code. You can skip for now.');
-      } finally {
-        setLoadingCode(false);
+        const { data } = await api.get('/auth/telegram-status');
+        if (data?.connected === true || data?.status === 'connected') {
+          setConnected(true);
+          if (pollRef.current) clearInterval(pollRef.current);
+          setTimeout(() => navigate('/dashboard'), 1500);
+        }
+      } catch {
+        // ignore poll errors
       }
+    }, 3000);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
     };
-    fetchCode();
-  }, []);
+  }, [step, navigate]);
 
-  const checkStatus = useCallback(async () => {
-    try {
-      const { data } = await api.get('/auth/telegram-status');
-      if (data?.connected === true || data?.status === 'connected') {
-        setConnected(true);
-        setPolling(false);
-        setTimeout(() => navigate('/dashboard'), 1500);
-      }
-    } catch {
-      // ignore
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!polling) return;
-    const interval = setInterval(checkStatus, 3000);
-    checkStatus();
-    return () => clearInterval(interval);
-  }, [polling, checkStatus]);
-
-  const handleOpenBot = () => {
-    window.open(`https://t.me/${BOT_USERNAME}`, '_blank');
-    setStep(2);
+  const copyCode = () => {
+    navigator.clipboard.writeText(linkCode).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSentCode = () => {
-    setStep(3);
-    setPolling(true);
-  };
-
-  const handleSkip = () => {
-    navigate('/dashboard');
+  const StepIndicator = ({ num, label }: { num: Step; label: string }) => {
+    const isDone = step > num;
+    const isActive = step === num;
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div
+          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+            isDone
+              ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+              : isActive
+              ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30 animate-pulse'
+              : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
+          }`}
+        >
+          {isDone ? <CheckCircle className="w-4 h-4" /> : num}
+        </div>
+        <span className={`text-xs font-medium ${isActive ? 'text-zinc-200' : 'text-zinc-600'}`}>
+          {label}
+        </span>
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen w-full bg-[#09090B] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background glows */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-[#4C1D95]/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-indigo-700/10 rounded-full blur-3xl" />
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[#4C1D95]/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-700/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white/[0.03] border border-[#7C3AED]/30 rounded-3xl p-8 backdrop-blur-xl shadow-2xl shadow-violet-900/20"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <img src="/logo-icon.png" alt="DriftIQ" className="h-10 w-10 object-contain" onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }} />
-              <span className="font-black italic text-2xl tracking-tight select-none">
-                <span className="text-white">Drift</span>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-2">Connect your Telegram</h1>
-            <p className="text-[#C084FC] text-sm font-medium">Required to start uploading files</p>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <img
+            src="/logo-icon.png"
+            alt="DriftIQ"
+            className="h-8 w-8 object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+          <span className="font-black italic text-xl tracking-tight select-none">
+            <span className="text-white">Drift</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+          </span>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
+          <h1 className="text-2xl font-bold text-white text-center mb-2">Connect your Telegram</h1>
+          <p className="text-sm text-zinc-500 text-center mb-8">
+            Link your Telegram account to enable real-time file sync.
+          </p>
+
+          {/* Step indicators */}
+          <div className="flex items-start justify-center gap-8 mb-10 relative">
+            {/* Connecting line */}
+            <div className="absolute top-4 left-[calc(50%-56px)] right-[calc(50%-56px)] h-px bg-zinc-800" />
+            <StepIndicator num={1} label="Open Bot" />
+            <StepIndicator num={2} label="Get Code" />
+            <StepIndicator num={3} label="Connecting" />
           </div>
 
-          {/* Steps */}
-          <div className="flex justify-center items-center gap-4 mb-10">
-            <StepIndicator number={1} done={step > 1} active={step === 1} />
-            <div className={`w-12 h-px ${step > 1 ? 'bg-[#7C3AED]' : 'bg-white/10'}`} />
-            <StepIndicator number={2} done={step > 2} active={step === 2} />
-            <div className={`w-12 h-px ${step > 2 ? 'bg-[#7C3AED]' : 'bg-white/10'}`} />
-            <StepIndicator number={3} done={connected} active={step === 3 && !connected} />
-          </div>
-
-          {/* Step 1 */}
-          {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="text-center">
-              <button
-                onClick={handleOpenBot}
-                className="w-full flex items-center justify-center gap-2.5 py-4 bg-[#2AABEE] hover:bg-[#229ED9] text-white font-bold rounded-2xl transition-all shadow-lg shadow-[#2AABEE]/20"
+          {/* Step content */}
+          <AnimatePresence mode="wait">
+            {/* ── STEP 1 ─────────────────────────────────────────── */}
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center"
               >
-                Open @{BOT_USERNAME} on Telegram
-                <ExternalLink className="w-4 h-4" />
-              </button>
-            </motion.div>
-          )}
+                <div className="w-16 h-16 rounded-full bg-[#2AABEE]/10 border border-[#2AABEE]/20 flex items-center justify-center mx-auto mb-6">
+                  <Zap className="w-8 h-8 text-[#2AABEE]" />
+                </div>
+                <h2 className="text-lg font-semibold text-zinc-100 mb-2">Open DriftIQ Bot</h2>
+                <p className="text-sm text-zinc-500 mb-8 leading-relaxed">
+                  Click the button below to open our Telegram bot. Start a chat — it will guide you through the connection process.
+                </p>
+                <button
+                  onClick={() => {
+                    window.open(
+                      'https://t.me/' + ((import.meta as any).env?.VITE_TELEGRAM_BOT_USERNAME || 'DriftIQBot'),
+                      '_blank'
+                    );
+                    setStep(2);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-[#2AABEE] hover:bg-[#229ED9] text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#2AABEE]/20"
+                >
+                  <Zap className="w-4 h-4" />
+                  Open @DriftIQBot on Telegram
+                </button>
+              </motion.div>
+            )}
 
-          {/* Step 2 */}
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-              {loadingCode ? (
-                <div className="flex justify-center py-6">
-                  <Loader2 className="w-8 h-8 text-[#A855F7] animate-spin" />
-                </div>
-              ) : codeError ? (
-                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                  {codeError}
-                </div>
-              ) : (
-                <div className="text-center">
-                  <div className="mb-6 p-6 rounded-2xl bg-[#09090B]/50 border border-white/10 flex flex-col items-center gap-4 shadow-inner">
-                    <div className="font-mono text-4xl font-bold text-zinc-100 tracking-wider">
+            {/* ── STEP 2 ─────────────────────────────────────────── */}
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center"
+              >
+                <h2 className="text-lg font-semibold text-zinc-100 mb-2">Send this code to the bot</h2>
+                <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+                  Send the following code to the DriftIQ bot on Telegram to link your account.
+                </p>
+
+                {loadingCode ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 text-violet-400 animate-spin" />
+                  </div>
+                ) : (
+                  <div className="relative mb-6">
+                    <div className="font-mono text-3xl font-bold text-white tracking-[0.3em] bg-zinc-900 border border-white/10 rounded-xl py-5 px-4 text-center select-all">
                       {linkCode}
                     </div>
-                    <CopyButton text={String(linkCode)} />
+                    <button
+                      onClick={copyCode}
+                      className="absolute top-1/2 -translate-y-1/2 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-lg transition text-zinc-400 hover:text-zinc-100"
+                      title="Copy code"
+                    >
+                      {copied ? (
+                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                          <Check className="w-3.5 h-3.5" /> Copied!
+                        </span>
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
-                  <p className="text-sm text-zinc-400 mb-6">Send this code to the bot in Telegram</p>
-                  <button
-                    onClick={handleSentCode}
-                    className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-violet-500 hover:to-purple-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-violet-500/30"
-                  >
-                    I've sent the code <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
+                )}
 
-          {/* Step 3 */}
-          {step === 3 && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-6">
-              {!connected ? (
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative flex items-center justify-center w-16 h-16">
-                    <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED]/20" />
-                    <div className="absolute inset-0 rounded-full border-4 border-[#A855F7] border-t-transparent animate-spin" />
-                    <Loader2 className="w-6 h-6 text-[#A855F7] animate-pulse" />
-                  </div>
-                  <p className="text-sm font-medium text-zinc-300">Waiting for Telegram connection...</p>
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                  className="flex flex-col items-center gap-4"
+                <p className="text-xs text-zinc-600 mb-6">This code expires in 10 minutes.</p>
+
+                <button
+                  onClick={() => setStep(3)}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all"
                 >
-                  <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center border border-emerald-500/30 shadow-lg shadow-emerald-500/20">
-                    <Check className="w-8 h-8" />
-                  </div>
-                  <p className="text-lg font-bold text-emerald-400">Connection Successful!</p>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
+                  I've sent the code →
+                </button>
+              </motion.div>
+            )}
 
-          {/* Skip link */}
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSkip}
-              className="text-sm text-zinc-500 hover:text-zinc-300 font-medium transition-colors"
-            >
-              Skip for now <ArrowRight className="w-3.5 h-3.5 inline ml-1" />
-            </button>
-            <p className="text-xs text-zinc-600 mt-2">You can connect Telegram later from Settings</p>
-          </div>
-        </motion.div>
-      </div>
+            {/* ── STEP 3 ─────────────────────────────────────────── */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="text-center py-4"
+              >
+                {connected ? (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-10 h-10 text-emerald-400" />
+                    </div>
+                    <h2 className="text-xl font-bold text-emerald-400 mb-2">Connected!</h2>
+                    <p className="text-sm text-zinc-500">Redirecting to your dashboard...</p>
+                  </motion.div>
+                ) : (
+                  <>
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                      <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping" />
+                      <div className="absolute inset-2 rounded-full border-2 border-violet-500/40 animate-ping" style={{ animationDelay: '0.3s' }} />
+                      <div className="absolute inset-0 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center">
+                        <Zap className="w-8 h-8 text-violet-400" />
+                      </div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-zinc-100 mb-2">Waiting for confirmation…</h2>
+                    <p className="text-sm text-zinc-500">
+                      Once you send the code to the bot, this page will automatically update.
+                    </p>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Skip button */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="text-xs text-zinc-600 hover:text-zinc-400 transition underline underline-offset-4"
+          >
+            Skip for now — connect later from Settings
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

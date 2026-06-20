@@ -309,6 +309,96 @@ export class FilesService {
     };
   }
 
+  async createShareLink(
+    userId: string,
+    fileId: string,
+    password?: string,
+    expiresIn?: number,
+  ) {
+    const file = await this.findOne(userId, fileId);
+    const token = Math.random().toString(36).substring(2) + 
+                  Date.now().toString(36);
+    
+    const shareData: any = {
+      file_id: fileId,
+      user_id: userId,
+      token,
+      created_at: new Date().toISOString(),
+    };
+
+    if (password) {
+      const bcrypt = await import('bcrypt');
+      shareData.password_hash = await bcrypt.hash(password, 10);
+    }
+
+    if (expiresIn) {
+      shareData.expires_at = new Date(
+        Date.now() + expiresIn * 1000
+      ).toISOString();
+    }
+
+    const { data, error } = await this.supabase
+      .getClient()
+      .from('shared_links')
+      .insert(shareData)
+      .select()
+      .single();
+
+    if (error) throw new InternalServerErrorException(error.message);
+
+    return {
+      token,
+      url: `${process.env.FRONTEND_URL}/share/${token}`,
+      fileName: file.name,
+    };
+  }
+
+  async getSharedFile(token: string, password?: string) {
+    const { data: share, error } = await this.supabase
+      .getClient()
+      .from('shared_links')
+      .select('*, files(*)')
+      .eq('token', token)
+      .maybeSingle();
+
+    if (error || !share) throw new NotFoundException('Share link not found');
+
+    if (share.expires_at && new Date(share.expires_at) < new Date()) {
+      throw new ForbiddenException('Share link has expired');
+    }
+
+    if (share.password_hash) {
+      if (!password) throw new ForbiddenException('Password required');
+      const bcrypt = await import('bcrypt');
+      const match = await bcrypt.compare(password, share.password_hash);
+      if (!match) throw new ForbiddenException('Incorrect password');
+    }
+
+    return share.files;
+  }
+
+  async streamSharedFile(token: string, password?: string) {
+    const file = await this.getSharedFile(token, password);
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+
+    const response = await axios.get(
+      `https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`
+    );
+    const filePath = response.data.result.file_path;
+    const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+
+    const fileStreamResponse = await axios.get(downloadUrl, {
+      responseType: 'stream',
+    });
+
+    return {
+      stream: fileStreamResponse.data,
+      name: file.name,
+      mimeType: file.mime_type,
+      size: file.size,
+    };
+  }
+
   private async getUserStorageUsed(userId: string): Promise<number> {
     const { data } = await this.supabase
       .getClient()

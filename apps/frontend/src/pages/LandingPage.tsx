@@ -6,14 +6,25 @@ import {
 } from 'lucide-react';
 
 /* ─── Floating particle canvas (CSS) ─────────────────────────────────────── */
+
+interface Particle {
+  id: number;
+  color: string;
+  size: number;
+  left: number;
+  duration: number;
+  delay: number;
+}
+
+const COLORS = ['bg-violet-500', 'bg-indigo-500', 'bg-[#2AABEE]', 'bg-pink-500', 'bg-emerald-500'];
+
 function FloatingParticles() {
-  const colors = ['bg-violet-500', 'bg-indigo-500', 'bg-[#2AABEE]', 'bg-pink-500', 'bg-emerald-500'];
-  const [particles, setParticles] = useState<any[]>([]);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
     const generated = Array.from({ length: 30 }).map((_, i) => ({
       id: i,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
       size: Math.random() * 4 + 2,
       left: Math.random() * 100,
       duration: Math.random() * 12 + 8,
@@ -47,10 +58,10 @@ function FloatingParticles() {
             style={{
               width: p.size,
               height: p.size,
-              left: \`\${p.left}%\`,
+              left: `${p.left}%`,
               bottom: '-20px',
-              animation: \`floatUp \${p.duration}s linear infinite\`,
-              animationDelay: \`\${p.delay}s\`,
+              animation: `floatUp ${p.duration}s linear infinite`,
+              animationDelay: `${p.delay}s`,
             }}
           />
         ))}

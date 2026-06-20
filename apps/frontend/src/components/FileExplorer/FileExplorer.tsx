@@ -7,7 +7,7 @@ import {
   ChevronRight, Upload, FolderPlus, Download, Trash2, Eye,
   Star, Edit3, Move, Search, Grid, List, HardDrive, Shield,
   RefreshCw, LogOut, Link as LinkIcon, Settings, Zap,
-  Image, Film, Music, FileText
+  Image, Film, Music, FileText, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../ui/Modal';
@@ -167,6 +167,12 @@ export function FileExplorer() {
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Notepad
+  const [notepadOpen, setNotepadOpen] = useState(false);
+  const [notepadText, setNotepadText] = useState(
+    localStorage.getItem('driftiq-notes') || ''
+  );
+
   // Modals
   const [renameModal, setRenameModal] = useState<{ id: string; name: string; type: 'file' | 'folder' } | null>(null);
   const [newFolderModal, setNewFolderModal] = useState(false);
@@ -243,8 +249,11 @@ export function FileExplorer() {
   const fetchTelegramStatus = useCallback(async () => {
     try {
       const { data } = await api.get('/auth/telegram-status');
-      setTelegramConnected(data?.connected === true || data?.status === 'connected');
+      setTelegramConnected(
+        data?.connected === true || data?.status === 'connected'
+      );
     } catch {
+      // Endpoint missing ya error — silently ignore, default false
       setTelegramConnected(false);
     }
   }, []);
@@ -265,20 +274,43 @@ export function FileExplorer() {
       ? (import.meta as any).env.VITE_BACKEND_URL.replace('/api', '')
       : 'http://localhost:4000';
 
-    const socket = io(wsUrl, {
-      query: { userId: user?.id },
-      transports: ['websocket', 'polling'],
-    });
-    socketRef.current = socket;
+    let socket: any = null;
 
-    socket.on('file_added', (newFile: any) => {
-      if (currentSection === 'drive' && newFile?.folder_id === currentFolderId) {
-        addFile(newFile);
-      }
-      toast.show(`New file "${newFile?.name}" synced from Telegram!`, 'success');
-    });
+    try {
+      socket = io(wsUrl, {
+        query: { userId: user?.id },
+        transports: ['polling'],
+        reconnectionAttempts: 3,
+        timeout: 5000,
+      });
 
-    return () => { socket.disconnect(); };
+      socket.on('connect_error', () => {
+        // silently ignore
+      });
+
+      socket.on('file_added', (newFile: any) => {
+        if (
+          currentSection === 'drive' &&
+          newFile?.folder_id === currentFolderId
+        ) {
+          addFile(newFile);
+        }
+        toast.show(
+          `New file "${newFile?.name}" synced from Telegram!`,
+          'success'
+        );
+      });
+
+      socketRef.current = socket;
+    } catch {
+      // ignore socket errors entirely
+    }
+
+    return () => {
+      try {
+        socket?.disconnect();
+      } catch {}
+    };
   }, [user?.id, currentSection, currentFolderId, addFile, toast]);
 
   // Search
@@ -493,8 +525,16 @@ export function FileExplorer() {
         {/* Logo */}
         <div className="h-[64px] flex items-center px-5 shrink-0 border-b border-white/[0.06]">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/logo-icon.png" alt="DriftIQ" className="w-7 h-7 object-contain"/>
-            <span className="text-base font-bold text-zinc-100 tracking-tight">DriftIQ</span>
+            <img
+              src="/logo-icon.png"
+              alt="DriftIQ"
+              className="w-7 h-7 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <span className="font-black italic text-base tracking-tight select-none">
+              <span className="text-white">Drift</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+            </span>
           </Link>
         </div>
 
@@ -625,9 +665,9 @@ export function FileExplorer() {
           )}
 
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <UserAvatar name={user?.full_name} />
+            <UserAvatar name={user?.full_name || user?.username} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-zinc-200 truncate">{user?.full_name || 'User'}</p>
+              <p className="text-xs font-semibold text-zinc-200 truncate">{user?.full_name || user?.username || user?.email?.split('@')[0] || 'User'}</p>
               <p className="text-[11px] text-zinc-600 truncate">{user?.email}</p>
             </div>
             <button
@@ -1172,23 +1212,60 @@ export function FileExplorer() {
         />
       )}
 
-      {/* Floating Notepad Widget */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 1, duration: 0.5, type: "spring" }}
-        className="fixed bottom-6 right-6 z-50 pointer-events-none"
-      >
-        <div className="pointer-events-auto bg-white/[0.03] backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl w-64 group hover:bg-white/[0.05] transition-colors cursor-pointer">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-violet-400 flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Quick Note</span>
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          </div>
-          <div className="h-20 w-full bg-black/20 rounded-lg border border-white/5 p-2 text-[10px] text-zinc-500 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-all" contentEditable suppressContentEditableWarning>
-            Jot down an idea...
-          </div>
-        </div>
-      </motion.div>
+      {/* Notepad panel */}
+      <AnimatePresence>
+        {notepadOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="fixed bottom-24 right-6 z-50 w-80 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-semibold text-zinc-300">Quick Notes</span>
+              </div>
+              <button onClick={() => setNotepadOpen(false)} className="text-zinc-500 hover:text-zinc-300 transition">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <textarea
+              value={notepadText}
+              onChange={(e) => {
+                setNotepadText(e.target.value);
+                localStorage.setItem('driftiq-notes', e.target.value);
+              }}
+              placeholder="Jot down something..."
+              className="w-full h-52 bg-transparent px-4 py-3 text-xs text-zinc-300 placeholder-zinc-600 resize-none outline-none"
+            />
+            <div className="px-4 py-2 border-t border-white/5 flex justify-between items-center">
+              <span className="text-[10px] text-zinc-600">Auto-saved</span>
+              <button
+                onClick={() => {
+                  setNotepadText('');
+                  localStorage.removeItem('driftiq-notes');
+                }}
+                className="text-[10px] text-zinc-600 hover:text-red-400 transition"
+              >
+                Clear
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Notepad FAB */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setNotepadOpen(!notepadOpen)}
+          className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/30 flex items-center justify-center"
+        >
+          <Edit3 className="w-5 h-5 text-white" />
+        </motion.button>
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function ShareModal({ isOpen, onClose, fileId, fileName }: ShareModalProp
   
   const [password, setPassword] = useState('');
   const [usePassword, setUsePassword] = useState(false);
-  const [expiresAt, setExpiresAt] = useState('');
+  const [expiresIn, setExpiresIn] = useState('');
   const [useExpiry, setUseExpiry] = useState(false);
   const [downloadLimit, setDownloadLimit] = useState<number | ''>('');
   const [useLimit, setUseLimit] = useState(false);
@@ -30,18 +30,28 @@ export function ShareModal({ isOpen, onClose, fileId, fileName }: ShareModalProp
     setIsCreating(true);
     
     try {
-      const payload: any = { fileId };
+      const payload: any = {};
       if (usePassword && password) payload.password = password;
-      if (useExpiry && expiresAt) payload.expiresAt = new Date(expiresAt).toISOString();
+      // expiresIn is seconds: convert datetime-local to seconds from now
+      if (useExpiry && expiresIn) {
+        const expiresDate = new Date(expiresIn);
+        const secondsFromNow = Math.floor((expiresDate.getTime() - Date.now()) / 1000);
+        if (secondsFromNow > 0) payload.expiresIn = secondsFromNow;
+      }
       if (useLimit && downloadLimit) payload.downloadLimit = Number(downloadLimit);
 
-      const { data } = await api.post('/shares', payload);
+      const { data } = await api.post(`/files/${fileId}/share`, payload);
       
-      const link = `${window.location.origin}/share/${data.share_token}`;
-      setShareLink(link);
+      // Use correct URL from backend or construct from window.location.origin
+      const token = data?.token;
+      const shareUrl = token
+        ? `${window.location.origin}/share/${token}`
+        : data?.url || '';
+      
+      setShareLink(shareUrl);
       toast.show('Share link created successfully', 'success');
     } catch (err: any) {
-      toast.show(err.response?.data?.message || 'Failed to create share link', 'error');
+      toast.show(err?.response?.data?.message || 'Failed to create share link', 'error');
     } finally {
       setIsCreating(false);
     }
@@ -49,7 +59,7 @@ export function ShareModal({ isOpen, onClose, fileId, fileName }: ShareModalProp
 
   const copyToClipboard = () => {
     if (!shareLink) return;
-    navigator.clipboard.writeText(shareLink);
+    navigator.clipboard.writeText(shareLink).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -58,7 +68,7 @@ export function ShareModal({ isOpen, onClose, fileId, fileName }: ShareModalProp
     setShareLink(null);
     setPassword('');
     setUsePassword(false);
-    setExpiresAt('');
+    setExpiresIn('');
     setUseExpiry(false);
     setDownloadLimit('');
     setUseLimit(false);
@@ -116,8 +126,8 @@ export function ShareModal({ isOpen, onClose, fileId, fileName }: ShareModalProp
             {useExpiry && (
               <input 
                 type="datetime-local" 
-                value={expiresAt}
-                onChange={e => setExpiresAt(e.target.value)}
+                value={expiresIn}
+                onChange={e => setExpiresIn(e.target.value)}
                 required={useExpiry}
                 className="w-full bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:ring-1 focus:ring-violet-500 outline-none transition [color-scheme:dark]"
               />

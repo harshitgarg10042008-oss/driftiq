@@ -24,7 +24,7 @@ export class UsersService {
     const { data, error } = await this.supabase
       .getClient()
       .from('users')
-      .select('id')
+      .select('*')
       .eq('username', username)
       .maybeSingle();
 
@@ -143,6 +143,17 @@ export class UsersService {
 
     if (error) throw new InternalServerErrorException('Failed to generate link code');
     return code;
+  }
+
+  async setTelegramLinkCode(userId: string, code: string, expires: Date) {
+    await this.supabase
+      .getClient()
+      .from('users')
+      .update({
+        telegram_link_code: code,
+        telegram_link_code_expires_at: expires.toISOString(),
+      })
+      .eq('id', userId);
   }
 
   async linkTelegramByCode(code: string, telegramUserId: string): Promise<any> {
