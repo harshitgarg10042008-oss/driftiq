@@ -35,5 +35,17 @@ export declare class FilesService {
         storageLimit: any;
         fileCount: number;
     }>;
+    createShareLink(userId: string, fileId: string, password?: string, expiresIn?: number): Promise<{
+        token: string;
+        url: string;
+        fileName: any;
+    }>;
+    getSharedFile(token: string, password?: string): Promise<any>;
+    streamSharedFile(token: string, password?: string): Promise<{
+        stream: any;
+        name: any;
+        mimeType: any;
+        size: any;
+    }>;
     private getUserStorageUsed;
 }

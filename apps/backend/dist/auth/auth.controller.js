@@ -49,6 +49,12 @@ let AuthController = class AuthController {
     async getProfile(req) {
         return req.user;
     }
+    async getTelegramLinkCode(req) {
+        return this.authService.getTelegramLinkCode(req.user.id);
+    }
+    async getTelegramStatus(req) {
+        return this.authService.getTelegramStatus(req.user.id);
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -118,6 +124,22 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('telegram-link-code'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getTelegramLinkCode", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('telegram-status'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getTelegramStatus", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

@@ -31,5 +31,12 @@ export declare class AuthService {
     resetPasswordConfirm(token: string, newPassword: string): Promise<{
         message: string;
     }>;
+    getTelegramLinkCode(userId: string): Promise<{
+        code: string;
+    }>;
+    getTelegramStatus(userId: string): Promise<{
+        connected: boolean;
+        status: string;
+    }>;
     private generateTokens;
 }

@@ -3,9 +3,7 @@ export declare class UsersService {
     private readonly supabase;
     constructor(supabase: SupabaseService);
     findByEmail(email: string): Promise<any>;
-    findByUsername(username: string): Promise<{
-        id: any;
-    }>;
+    findByUsername(username: string): Promise<any>;
     findById(id: string): Promise<any>;
     findByTelegramUserId(telegramUserId: string): Promise<{
         id: any;
@@ -19,6 +17,7 @@ export declare class UsersService {
     clearResetToken(id: string): Promise<void>;
     linkTelegram(userId: string, telegramUserId: string): Promise<void>;
     generateTelegramLinkCode(userId: string): Promise<string>;
+    setTelegramLinkCode(userId: string, code: string, expires: Date): Promise<void>;
     linkTelegramByCode(code: string, telegramUserId: string): Promise<any>;
     findAll(page?: number, limit?: number, search?: string): Promise<{
         users: {

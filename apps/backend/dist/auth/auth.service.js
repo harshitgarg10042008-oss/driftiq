@@ -78,7 +78,10 @@ let AuthService = class AuthService {
         return this.generateTokens(user.id, user.email, user.role);
     }
     async login(dto) {
-        const user = await this.usersService.findByEmail(dto.email);
+        let user = await this.usersService.findByEmail(dto.email);
+        if (!user) {
+            user = await this.usersService.findByUsername(dto.email);
+        }
         if (!user) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
@@ -184,6 +187,19 @@ let AuthService = class AuthService {
         catch {
             throw new common_1.BadRequestException('Invalid or expired reset token');
         }
+    }
+    async getTelegramLinkCode(userId) {
+        const code = 'DQ-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        const expires = new Date(Date.now() + 10 * 60 * 1000);
+        await this.usersService.setTelegramLinkCode(userId, code, expires);
+        return { code };
+    }
+    async getTelegramStatus(userId) {
+        const user = await this.usersService.findById(userId);
+        return {
+            connected: user?.telegramconnected === true || user?.telegram_status === 'connected',
+            status: (user?.telegramconnected || user?.telegram_status === 'connected') ? 'connected' : 'pending',
+        };
     }
     async generateTokens(userId, email, role) {
         const payload = { sub: userId, email, role };

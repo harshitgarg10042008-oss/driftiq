@@ -32,4 +32,11 @@ export declare class AuthController {
         message: string;
     }>;
     getProfile(req: any): Promise<any>;
+    getTelegramLinkCode(req: any): Promise<{
+        code: string;
+    }>;
+    getTelegramStatus(req: any): Promise<{
+        connected: boolean;
+        status: string;
+    }>;
 }

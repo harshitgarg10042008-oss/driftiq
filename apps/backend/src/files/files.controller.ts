@@ -140,8 +140,8 @@ export class FilesController {
   @Get('shared/:token/stream')
   async streamSharedFile(
     @Param('token') token: string,
-    @Query('password') password?: string,
     @Res({ passthrough: true }) res: Response,
+    @Query('password') password?: string,
   ) {
     const { stream, name, mimeType, size } = 
       await this.filesService.streamSharedFile(token, password);

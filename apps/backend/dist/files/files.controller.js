@@ -71,6 +71,21 @@ let FilesController = class FilesController {
     async restore(req, fileId) {
         return this.filesService.restore(req.user.id, fileId);
     }
+    async createShareLink(req, fileId, password, expiresIn) {
+        return this.filesService.createShareLink(req.user.id, fileId, password, expiresIn);
+    }
+    async getSharedFile(token, password) {
+        return this.filesService.getSharedFile(token, password);
+    }
+    async streamSharedFile(token, res, password) {
+        const { stream, name, mimeType, size } = await this.filesService.streamSharedFile(token, password);
+        res.set({
+            'Content-Type': mimeType,
+            'Content-Disposition': `attachment; filename="${name}"`,
+            'Content-Length': size.toString(),
+        });
+        return new common_1.StreamableFile(stream);
+    }
 };
 exports.FilesController = FilesController;
 __decorate([
@@ -189,6 +204,33 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], FilesController.prototype, "restore", null);
+__decorate([
+    (0, common_1.Post)(':id/share'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('password')),
+    __param(3, (0, common_1.Body)('expiresIn')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, Number]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "createShareLink", null);
+__decorate([
+    (0, common_1.Get)('shared/:token'),
+    __param(0, (0, common_1.Param)('token')),
+    __param(1, (0, common_1.Query)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "getSharedFile", null);
+__decorate([
+    (0, common_1.Get)('shared/:token/stream'),
+    __param(0, (0, common_1.Param)('token')),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __param(2, (0, common_1.Query)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, String]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "streamSharedFile", null);
 exports.FilesController = FilesController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('files'),
