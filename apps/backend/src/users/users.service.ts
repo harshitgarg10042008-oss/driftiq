@@ -89,13 +89,15 @@ export class UsersService {
   }
 
   async updateLastLogin(id: string) {
-    const { error } = await this.supabase
-      .getClient()
-      .from('users')
-      .update({ last_login: new Date().toISOString() })
-      .eq('id', id);
-
-    if (error) throw new InternalServerErrorException(error.message);
+    try {
+      await this.supabase
+        .getClient()
+        .from('users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', id);
+    } catch {
+      // Silently ignore — last_login update should never break login
+    }
   }
 
   async setResetToken(id: string, token: string) {
@@ -179,8 +181,9 @@ export class UsersService {
       .update({
         telegram_user_id: telegramUserId,
         telegram_status: 'connected',
-        telegram_link_code: null, // Clear code
-        telegram_link_code_expires_at: null
+        telegramconnected: true,
+        telegram_link_code: null,
+        telegram_link_code_expires_at: null,
       })
       .eq('id', user.id);
 

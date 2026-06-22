@@ -22,6 +22,15 @@ let FilesController = class FilesController {
         this.filesService = filesService;
     }
     async upload(req, file, folderId) {
+        console.log('--- UPLOAD REQUEST REACHED CONTROLLER ---');
+        console.log('Folder ID:', folderId);
+        console.log('File exists?', !!file);
+        if (file) {
+            console.log('File Name:', file.originalname);
+            console.log('File Mime:', file.mimetype);
+            console.log('File Size:', file.size);
+            console.log('Buffer exists?', !!file.buffer);
+        }
         if (!file)
             throw new common_1.BadRequestException('No file provided');
         return this.filesService.uploadToTelegram(req.user.id, file.buffer, file.originalname, file.mimetype, folderId);

@@ -16,25 +16,36 @@ export class FilesService {
     folderId?: string,
   ) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_STORAGE_CHAT_ID; // A private channel/chat that acts as storage
+    const chatId = process.env.TELEGRAM_STORAGE_CHAT_ID;
 
     if (!botToken || !chatId) {
-      throw new InternalServerErrorException('Telegram bot not configured');
+      console.error('❌ UPLOAD FAILED: TELEGRAM_BOT_TOKEN or TELEGRAM_STORAGE_CHAT_ID is not set in .env');
+      throw new InternalServerErrorException('Telegram bot not configured. Check your .env file.');
     }
 
-    // Check storage limit before uploading
-    const { data: storageUser } = await this.supabase
-      .getClient()
-      .from('users')
-      .select('storage_used, storage_limit')
-      .eq('id', userId)
-      .single();
+    // ── Storage limit check (non-fatal — silently skip if columns missing) ──
+    try {
+      const { data: storageUser } = await this.supabase
+        .getClient()
+        .from('users')
+        .select('storage_used, storage_limit')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (storageUser && storageUser.storage_used + fileBuffer.length > storageUser.storage_limit) {
-      throw new ForbiddenException('Storage limit exceeded');
+      if (
+        storageUser &&
+        storageUser.storage_used != null &&
+        storageUser.storage_limit != null &&
+        storageUser.storage_used + fileBuffer.length > storageUser.storage_limit
+      ) {
+        throw new ForbiddenException('Storage limit exceeded. Please delete some files to free up space.');
+      }
+    } catch (storageErr: any) {
+      if (storageErr?.status === 403) throw storageErr; // re-throw ForbiddenException
+      console.warn('⚠️  Storage check skipped (column may not exist yet):', storageErr?.message);
     }
 
-    // Upload file to Telegram
+    // ── Upload file to Telegram ───────────────────────────────────────────────
     const formData = new FormData();
     formData.append('chat_id', chatId);
     formData.append('document', fileBuffer, { filename: fileName, contentType: mimeType });
@@ -42,17 +53,38 @@ export class FilesService {
 
     let telegramFileId: string;
     try {
+      console.log(`📤 Uploading "${fileName}" (${fileBuffer.length} bytes) to Telegram chat ${chatId}...`);
       const response = await axios.post(
         `https://api.telegram.org/bot${botToken}/sendDocument`,
         formData,
-        { headers: formData.getHeaders() },
+        { headers: formData.getHeaders(), timeout: 60000 },
       );
-      telegramFileId = response.data.result.document.file_id;
-    } catch (err) {
-      throw new InternalServerErrorException('Failed to upload to Telegram: ' + err.message);
+      telegramFileId = response.data?.result?.document?.file_id;
+      if (!telegramFileId) {
+        console.error('❌ Telegram response missing file_id:', JSON.stringify(response.data));
+        throw new InternalServerErrorException('Telegram did not return a file_id. Check bot permissions.');
+      }
+      console.log(`✅ Telegram upload successful. file_id: ${telegramFileId}`);
+    } catch (err: any) {
+      const telegramError = err?.response?.data?.description || err?.message || 'Unknown error';
+      const status = err?.response?.status;
+      console.error(`❌ Telegram upload failed [HTTP ${status}]:`, telegramError);
+
+      if (status === 400) {
+        throw new InternalServerErrorException(
+          `Telegram rejected the request: ${telegramError}. Ensure the bot is added to the storage channel as Admin.`
+        );
+      }
+      if (status === 403) {
+        throw new InternalServerErrorException(
+          'Bot does not have permission to send messages in the storage channel. Add the bot as Admin.'
+        );
+      }
+      throw new InternalServerErrorException(`Failed to upload to Telegram: ${telegramError}`);
     }
 
-    // Save file metadata in Supabase
+    // ── Save file metadata in Supabase ────────────────────────────────────────
+    console.log(`💾 Saving file metadata to Supabase...`);
     const { data: file, error } = await this.supabase
       .getClient()
       .from('files')
@@ -68,11 +100,21 @@ export class FilesService {
       .select()
       .single();
 
-    if (error) throw new InternalServerErrorException(error.message);
+    if (error) {
+      console.error('❌ Supabase insert failed:', error.message, '| Code:', error.code, '| Details:', error.details);
+      throw new InternalServerErrorException(
+        `Database error: ${error.message}. Run the SQL migration in database/missing_columns_migration.sql in your Supabase SQL Editor.`
+      );
+    }
+    console.log(`✅ File saved to database. id: ${file?.id}`);
 
     // Atomically increment storage_used via RPC (avoids read-modify-write race condition)
-    await this.supabase.getClient()
-      .rpc('increment_storage_used', { user_id: userId, bytes: fileBuffer.length });
+    try {
+      await this.supabase.getClient()
+        .rpc('increment_storage_used', { user_id: userId, bytes: fileBuffer.length });
+    } catch (rpcErr: any) {
+      console.warn('Storage RPC failed silently:', rpcErr?.message);
+    }
 
     return file;
   }

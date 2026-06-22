@@ -1,18 +1,16 @@
 {
-  "name": "driftiq-backend",
+  "name": "driftiq",
   "version": "1.0.0",
-  "description": "",
+  "description": "Secure cloud storage powered by Telegram",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+    "backend": "cd apps/backend && npm run start:dev",
+    "frontend": "cd apps/frontend && npm run dev",
+    "build:backend": "cd apps/backend && npm run build",
+    "build:frontend": "cd apps/frontend && npm run build",
+    "install:all": "npm install && cd apps/backend && npm install && cd ../frontend && npm install"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
