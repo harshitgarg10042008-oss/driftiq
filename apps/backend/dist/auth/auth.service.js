@@ -92,7 +92,11 @@ let AuthService = class AuthService {
         if (!isMatch) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
-        await this.usersService.updateLastLogin(user.id);
+        try {
+            await this.usersService.updateLastLogin(user.id);
+        }
+        catch {
+        }
         return this.generateTokens(user.id, user.email, user.role);
     }
     async refresh(refreshToken) {
@@ -189,16 +193,16 @@ let AuthService = class AuthService {
         }
     }
     async getTelegramLinkCode(userId) {
-        const code = 'DQ-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-        const expires = new Date(Date.now() + 10 * 60 * 1000);
-        await this.usersService.setTelegramLinkCode(userId, code, expires);
+        const code = await this.usersService.generateTelegramLinkCode(userId);
         return { code };
     }
     async getTelegramStatus(userId) {
         const user = await this.usersService.findById(userId);
+        const connected = user?.telegramconnected === true ||
+            user?.telegram_status === 'connected';
         return {
-            connected: user?.telegramconnected === true || user?.telegram_status === 'connected',
-            status: (user?.telegramconnected || user?.telegram_status === 'connected') ? 'connected' : 'pending',
+            connected,
+            status: connected ? 'connected' : 'pending',
         };
     }
     async generateTokens(userId, email, role) {

@@ -27,45 +27,90 @@ let TelegramService = TelegramService_1 = class TelegramService {
         this.logger = new common_1.Logger(TelegramService_1.name);
     }
     async handleWebhook(update) {
-        const telegramUserId = update.message?.from?.id?.toString();
+        const telegramUserId = update?.message?.from?.id?.toString();
         if (!telegramUserId)
             return { status: 'ignored' };
-        if (update.message?.text?.startsWith('/link ')) {
-            const code = update.message.text.replace('/link ', '').trim();
+        const text = update?.message?.text || '';
+        if (text === '/start') {
+            await this.sendTelegramMessage(telegramUserId, `👋 Welcome to DriftIQ Bot!\n\n` +
+                `To link your account:\n` +
+                `1. Go to the DriftIQ website\n` +
+                `2. Click "Connect Telegram"\n` +
+                `3. Copy your 6-digit code\n` +
+                `4. Send it here (just the code, or use /link YOUR_CODE)\n\n` +
+                `After linking, you can send files directly here to upload them to DriftIQ! 🚀`);
+            return { status: 'start' };
+        }
+        const linkMatch = text.match(/^\/link\s+(\S+)$/) || text.match(/^(\d{6})$/);
+        if (linkMatch) {
+            const code = linkMatch[1];
             try {
                 const user = await this.usersService.linkTelegramByCode(code, telegramUserId);
                 if (user) {
-                    await this.sendTelegramMessage(telegramUserId, '✅ Account successfully linked! You can now send files here to upload them directly to DriftIQ.');
+                    await this.sendTelegramMessage(telegramUserId, `✅ Account linked successfully!\n\n` +
+                        `You can now send files here to upload them to DriftIQ.\n` +
+                        `Supported: documents, images, videos, audio files 📁`);
                     return { status: 'linked' };
                 }
                 else {
-                    await this.sendTelegramMessage(telegramUserId, '❌ Invalid or expired link code. Please generate a new one from your Settings page.');
+                    await this.sendTelegramMessage(telegramUserId, `❌ Invalid or expired code.\n` +
+                        `Please generate a new code from DriftIQ Settings.`);
                     return { status: 'invalid_code' };
                 }
             }
             catch (err) {
-                await this.sendTelegramMessage(telegramUserId, '❌ Failed to link account due to an internal error.');
+                this.logger.error('linkTelegramByCode error:', err?.message);
+                await this.sendTelegramMessage(telegramUserId, `❌ Failed to link. Please try again.`);
                 return { status: 'error' };
             }
         }
-        if (!update.message || !update.message.document) {
+        const msg = update?.message;
+        const hasFile = msg?.document || msg?.photo || msg?.video || msg?.audio;
+        if (!hasFile) {
             return { status: 'ignored' };
         }
-        const document = update.message.document;
+        let fileInfo = null;
+        if (msg.document) {
+            fileInfo = { ...msg.document };
+            fileInfo.file_name = fileInfo.file_name || 'document';
+            fileInfo.mime_type = fileInfo.mime_type || 'application/octet-stream';
+        }
+        else if (msg.photo) {
+            const photo = msg.photo[msg.photo.length - 1];
+            fileInfo = {
+                ...photo,
+                file_name: 'photo.jpg',
+                mime_type: 'image/jpeg',
+            };
+        }
+        else if (msg.video) {
+            fileInfo = { ...msg.video };
+            fileInfo.file_name = fileInfo.file_name || 'video.mp4';
+            fileInfo.mime_type = fileInfo.mime_type || 'video/mp4';
+        }
+        else if (msg.audio) {
+            fileInfo = { ...msg.audio };
+            fileInfo.file_name =
+                fileInfo.file_name || fileInfo.title || 'audio.mp3';
+            fileInfo.mime_type = fileInfo.mime_type || 'audio/mpeg';
+        }
+        if (!fileInfo)
+            return { status: 'ignored' };
         const { data: user, error: userError } = await this.supabase
             .getClient()
             .from('users')
             .select('id')
             .eq('telegram_user_id', telegramUserId)
-            .single();
+            .maybeSingle();
         if (userError || !user) {
-            this.logger.warn(`File received from unknown Telegram user: ${telegramUserId}`);
-            this.sendTelegramMessage(telegramUserId, 'Please link your account on DriftIQ before uploading files.');
+            this.logger.warn(`File received from unlinked Telegram user: ${telegramUserId}`);
+            await this.sendTelegramMessage(telegramUserId, `⚠️ Account not linked yet!\n` +
+                `Send your 6-digit code from DriftIQ to link your account first.`);
             return { status: 'user_not_found' };
         }
         let folderId = null;
         try {
-            const { data: folder, error: folderError } = await this.supabase
+            const { data: folder } = await this.supabase
                 .getClient()
                 .from('folders')
                 .select('id')
@@ -77,35 +122,27 @@ let TelegramService = TelegramService_1 = class TelegramService {
                 folderId = folder.id;
             }
             else {
-                const { data: newFolder, error: createFolderError } = await this.supabase
+                const { data: newFolder } = await this.supabase
                     .getClient()
                     .from('folders')
-                    .insert({
-                    user_id: user.id,
-                    name: 'Telegram Imports',
-                    parent_id: null
-                })
+                    .insert({ user_id: user.id, name: 'Telegram Imports', parent_id: null })
                     .select('id')
                     .single();
-                if (createFolderError) {
-                    this.logger.error(`Error creating folder: ${createFolderError.message}`);
-                }
-                else {
-                    folderId = newFolder.id;
-                }
+                folderId = newFolder?.id || null;
             }
         }
         catch (folderErr) {
-            this.logger.error(`Folder setup failed: ${folderErr.message}`);
+            this.logger.error('Folder setup failed:', folderErr?.message);
         }
         const newFile = {
             user_id: user.id,
             folder_id: folderId,
-            name: document.file_name || 'Unknown File',
-            mime_type: document.mime_type || 'application/octet-stream',
-            size: document.file_size,
-            telegram_file_id: document.file_id,
+            name: fileInfo.file_name || 'Unknown File',
+            mime_type: fileInfo.mime_type || 'application/octet-stream',
+            size: fileInfo.file_size || 0,
+            telegram_file_id: fileInfo.file_id,
             is_starred: false,
+            is_deleted: false,
         };
         const { data: file, error: insertError } = await this.supabase
             .getClient()
@@ -114,11 +151,15 @@ let TelegramService = TelegramService_1 = class TelegramService {
             .select()
             .single();
         if (insertError) {
-            this.logger.error(`Error saving file: ${insertError.message}`);
-            throw new common_1.InternalServerErrorException('Database insert failed');
+            this.logger.error(`File save error: ${insertError.message}`);
+            await this.sendTelegramMessage(telegramUserId, `❌ Failed to save file. Please try again.`);
+            return { status: 'error' };
         }
-        this.realtimeGateway.notifyFileAdded(user.id, file);
-        this.sendTelegramMessage(telegramUserId, `✅ File "${newFile.name}" successfully saved to DriftIQ!`);
+        try {
+            this.realtimeGateway.notifyFileAdded(user.id, file);
+        }
+        catch { }
+        await this.sendTelegramMessage(telegramUserId, `✅ "${newFile.name}" saved to DriftIQ!\n📁 Folder: Telegram Imports`);
         return { status: 'success', fileId: file.id };
     }
     async sendTelegramMessage(chatId, text) {
@@ -126,13 +167,10 @@ let TelegramService = TelegramService_1 = class TelegramService {
         if (!token)
             return;
         try {
-            await axios_1.default.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-                chat_id: chatId,
-                text,
-            });
+            await axios_1.default.post(`https://api.telegram.org/bot${token}/sendMessage`, { chat_id: chatId, text }, { timeout: 10000 });
         }
         catch (e) {
-            this.logger.error('Failed to send Telegram reply', e.message);
+            this.logger.error('Failed to send Telegram reply:', e?.message);
         }
     }
 };

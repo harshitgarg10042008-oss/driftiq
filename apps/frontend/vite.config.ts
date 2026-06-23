@@ -13,4 +13,27 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'framer-motion',
+      'lucide-react',
+      'axios',
+      'zustand',
+      'socket.io-client',
+    ],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion'],
+          ui: ['lucide-react'],
+        },
+      },
+    },
+  },
 })

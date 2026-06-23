@@ -1,6 +1,6 @@
 import {
   Injectable, InternalServerErrorException,
-  NotFoundException, UnauthorizedException, BadRequestException,
+  NotFoundException, UnauthorizedException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,16 +11,29 @@ import axios from 'axios';
 export class SharesService {
   constructor(private readonly supabase: SupabaseService) {}
 
-  async createShare(userId: string, fileId: string, dto: {
-    password?: string;
-    expiresAt?: string;
-    downloadLimit?: number;
-  }) {
+  async createShare(
+    userId: string,
+    fileId: string,
+    dto: {
+      password?: string;
+      expiresAt?: string;
+      expiresIn?: number;
+      downloadLimit?: number;
+    },
+  ) {
     const shareToken = uuidv4().replace(/-/g, '');
 
     let passwordHash: string | null = null;
-    if (dto.password) {
+    if (dto?.password) {
       passwordHash = await bcrypt.hash(dto.password, 10);
+    }
+
+    // Handle both expiresIn (seconds from now) and expiresAt (ISO date string)
+    let expiresAt: string | null = null;
+    if (dto?.expiresIn && dto.expiresIn > 0) {
+      expiresAt = new Date(Date.now() + dto.expiresIn * 1000).toISOString();
+    } else if (dto?.expiresAt) {
+      expiresAt = dto.expiresAt;
     }
 
     const { data, error } = await this.supabase
@@ -31,19 +44,24 @@ export class SharesService {
         file_id: fileId,
         share_token: shareToken,
         password_hash: passwordHash,
-        expires_at: dto.expiresAt || null,
-        download_limit: dto.downloadLimit || null,
+        expires_at: expiresAt,
+        download_limit: dto?.downloadLimit || null,
         is_active: true,
+        download_count: 0,
       })
       .select()
       .single();
 
     if (error) throw new InternalServerErrorException(error.message);
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const shareUrl = `${frontendUrl}/share/${shareToken}`;
+
     return {
       ...data,
-      share_url: `${process.env.FRONTEND_URL}/share/${shareToken}`,
-      qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${process.env.FRONTEND_URL}/share/${shareToken}`)}`,
+      token: shareToken,
+      share_url: shareUrl,
+      qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`,
     };
   }
 
@@ -56,11 +74,17 @@ export class SharesService {
       .order('created_at', { ascending: false });
 
     if (error) throw new InternalServerErrorException(error.message);
-    return data?.map(s => ({
-      ...s,
-      share_url: `${process.env.FRONTEND_URL}/share/${s.share_token}`,
-      qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${process.env.FRONTEND_URL}/share/${s.share_token}`)}`,
-    })) || [];
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return (data || []).map((s) => {
+      const shareUrl = `${frontendUrl}/share/${s.share_token}`;
+      return {
+        ...s,
+        token: s.share_token,
+        share_url: shareUrl,
+        qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`,
+      };
+    });
   }
 
   async accessShare(token: string, password?: string) {
@@ -72,14 +96,21 @@ export class SharesService {
       .eq('is_active', true)
       .maybeSingle();
 
-    if (error || !share) throw new NotFoundException('Share link not found or inactive');
+    if (error || !share) {
+      throw new NotFoundException('Share link not found or has been deleted');
+    }
 
     if (share.expires_at && new Date(share.expires_at) < new Date()) {
       throw new UnauthorizedException('This share link has expired');
     }
 
-    if (share.download_limit !== null && share.download_count >= share.download_limit) {
-      throw new UnauthorizedException('Download limit reached');
+    if (
+      share.download_limit !== null &&
+      share.download_count >= share.download_limit
+    ) {
+      throw new UnauthorizedException(
+        'Download limit reached for this share link',
+      );
     }
 
     if (share.password_hash) {
@@ -101,38 +132,63 @@ export class SharesService {
   async getShareStream(token: string, password?: string) {
     const access = await this.accessShare(token, password);
     const file = access.file;
+
+    if (!file?.telegram_file_id) {
+      throw new NotFoundException('File not found in storage');
+    }
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      throw new InternalServerErrorException('Telegram bot not configured');
+    }
 
-    const response = await axios.get(
-      `https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`
-    );
-    const filePath = response.data.result.file_path;
-    const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+    try {
+      const response = await axios.get(
+        `https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`,
+      );
+      const filePath = response.data?.result?.file_path;
+      if (!filePath) {
+        throw new InternalServerErrorException('Invalid Telegram file response');
+      }
+      const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+      const fileStreamResponse = await axios.get(downloadUrl, {
+        responseType: 'stream',
+      });
 
-    const fileStreamResponse = await axios.get(downloadUrl, {
-      responseType: 'stream',
-    });
-
-    return {
-      stream: fileStreamResponse.data,
-      name: file.name,
-      mimeType: file.mime_type,
-      size: file.size,
-      shareId: access.shareId,
-    };
+      return {
+        stream: fileStreamResponse.data,
+        name: file.name || 'download',
+        mimeType: file.mime_type || 'application/octet-stream',
+        size: file.size || 0,
+        shareId: access.shareId,
+      };
+    } catch (err: any) {
+      if (err?.status >= 400 || err?.response?.status >= 400) {
+        throw err;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch file from Telegram: ' + (err?.message || 'Unknown error'),
+      );
+    }
   }
 
   async recordDownload(shareId: string, ip: string, userAgent: string) {
-    // Increment counter
-    await this.supabase.getClient().rpc('increment_download_count', { share_id: shareId });
-
-    // Analytics record
-    await this.supabase.getClient().from('downloads').insert({
-      share_id: shareId,
-      ip_address: ip,
-      user_agent: userAgent,
-    });
-
+    try {
+      await this.supabase
+        .getClient()
+        .rpc('increment_download_count', { share_id: shareId });
+    } catch {
+      // RPC may not exist yet — silently ignore
+    }
+    try {
+      await this.supabase.getClient().from('downloads').insert({
+        share_id: shareId,
+        ip_address: ip,
+        user_agent: userAgent,
+      });
+    } catch {
+      // analytics table may not exist yet — silently ignore
+    }
     return { success: true };
   }
 

@@ -654,14 +654,21 @@ export function FileExplorer() {
         <div className="px-4 pb-4 border-t border-white/[0.06] pt-3">
           {/* Telegram status */}
           {telegramConnected !== null && (
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-2 text-xs font-medium ${telegramConnected
-                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                : 'bg-white/5 border border-white/10 text-zinc-500'
-              }`}>
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${telegramConnected ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' : 'bg-zinc-600'}`} />
-              <Zap className="w-3 h-3" />
-              {telegramConnected ? 'Telegram connected' : 'Telegram not linked'}
-            </div>
+            telegramConnected ? (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-2 text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-400 shadow-sm shadow-emerald-400/50" />
+                <Zap className="w-3 h-3" />
+                Telegram connected
+              </div>
+            ) : (
+              <Link to="/telegram-connect" className="block mb-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 border border-white/10 text-zinc-500 hover:bg-white/10 transition">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-600" />
+                  <Zap className="w-3 h-3" />
+                  Telegram not linked
+                </div>
+              </Link>
+            )
           )}
 
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">

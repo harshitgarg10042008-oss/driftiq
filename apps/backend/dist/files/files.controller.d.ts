@@ -31,11 +31,5 @@ export declare class FilesController {
         success: boolean;
     }>;
     restore(req: any, fileId: string): Promise<any>;
-    createShareLink(req: any, fileId: string, password?: string, expiresIn?: number): Promise<{
-        token: string;
-        url: string;
-        fileName: any;
-    }>;
-    getSharedFile(token: string, password?: string): Promise<any>;
-    streamSharedFile(token: string, res: Response, password?: string): Promise<StreamableFile>;
+    createShareLink(req: any, fileId: string, password?: string, expiresIn?: number): Promise<any>;
 }

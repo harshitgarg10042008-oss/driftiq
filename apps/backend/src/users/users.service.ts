@@ -124,7 +124,11 @@ export class UsersService {
     const { error } = await this.supabase
       .getClient()
       .from('users')
-      .update({ telegram_user_id: telegramUserId, telegram_status: 'connected' })
+      .update({
+        telegram_user_id: telegramUserId,
+        telegram_status: 'connected',
+        telegramconnected: true,
+      })
       .eq('id', userId);
 
     if (error) throw new InternalServerErrorException(error.message);
@@ -137,9 +141,9 @@ export class UsersService {
     const { error } = await this.supabase
       .getClient()
       .from('users')
-      .update({ 
+      .update({
         telegram_link_code: code,
-        telegram_link_code_expires_at: expiresAt
+        telegram_link_code_expires_at: expiresAt,
       })
       .eq('id', userId);
 
@@ -165,16 +169,19 @@ export class UsersService {
       .from('users')
       .select('id, telegram_link_code_expires_at')
       .eq('telegram_link_code', code)
-      .single();
+      .maybeSingle();
 
     if (error || !user) return null;
 
     // 2. Check expiry
-    if (new Date(user.telegram_link_code_expires_at) < new Date()) {
+    if (
+      user.telegram_link_code_expires_at &&
+      new Date(user.telegram_link_code_expires_at) < new Date()
+    ) {
       return null; // Expired
     }
 
-    // 3. Update user
+    // 3. Update user — link Telegram account
     const { error: updateError } = await this.supabase
       .getClient()
       .from('users')
@@ -196,7 +203,10 @@ export class UsersService {
     let query = this.supabase
       .getClient()
       .from('users')
-      .select('id, email, username, full_name, role, is_active, storage_used, storage_limit, created_at, last_login, telegram_status', { count: 'exact' });
+      .select(
+        'id, email, username, full_name, role, is_active, storage_used, storage_limit, created_at, last_login, telegram_status',
+        { count: 'exact' },
+      );
 
     if (search) {
       query = query.or(`email.ilike.%${search}%,username.ilike.%${search}%`);

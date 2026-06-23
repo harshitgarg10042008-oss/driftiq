@@ -20,8 +20,13 @@ let SharesController = class SharesController {
     constructor(sharesService) {
         this.sharesService = sharesService;
     }
-    async createShare(req, fileId, password, expiresAt, downloadLimit) {
-        return this.sharesService.createShare(req.user.id, fileId, { password, expiresAt, downloadLimit });
+    async createShare(req, fileId, password, expiresAt, expiresIn, downloadLimit) {
+        return this.sharesService.createShare(req.user.id, fileId, {
+            password,
+            expiresAt,
+            expiresIn: expiresIn ? Number(expiresIn) : undefined,
+            downloadLimit: downloadLimit ? Number(downloadLimit) : undefined,
+        });
     }
     async getMyShares(req) {
         return this.sharesService.getMyShares(req.user.id);
@@ -31,12 +36,21 @@ let SharesController = class SharesController {
     }
     async downloadShare(token, password, ip, userAgent, res) {
         const { stream, name, mimeType, size, shareId } = await this.sharesService.getShareStream(token, password);
-        await this.sharesService.recordDownload(shareId, ip || 'unknown', userAgent || '');
+        try {
+            await this.sharesService.recordDownload(shareId, ip || 'unknown', userAgent || '');
+        }
+        catch { }
+        const safeName = (name || 'download').replace(/[^\w\s.\-]/g, '_');
+        const encodedName = encodeURIComponent(name || 'download')
+            .replace(/'/g, '%27')
+            .replace(/\(/g, '%28')
+            .replace(/\)/g, '%29');
         if (res) {
             res.set({
-                'Content-Type': mimeType,
-                'Content-Disposition': `attachment; filename="${name}"`,
-                'Content-Length': size.toString(),
+                'Content-Type': mimeType || 'application/octet-stream',
+                'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodedName}`,
+                'Content-Length': size?.toString() || '0',
+                'Cache-Control': 'no-cache',
             });
         }
         return new common_1.StreamableFile(stream);
@@ -59,9 +73,10 @@ __decorate([
     __param(1, (0, common_1.Body)('fileId')),
     __param(2, (0, common_1.Body)('password')),
     __param(3, (0, common_1.Body)('expiresAt')),
-    __param(4, (0, common_1.Body)('downloadLimit')),
+    __param(4, (0, common_1.Body)('expiresIn')),
+    __param(5, (0, common_1.Body)('downloadLimit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String, Number]),
+    __metadata("design:paramtypes", [Object, String, String, String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], SharesController.prototype, "createShare", null);
 __decorate([

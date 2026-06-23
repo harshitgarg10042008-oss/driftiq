@@ -14,9 +14,11 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+    }),
+  )
   async upload(
     @Request() req,
     @UploadedFile() file: Express.Multer.File,
@@ -32,7 +34,7 @@ export class FilesController {
       console.log('Buffer exists?', !!file.buffer);
     }
     if (!file) throw new BadRequestException('No file provided');
-    
+
     return this.filesService.uploadToTelegram(
       req.user.id,
       file.buffer,
@@ -78,20 +80,38 @@ export class FilesController {
   }
 
   @Get(':id/stream')
-  async streamFile(@Request() req, @Param('id') fileId: string, @Res({ passthrough: true }) res: Response) {
-    const { stream, name, mimeType, size } = await this.filesService.getFileStream(req.user.id, fileId);
-    
+  async streamFile(
+    @Request() req,
+    @Param('id') fileId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { stream, name, mimeType, size } = await this.filesService.getFileStream(
+      req.user.id,
+      fileId,
+    );
+
+    const safeName = (name || 'download').replace(/[^\w\s.\-]/g, '_');
+    const encodedName = encodeURIComponent(name || 'download')
+      .replace(/'/g, '%27')
+      .replace(/\(/g, '%28')
+      .replace(/\)/g, '%29');
+
     res.set({
-      'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename="${name}"`,
-      'Content-Length': size.toString(),
+      'Content-Type': mimeType || 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodedName}`,
+      'Content-Length': size?.toString() || '0',
+      'Cache-Control': 'no-cache',
     });
 
     return new StreamableFile(stream);
   }
 
   @Put(':id/rename')
-  async rename(@Request() req, @Param('id') fileId: string, @Body('name') name: string) {
+  async rename(
+    @Request() req,
+    @Param('id') fileId: string,
+    @Body('name') name: string,
+  ) {
     return this.filesService.rename(req.user.id, fileId, name);
   }
 
@@ -131,37 +151,10 @@ export class FilesController {
     @Body('expiresIn') expiresIn?: number,
   ) {
     return this.filesService.createShareLink(
-      req.user.id, fileId, password, expiresIn
+      req.user.id,
+      fileId,
+      password,
+      expiresIn,
     );
-  }
-
-  // Public endpoint — no auth guard needed, but controller-level guard applies
-  // The guard is on the controller, so we need a separate public approach.
-  // We'll keep it here and let the JWT guard handle it — unauthenticated access
-  // to shared files should use a separate public controller or AllowAnonymous.
-  @Get('shared/:token')
-  async getSharedFile(
-    @Param('token') token: string,
-    @Query('password') password?: string,
-  ) {
-    return this.filesService.getSharedFile(token, password);
-  }
-
-  @Get('shared/:token/stream')
-  async streamSharedFile(
-    @Param('token') token: string,
-    @Res({ passthrough: true }) res: Response,
-    @Query('password') password?: string,
-  ) {
-    const { stream, name, mimeType, size } = 
-      await this.filesService.streamSharedFile(token, password);
-
-    res.set({
-      'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename="${name}"`,
-      'Content-Length': size.toString(),
-    });
-
-    return new StreamableFile(stream);
   }
 }

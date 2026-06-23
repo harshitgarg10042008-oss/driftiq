@@ -5,6 +5,7 @@ export declare class SharesService {
     createShare(userId: string, fileId: string, dto: {
         password?: string;
         expiresAt?: string;
+        expiresIn?: number;
         downloadLimit?: number;
     }): Promise<any>;
     getMyShares(userId: string): Promise<any[]>;

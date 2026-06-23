@@ -4,7 +4,7 @@ import { SharesService } from './shares.service';
 export declare class SharesController {
     private readonly sharesService;
     constructor(sharesService: SharesService);
-    createShare(req: any, fileId: string, password?: string, expiresAt?: string, downloadLimit?: number): Promise<any>;
+    createShare(req: any, fileId: string, password?: string, expiresAt?: string, expiresIn?: number, downloadLimit?: number): Promise<any>;
     getMyShares(req: any): Promise<any[]>;
     accessShare(token: string, password?: string): Promise<{
         file: any;

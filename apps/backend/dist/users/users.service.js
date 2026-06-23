@@ -124,7 +124,11 @@ let UsersService = class UsersService {
         const { error } = await this.supabase
             .getClient()
             .from('users')
-            .update({ telegram_user_id: telegramUserId, telegram_status: 'connected' })
+            .update({
+            telegram_user_id: telegramUserId,
+            telegram_status: 'connected',
+            telegramconnected: true,
+        })
             .eq('id', userId);
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
@@ -137,7 +141,7 @@ let UsersService = class UsersService {
             .from('users')
             .update({
             telegram_link_code: code,
-            telegram_link_code_expires_at: expiresAt
+            telegram_link_code_expires_at: expiresAt,
         })
             .eq('id', userId);
         if (error)
@@ -160,10 +164,11 @@ let UsersService = class UsersService {
             .from('users')
             .select('id, telegram_link_code_expires_at')
             .eq('telegram_link_code', code)
-            .single();
+            .maybeSingle();
         if (error || !user)
             return null;
-        if (new Date(user.telegram_link_code_expires_at) < new Date()) {
+        if (user.telegram_link_code_expires_at &&
+            new Date(user.telegram_link_code_expires_at) < new Date()) {
             return null;
         }
         const { error: updateError } = await this.supabase

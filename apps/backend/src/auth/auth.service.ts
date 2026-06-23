@@ -18,7 +18,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     const existing = await this.usersService.findByEmail(dto.email);
@@ -63,7 +63,11 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    await this.usersService.updateLastLogin(user.id);
+    try {
+      await this.usersService.updateLastLogin(user.id);
+    } catch {
+      // Non-fatal: updateLastLogin failing should never block login
+    }
     return this.generateTokens(user.id, user.email, user.role);
   }
 
@@ -152,7 +156,7 @@ export class AuthService {
             </div>
           `,
         },
-        { headers: { Authorization: `Bearer ${resendKey}` } }
+        { headers: { Authorization: `Bearer ${resendKey}` } },
       );
     } catch (e: any) {
       console.error('Failed to send reset email:', e.response?.data || e.message);
@@ -188,18 +192,18 @@ export class AuthService {
   }
 
   async getTelegramLinkCode(userId: string) {
-    const code = 'DQ-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
-    await this.usersService.setTelegramLinkCode(userId, code, expires);
+    const code = await this.usersService.generateTelegramLinkCode(userId);
     return { code };
   }
 
   async getTelegramStatus(userId: string) {
     const user = await this.usersService.findById(userId);
+    const connected =
+      user?.telegramconnected === true ||
+      user?.telegram_status === 'connected';
     return {
-      connected: user?.telegramconnected === true || user?.telegram_status === 'connected',
-      status: (user?.telegramconnected || user?.telegram_status === 'connected') ? 'connected' : 'pending',
+      connected,
+      status: connected ? 'connected' : 'pending',
     };
   }
 

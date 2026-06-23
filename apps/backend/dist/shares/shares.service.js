@@ -58,8 +58,15 @@ let SharesService = class SharesService {
     async createShare(userId, fileId, dto) {
         const shareToken = (0, uuid_1.v4)().replace(/-/g, '');
         let passwordHash = null;
-        if (dto.password) {
+        if (dto?.password) {
             passwordHash = await bcrypt.hash(dto.password, 10);
+        }
+        let expiresAt = null;
+        if (dto?.expiresIn && dto.expiresIn > 0) {
+            expiresAt = new Date(Date.now() + dto.expiresIn * 1000).toISOString();
+        }
+        else if (dto?.expiresAt) {
+            expiresAt = dto.expiresAt;
         }
         const { data, error } = await this.supabase
             .getClient()
@@ -69,18 +76,22 @@ let SharesService = class SharesService {
             file_id: fileId,
             share_token: shareToken,
             password_hash: passwordHash,
-            expires_at: dto.expiresAt || null,
-            download_limit: dto.downloadLimit || null,
+            expires_at: expiresAt,
+            download_limit: dto?.downloadLimit || null,
             is_active: true,
+            download_count: 0,
         })
             .select()
             .single();
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const shareUrl = `${frontendUrl}/share/${shareToken}`;
         return {
             ...data,
-            share_url: `${process.env.FRONTEND_URL}/share/${shareToken}`,
-            qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${process.env.FRONTEND_URL}/share/${shareToken}`)}`,
+            token: shareToken,
+            share_url: shareUrl,
+            qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`,
         };
     }
     async getMyShares(userId) {
@@ -92,11 +103,16 @@ let SharesService = class SharesService {
             .order('created_at', { ascending: false });
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
-        return data?.map(s => ({
-            ...s,
-            share_url: `${process.env.FRONTEND_URL}/share/${s.share_token}`,
-            qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${process.env.FRONTEND_URL}/share/${s.share_token}`)}`,
-        })) || [];
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        return (data || []).map((s) => {
+            const shareUrl = `${frontendUrl}/share/${s.share_token}`;
+            return {
+                ...s,
+                token: s.share_token,
+                share_url: shareUrl,
+                qr_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`,
+            };
+        });
     }
     async accessShare(token, password) {
         const { data: share, error } = await this.supabase
@@ -106,13 +122,15 @@ let SharesService = class SharesService {
             .eq('share_token', token)
             .eq('is_active', true)
             .maybeSingle();
-        if (error || !share)
-            throw new common_1.NotFoundException('Share link not found or inactive');
+        if (error || !share) {
+            throw new common_1.NotFoundException('Share link not found or has been deleted');
+        }
         if (share.expires_at && new Date(share.expires_at) < new Date()) {
             throw new common_1.UnauthorizedException('This share link has expired');
         }
-        if (share.download_limit !== null && share.download_count >= share.download_limit) {
-            throw new common_1.UnauthorizedException('Download limit reached');
+        if (share.download_limit !== null &&
+            share.download_count >= share.download_limit) {
+            throw new common_1.UnauthorizedException('Download limit reached for this share link');
         }
         if (share.password_hash) {
             if (!password)
@@ -133,28 +151,55 @@ let SharesService = class SharesService {
     async getShareStream(token, password) {
         const access = await this.accessShare(token, password);
         const file = access.file;
+        if (!file?.telegram_file_id) {
+            throw new common_1.NotFoundException('File not found in storage');
+        }
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
-        const filePath = response.data.result.file_path;
-        const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-        const fileStreamResponse = await axios_1.default.get(downloadUrl, {
-            responseType: 'stream',
-        });
-        return {
-            stream: fileStreamResponse.data,
-            name: file.name,
-            mimeType: file.mime_type,
-            size: file.size,
-            shareId: access.shareId,
-        };
+        if (!botToken) {
+            throw new common_1.InternalServerErrorException('Telegram bot not configured');
+        }
+        try {
+            const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
+            const filePath = response.data?.result?.file_path;
+            if (!filePath) {
+                throw new common_1.InternalServerErrorException('Invalid Telegram file response');
+            }
+            const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+            const fileStreamResponse = await axios_1.default.get(downloadUrl, {
+                responseType: 'stream',
+            });
+            return {
+                stream: fileStreamResponse.data,
+                name: file.name || 'download',
+                mimeType: file.mime_type || 'application/octet-stream',
+                size: file.size || 0,
+                shareId: access.shareId,
+            };
+        }
+        catch (err) {
+            if (err?.status >= 400 || err?.response?.status >= 400) {
+                throw err;
+            }
+            throw new common_1.InternalServerErrorException('Failed to fetch file from Telegram: ' + (err?.message || 'Unknown error'));
+        }
     }
     async recordDownload(shareId, ip, userAgent) {
-        await this.supabase.getClient().rpc('increment_download_count', { share_id: shareId });
-        await this.supabase.getClient().from('downloads').insert({
-            share_id: shareId,
-            ip_address: ip,
-            user_agent: userAgent,
-        });
+        try {
+            await this.supabase
+                .getClient()
+                .rpc('increment_download_count', { share_id: shareId });
+        }
+        catch {
+        }
+        try {
+            await this.supabase.getClient().from('downloads').insert({
+                share_id: shareId,
+                ip_address: ip,
+                user_agent: userAgent,
+            });
+        }
+        catch {
+        }
         return { success: true };
     }
     async updateShare(userId, shareId, updates) {

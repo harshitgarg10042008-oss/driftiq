@@ -82,7 +82,10 @@ let FilesService = class FilesService {
         }
         const formData = new form_data_1.default();
         formData.append('chat_id', chatId);
-        formData.append('document', fileBuffer, { filename: fileName, contentType: mimeType });
+        formData.append('document', fileBuffer, {
+            filename: fileName,
+            contentType: mimeType,
+        });
         formData.append('caption', `DriftIQ | user:${userId} | ${fileName}`);
         let telegramFileId;
         try {
@@ -119,20 +122,22 @@ let FilesService = class FilesService {
             size: fileBuffer.length,
             telegram_file_id: telegramFileId,
             is_starred: false,
+            is_deleted: false,
         })
             .select()
             .single();
         if (error) {
             console.error('❌ Supabase insert failed:', error.message, '| Code:', error.code, '| Details:', error.details);
-            throw new common_1.InternalServerErrorException(`Database error: ${error.message}. Run the SQL migration in database/missing_columns_migration.sql in your Supabase SQL Editor.`);
+            throw new common_1.InternalServerErrorException(`Database error: ${error.message}. Run the SQL migration in database/schema.sql in your Supabase SQL Editor.`);
         }
         console.log(`✅ File saved to database. id: ${file?.id}`);
         try {
-            await this.supabase.getClient()
+            await this.supabase
+                .getClient()
                 .rpc('increment_storage_used', { user_id: userId, bytes: fileBuffer.length });
         }
         catch (rpcErr) {
-            console.warn('Storage RPC failed silently:', rpcErr?.message);
+            console.warn('Storage RPC failed silently (non-fatal):', rpcErr?.message);
         }
         return file;
     }
@@ -141,24 +146,37 @@ let FilesService = class FilesService {
         return {
             url: `/api/files/${fileId}/stream`,
             name: file.name,
-            mimeType: file.mime_type
+            mimeType: file.mime_type,
         };
     }
     async getFileStream(userId, fileId) {
         const file = await this.findOne(userId, fileId);
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
-        const filePath = response.data.result.file_path;
-        const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-        const fileStreamResponse = await axios_1.default.get(downloadUrl, {
-            responseType: 'stream',
-        });
-        return {
-            stream: fileStreamResponse.data,
-            name: file.name,
-            mimeType: file.mime_type,
-            size: file.size,
-        };
+        if (!botToken) {
+            throw new common_1.InternalServerErrorException('Telegram bot not configured');
+        }
+        try {
+            const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
+            const filePath = response.data?.result?.file_path;
+            if (!filePath) {
+                throw new common_1.InternalServerErrorException('Invalid Telegram file response');
+            }
+            const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+            const fileStreamResponse = await axios_1.default.get(downloadUrl, {
+                responseType: 'stream',
+            });
+            return {
+                stream: fileStreamResponse.data,
+                name: file.name || 'download',
+                mimeType: file.mime_type || 'application/octet-stream',
+                size: file.size || 0,
+            };
+        }
+        catch (err) {
+            if (err?.status >= 400 || err?.response?.status >= 400)
+                throw err;
+            throw new common_1.InternalServerErrorException('Failed to fetch from Telegram: ' + (err?.message || 'Unknown error'));
+        }
     }
     async findAll(userId, folderId) {
         let query = this.supabase
@@ -286,9 +304,10 @@ let FilesService = class FilesService {
             .eq('is_deleted', true);
         if (fetchError)
             throw new common_1.InternalServerErrorException(fetchError.message);
-        if (!filesToDelete || filesToDelete.length === 0)
+        if (!filesToDelete || filesToDelete.length === 0) {
             return { success: true, count: 0 };
-        const totalSizeToFree = filesToDelete.reduce((acc, f) => acc + Number(f.size), 0);
+        }
+        const totalSizeToFree = filesToDelete.reduce((acc, f) => acc + Number(f.size || 0), 0);
         const { error: deleteError } = await this.supabase
             .getClient()
             .from('files')
@@ -298,8 +317,14 @@ let FilesService = class FilesService {
         if (deleteError)
             throw new common_1.InternalServerErrorException(deleteError.message);
         if (totalSizeToFree > 0) {
-            await this.supabase.getClient()
-                .rpc('increment_storage_used', { user_id: userId, bytes: -totalSizeToFree });
+            try {
+                await this.supabase
+                    .getClient()
+                    .rpc('increment_storage_used', { user_id: userId, bytes: -totalSizeToFree });
+            }
+            catch (rpcErr) {
+                console.warn('Storage decrement RPC failed silently:', rpcErr?.message);
+            }
         }
         return { success: true, count: filesToDelete.length };
     }
@@ -310,6 +335,7 @@ let FilesService = class FilesService {
             .select('*')
             .eq('user_id', userId)
             .eq('is_starred', true)
+            .eq('is_deleted', false)
             .order('created_at', { ascending: false });
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
@@ -321,6 +347,7 @@ let FilesService = class FilesService {
             .from('files')
             .select('*')
             .eq('user_id', userId)
+            .eq('is_deleted', false)
             .ilike('name', `%${query}%`)
             .order('created_at', { ascending: false })
             .limit(50);
@@ -339,7 +366,8 @@ let FilesService = class FilesService {
             .getClient()
             .from('files')
             .select('id', { count: 'exact' })
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .eq('is_deleted', false);
         return {
             storageUsed: user?.storage_used || 0,
             storageLimit: user?.storage_limit || 5368709120,
@@ -348,13 +376,13 @@ let FilesService = class FilesService {
     }
     async createShareLink(userId, fileId, password, expiresIn) {
         const file = await this.findOne(userId, fileId);
-        const token = Math.random().toString(36).substring(2) +
-            Date.now().toString(36);
+        const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
         const shareData = {
             file_id: fileId,
             user_id: userId,
-            token,
-            created_at: new Date().toISOString(),
+            share_token: token,
+            is_active: true,
+            download_count: 0,
         };
         if (password) {
             const bcrypt = await Promise.resolve().then(() => __importStar(require('bcrypt')));
@@ -365,24 +393,28 @@ let FilesService = class FilesService {
         }
         const { data, error } = await this.supabase
             .getClient()
-            .from('shared_links')
+            .from('shares')
             .insert(shareData)
             .select()
             .single();
         if (error)
             throw new common_1.InternalServerErrorException(error.message);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         return {
+            ...data,
             token,
-            url: `${process.env.FRONTEND_URL}/share/${token}`,
+            url: `${frontendUrl}/share/${token}`,
+            share_url: `${frontendUrl}/share/${token}`,
             fileName: file.name,
         };
     }
     async getSharedFile(token, password) {
         const { data: share, error } = await this.supabase
             .getClient()
-            .from('shared_links')
+            .from('shares')
             .select('*, files(*)')
-            .eq('token', token)
+            .eq('share_token', token)
+            .eq('is_active', true)
             .maybeSingle();
         if (error || !share)
             throw new common_1.NotFoundException('Share link not found');
@@ -402,18 +434,23 @@ let FilesService = class FilesService {
     async streamSharedFile(token, password) {
         const file = await this.getSharedFile(token, password);
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
-        const filePath = response.data.result.file_path;
-        const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-        const fileStreamResponse = await axios_1.default.get(downloadUrl, {
-            responseType: 'stream',
-        });
-        return {
-            stream: fileStreamResponse.data,
-            name: file.name,
-            mimeType: file.mime_type,
-            size: file.size,
-        };
+        try {
+            const response = await axios_1.default.get(`https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`);
+            const filePath = response.data?.result?.file_path;
+            const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
+            const fileStreamResponse = await axios_1.default.get(downloadUrl, {
+                responseType: 'stream',
+            });
+            return {
+                stream: fileStreamResponse.data,
+                name: file.name,
+                mimeType: file.mime_type,
+                size: file.size,
+            };
+        }
+        catch (err) {
+            throw new common_1.InternalServerErrorException('Failed to stream file: ' + (err?.message || 'Unknown error'));
+        }
     }
     async getUserStorageUsed(userId) {
         const { data } = await this.supabase
