@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useFileStore } from '../../store/useFileStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { io, Socket } from 'socket.io-client';
@@ -159,7 +159,6 @@ export function FileExplorer() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -323,17 +322,7 @@ export function FileExplorer() {
     };
   }, [user?.id, currentSection, currentFolderId, addFile, toast]);
 
-  // Search
-  useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults(null); return; }
-    const timer = setTimeout(async () => {
-      try {
-        const { data } = await api.get('/files/search', { params: { q: searchQuery } });
-        setSearchResults(data);
-      } catch { setSearchResults([]); }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+
 
   // ─── Handlers — all original, untouched ─────────────────────────────
   const handleUpload = async (fileList: FileList) => {
@@ -477,7 +466,7 @@ export function FileExplorer() {
     try {
       const response = await api.get(`/files/${fileId}/stream`, { responseType: 'blob' });
       
-      const fileInState = files.find(f => f?.id === fileId) || searchResults?.find(f => f?.id === fileId);
+      const fileInState = files.find(f => f?.id === fileId);
       const fileName = fileInState?.name || fileId;
 
       const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
@@ -508,9 +497,28 @@ export function FileExplorer() {
     return () => window.removeEventListener('click', handler);
   }, []);
 
-  const displayFiles = searchResults !== null ? searchResults : files;
+  const { displayFiles, displayFolders } = useMemo(() => {
+    if (!searchQuery.trim()) return { displayFiles: files, displayFolders: folders };
+    
+    const query = searchQuery.toLowerCase();
+    
+    const sortedFiles = [...files].sort((a, b) => {
+      const aMatch = a?.name?.toLowerCase().includes(query) ? 1 : 0;
+      const bMatch = b?.name?.toLowerCase().includes(query) ? 1 : 0;
+      return bMatch - aMatch;
+    });
+
+    const sortedFolders = [...folders].sort((a, b) => {
+      const aMatch = a?.name?.toLowerCase().includes(query) ? 1 : 0;
+      const bMatch = b?.name?.toLowerCase().includes(query) ? 1 : 0;
+      return bMatch - aMatch;
+    });
+
+    return { displayFiles: sortedFiles, displayFolders: sortedFolders };
+  }, [files, folders, searchQuery]);
+
   const selectedFile = displayFiles.find(f => f?.id === selectedId);
-  const selectedFolder = folders.find(f => f?.id === selectedId);
+  const selectedFolder = displayFolders.find(f => f?.id === selectedId);
   const hasSelection = !!selectedFile || !!selectedFolder;
 
   const storagePercent = stats ? Math.min(100, (stats.storageUsed / stats.storageLimit) * 100) : 0;
@@ -712,7 +720,7 @@ export function FileExplorer() {
         {/* Top bar */}
         <div className="h-[64px] flex items-center justify-between px-6 shrink-0 border-b dark:border-white/[0.06] border-stone-200/60 dark:bg-zinc-950/90 bg-[#FBF9F6]/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-1 text-sm font-medium dark:text-zinc-400 text-stone-500 overflow-x-auto">
+          <div className="flex items-center space-x-1 text-sm font-medium dark:text-zinc-400 text-stone-500 overflow-x-auto w-1/3">
             {currentSection === 'drive' ? breadcrumbs.map((crumb, idx) => (
               <div key={crumb?.id || 'root'} className="flex items-center">
                 {idx > 0 && <ChevronRight className="w-4 h-4 dark:text-zinc-700 text-stone-300 mx-1" />}
@@ -728,8 +736,22 @@ export function FileExplorer() {
             )}
           </div>
 
+          {/* Centered Search Bar */}
+          <div className="flex-1 flex justify-center px-4">
+            <div className="relative group w-full max-w-[320px]">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 dark:text-zinc-600 text-stone-400 group-focus-within:text-violet-400 transition-colors" />
+              <input
+                type="text"
+                placeholder="Search files..."
+                className="w-full dark:bg-white/[0.04] bg-stone-100 border dark:border-white/[0.08] border-stone-200/80 rounded-xl pl-8 pr-4 py-2 text-xs transition-all duration-200 focus:ring-1 focus:ring-violet-500/50 outline-none dark:text-zinc-200 text-stone-800 dark:placeholder-zinc-600 placeholder-stone-400 shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3 w-1/3">
             {/* Telegram Status Header */}
             {telegramConnected !== null && (
               telegramConnected ? (
@@ -755,18 +777,6 @@ export function FileExplorer() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-
-            {/* Search */}
-            <div className="relative group">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 dark:text-zinc-600 text-stone-400 group-focus-within:text-violet-400 transition-colors" />
-              <input
-                type="text"
-                placeholder="Search files..."
-                className="dark:bg-white/[0.04] bg-stone-100 border dark:border-white/[0.08] border-stone-200/80 rounded-xl pl-8 pr-4 py-2 text-xs w-44 focus:w-60 transition-all duration-200 focus:ring-1 focus:ring-violet-500/50 outline-none dark:text-zinc-200 text-stone-800 dark:placeholder-zinc-600 placeholder-stone-400"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
 
             {/* View toggle */}
             <div className="flex items-center dark:bg-white/5 bg-stone-100 rounded-lg p-0.5 border dark:border-white/[0.08] border-stone-200/80">
@@ -825,11 +835,14 @@ export function FileExplorer() {
           <div className={`flex-1 overflow-y-auto ${viewMode === 'grid' ? 'p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-min' : 'px-3 py-3 flex flex-col gap-1'}`}>
 
             {/* ── FOLDERS ─────────────────────────────────────────────── */}
-            {searchResults === null && folders.map((folder: any) => (
-              viewMode === 'grid' ? (
+            {displayFolders.map((folder: any) => {
+              const isMatch = searchQuery.trim() && folder?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchHighlightGrid = isMatch ? 'ring-2 ring-violet-500 shadow-lg shadow-violet-500/20 bg-violet-500/5' : '';
+              const matchHighlightList = isMatch ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : '';
+              return viewMode === 'grid' ? (
                 <div
                   key={folder?.id}
-                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === folder?.id
+                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${matchHighlightGrid} ${selectedId === folder?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
                       : 'dark:bg-white/[0.02] bg-white dark:border-white/[0.06] border-stone-200 hover:dark:border-white/20 hover:border-stone-300 hover:dark:bg-white/[0.04] shadow-sm hover:shadow-md dark:shadow-none'
                     }`}
@@ -844,7 +857,7 @@ export function FileExplorer() {
               ) : (
                 <div
                   key={folder?.id}
-                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${selectedId === folder?.id
+                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${matchHighlightList} ${selectedId === folder?.id
                       ? 'bg-violet-500/10 border-b-violet-500/30'
                       : 'hover:dark:bg-white/[0.02] hover:bg-stone-100/60'
                     }`}
@@ -873,15 +886,18 @@ export function FileExplorer() {
                     </button>
                   </div>
                 </div>
-              )
-            ))}
+              );
+            })}
 
             {/* ── FILES ───────────────────────────────────────────────── */}
-            {displayFiles.map((file: any) => (
-              viewMode === 'grid' ? (
+            {displayFiles.map((file: any) => {
+              const isMatch = searchQuery.trim() && file?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchHighlightGrid = isMatch ? 'ring-2 ring-violet-500 shadow-lg shadow-violet-500/20 bg-violet-500/5' : '';
+              const matchHighlightList = isMatch ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : '';
+              return viewMode === 'grid' ? (
                 <div
                   key={file?.id}
-                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === file?.id
+                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${matchHighlightGrid} ${selectedId === file?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
                       : 'dark:bg-white/[0.02] bg-white dark:border-white/[0.06] border-stone-200 hover:dark:border-white/20 hover:border-stone-300 hover:dark:bg-white/[0.04] shadow-sm hover:shadow-md dark:shadow-none'
                     }`}
@@ -908,7 +924,7 @@ export function FileExplorer() {
                 /* ── LIST ROW ─────────────────────────────────────────── */
                 <div
                   key={file?.id}
-                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${selectedId === file?.id
+                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${matchHighlightList} ${selectedId === file?.id
                       ? 'bg-violet-500/10 border-b-violet-500/30'
                       : 'hover:dark:bg-white/[0.02] hover:bg-stone-100/60'
                     }`}
@@ -936,11 +952,11 @@ export function FileExplorer() {
                     />
                   </div>
                 </div>
-              )
-            ))}
+              );
+            })}
 
             {/* Empty state */}
-            {displayFiles.length === 0 && folders.length === 0 && (
+            {displayFiles.length === 0 && displayFolders.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-32 text-zinc-600">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
