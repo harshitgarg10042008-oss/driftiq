@@ -40,7 +40,9 @@ async function bootstrap() {
   });
 
   // Global API prefix
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['/'],
+  });
 
   // Validation — transform and whitelist but do NOT forbidNonWhitelisted to avoid 400 on extra fields
   app.useGlobalPipes(

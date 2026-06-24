@@ -1,5 +1,4 @@
 services:
-  # Backend API Service
   - type: web
     name: driftiq-backend
     env: node
@@ -25,21 +24,16 @@ services:
         sync: false
       - key: TELEGRAM_STORAGE_CHAT_ID
         sync: false
-      - key: TELEGRAM_WEBHOOK_URL
-        sync: false
       - key: TELEGRAM_WEBHOOK_SECRET
         sync: false
       - key: RESEND_API_KEY
         sync: false
-      - key: RESEND_FROM_EMAIL
-        sync: false
 
-  # Frontend Static Site
   - type: web
     name: driftiq-frontend
     env: static
     rootDir: apps/frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL

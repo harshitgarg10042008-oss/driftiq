@@ -10,6 +10,7 @@ import { AdminModule } from './admin/admin.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { TelegramModule } from './telegram/telegram.module';
     RealtimeModule,
     TelegramModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
