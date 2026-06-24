@@ -35,11 +35,42 @@ export class FilesController {
     }
     if (!file) throw new BadRequestException('No file provided');
 
+    let finalMimeType = file.mimetype;
+    if (finalMimeType === 'application/octet-stream' || !finalMimeType) {
+      const ext = file.originalname.split('.').pop()?.toLowerCase();
+      const extMap: Record<string, string> = {
+        'cpp': 'text/x-c',
+        'c': 'text/x-c',
+        'h': 'text/x-c',
+        'hpp': 'text/x-c',
+        'py': 'text/x-python',
+        'js': 'text/javascript',
+        'ts': 'text/typescript',
+        'java': 'text/x-java-source',
+        'cs': 'text/plain',
+        'txt': 'text/plain',
+        'json': 'application/json',
+        'md': 'text/markdown',
+        'csv': 'text/csv',
+        'html': 'text/html',
+        'css': 'text/css',
+        'xml': 'text/xml',
+        'yaml': 'text/yaml',
+        'yml': 'text/yaml',
+      };
+      if (ext && extMap[ext]) {
+        finalMimeType = extMap[ext];
+      } else if (ext) {
+        // Fallback for unknown text-based extensions to allow previewing
+        finalMimeType = 'text/plain';
+      }
+    }
+
     return this.filesService.uploadToTelegram(
       req.user.id,
       file.buffer,
       file.originalname,
-      file.mimetype,
+      finalMimeType,
       folderId,
     );
   }

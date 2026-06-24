@@ -27,7 +27,8 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
   const isImage = file?.mime_type?.startsWith('image/');
   const isVideo = file?.mime_type?.startsWith('video/');
   const isPdf = file?.mime_type === 'application/pdf';
-  const isText = file?.mime_type?.startsWith('text/') || file?.mime_type?.includes('json') || file?.mime_type?.includes('xml') || file?.mime_type?.includes('javascript');
+  // Default to text preview for any unknown file type to support previewing every file
+  const isText = !isImage && !isVideo && !isPdf;
 
   useEffect(() => {
     if (!isOpen || !file) return;
@@ -63,37 +64,34 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
   if (!isOpen || !file) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-zinc-950/90 backdrop-blur-sm">
-      {/* Backdrop click */}
-      <div className="absolute inset-0" onClick={onClose} />
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
       <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 8 }}
+        drag
+        dragMomentum={false}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.97, y: 8 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="relative w-full max-w-4xl bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]"
+        className="relative w-full max-w-3xl bg-[#1A1A1A] border border-[#333] rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[75vh] pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-4 px-6 py-4 border-b border-white/5 shrink-0">
-          <div className="text-2xl shrink-0">{getMimeIcon(file?.mime_type)}</div>
+        <div className="flex items-center gap-3 px-4 py-3 bg-[#222] border-b border-[#333] shrink-0 cursor-move">
+          <div className="text-xl shrink-0">{getMimeIcon(file?.mime_type)}</div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-zinc-100 truncate">{file?.name}</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">{formatBytes(file?.size)}</p>
+            <h3 className="text-xs font-semibold text-zinc-200 truncate">{file?.name}</h3>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => onDownload(file?.id)}
-              className="btn-ghost"
+              className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-white/10 rounded-md transition"
               title="Download"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Download</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-lg transition"
+              className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition ml-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -101,7 +99,7 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto flex items-center justify-center bg-zinc-950/50 min-h-[300px] p-8">
+        <div className="flex-1 overflow-auto flex items-center justify-center bg-[#1A1A1A] min-h-[300px] p-0">
           {previewError ? (
             <div className="flex flex-col items-center justify-center text-zinc-500 text-center">
               <div className="text-8xl mb-6 opacity-60">{getMimeIcon(file?.mime_type)}</div>
@@ -129,7 +127,7 @@ export function FilePreviewModal({ isOpen, onClose, file, onDownload }: FilePrev
               className="w-full h-full min-h-[65vh] rounded-xl bg-white shadow-lg border-0"
             />
           ) : isText && textContent !== null ? (
-            <div className="w-full h-full max-h-[65vh] overflow-auto bg-zinc-900 border border-white/10 rounded-xl p-4 text-left">
+            <div className="w-full h-full min-h-[300px] max-h-[65vh] overflow-auto bg-[#1A1A1A] p-4 text-left">
               <pre className="text-xs text-zinc-300 font-mono whitespace-pre-wrap">{textContent}</pre>
             </div>
           ) : (isImage || isVideo || isPdf || isText) && !previewUrl && textContent === null ? (

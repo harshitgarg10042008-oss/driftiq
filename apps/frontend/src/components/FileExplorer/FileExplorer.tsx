@@ -41,27 +41,28 @@ interface NavItemProps {
   active: boolean;
   onClick: () => void;
   count?: number;
+  colorClass?: string;
 }
-function NavItem({ icon, label, active, onClick, count }: NavItemProps) {
+function NavItem({ icon, label, active, onClick, count, colorClass }: NavItemProps) {
   return (
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative group ${active
-          ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
+          ? 'bg-white/10 text-white border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
           : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
         }`}
     >
       {active && (
         <motion.div
           layoutId="nav-active"
-          className="absolute inset-0 rounded-xl bg-violet-500/10"
+          className="absolute inset-0 rounded-xl bg-white/5"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
-      <span className={`relative z-10 ${active ? 'text-violet-400' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{icon}</span>
-      <span className="relative z-10 flex-1 text-left">{label}</span>
+      <span className={`relative z-10 transition-transform duration-200 group-hover:scale-110 ${colorClass || 'text-zinc-500 group-hover:text-zinc-300'}`}>{icon}</span>
+      <span className={`relative z-10 flex-1 text-left ${active ? 'font-semibold' : ''}`}>{label}</span>
       {count !== undefined && (
-        <span className={`relative z-10 text-xs px-1.5 py-0.5 rounded-md font-semibold ${active ? 'bg-violet-500/20 text-violet-400' : 'bg-white/5 text-zinc-500'}`}>
+        <span className={`relative z-10 text-xs px-1.5 py-0.5 rounded-md font-semibold ${active ? 'bg-white/20 text-white' : 'bg-white/5 text-zinc-500'}`}>
           {count}
         </span>
       )}
@@ -461,9 +462,10 @@ export function FileExplorer() {
   const handleDownload = async (fileId: string) => {
     try {
       const response = await api.get(`/files/${fileId}/stream`, { responseType: 'blob' });
-      const contentDisposition = response.headers['content-disposition'] || '';
-      const nameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-      const fileName = nameMatch?.[1] || fileId;
+      
+      const fileInState = files.find(f => f?.id === fileId) || searchResults?.find(f => f?.id === fileId);
+      const fileName = fileInState?.name || fileId;
+
       const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = blobUrl;
@@ -538,12 +540,14 @@ export function FileExplorer() {
             label="My Drive"
             active={currentSection === 'drive'}
             onClick={() => { setCurrentSection('drive'); navigateToBreadcrumb(0); }}
+            colorClass="text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
           />
           <NavItem
             icon={<Star className="w-4 h-4" />}
             label="Starred"
             active={currentSection === 'starred'}
             onClick={() => setCurrentSection('starred')}
+            colorClass="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
           />
 
           {/* Categories */}
@@ -553,24 +557,28 @@ export function FileExplorer() {
             label="Documents"
             active={currentSection === 'documents'}
             onClick={() => setCurrentSection('documents')}
+            colorClass="text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]"
           />
           <NavItem
             icon={<Image className="w-4 h-4" />}
             label="Pictures"
             active={currentSection === 'pictures'}
             onClick={() => setCurrentSection('pictures')}
+            colorClass="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]"
           />
           <NavItem
             icon={<Film className="w-4 h-4" />}
             label="Videos"
             active={currentSection === 'videos'}
             onClick={() => setCurrentSection('videos')}
+            colorClass="text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.6)]"
           />
           <NavItem
             icon={<Music className="w-4 h-4" />}
             label="Music"
             active={currentSection === 'music'}
             onClick={() => setCurrentSection('music')}
+            colorClass="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
           />
 
           {/* Other */}
@@ -580,6 +588,7 @@ export function FileExplorer() {
             label="Trash"
             active={currentSection === 'trash'}
             onClick={() => setCurrentSection('trash')}
+            colorClass="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.6)]"
           />
           <Link to="/settings">
             <NavItem
@@ -587,6 +596,7 @@ export function FileExplorer() {
               label="Settings"
               active={false}
               onClick={() => { }}
+              colorClass="text-zinc-400"
             />
           </Link>
           {user?.role === 'admin' && (
@@ -821,14 +831,9 @@ export function FileExplorer() {
             {/* ── FOLDERS ─────────────────────────────────────────────── */}
             {searchResults === null && folders.map((folder: any) => (
               viewMode === 'grid' ? (
-                <motion.div
+                <div
                   key={folder?.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ duration: 0.15 }}
-                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all cursor-pointer select-none group relative ${selectedId === folder?.id
+                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === folder?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
                       : 'bg-white/[0.02] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.04]'
                     }`}
@@ -836,10 +841,10 @@ export function FileExplorer() {
                   onDoubleClick={() => navigateToFolder(folder?.id, folder?.name)}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: folder, type: 'folder' }); }}
                 >
-                  <div className="text-4xl mb-3 transform transition-transform duration-200 group-hover:-translate-y-1">📁</div>
+                  <div className="text-4xl mb-3">📁</div>
                   <span className="truncate w-full text-center text-xs font-semibold text-zinc-300 group-hover:text-zinc-100">{folder?.name}</span>
                   <span className="text-[10px] text-zinc-600 mt-1">{formatDate(folder?.created_at)}</span>
-                </motion.div>
+                </div>
               ) : (
                 <div
                   key={folder?.id}
@@ -878,14 +883,9 @@ export function FileExplorer() {
             {/* ── FILES ───────────────────────────────────────────────── */}
             {displayFiles.map((file: any) => (
               viewMode === 'grid' ? (
-                <motion.div
+                <div
                   key={file?.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ duration: 0.15 }}
-                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all cursor-pointer select-none group relative ${selectedId === file?.id
+                  className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === file?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
                       : 'bg-white/[0.02] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.04]'
                     }`}
@@ -893,7 +893,7 @@ export function FileExplorer() {
                   onDoubleClick={() => { if (currentSection !== 'trash') setPreviewFile(file); }}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: file, type: 'file' }); }}
                 >
-                  <div className="text-4xl mb-3 transform transition-transform duration-200 group-hover:-translate-y-1">{getMimeIcon(file?.mime_type)}</div>
+                  <div className="text-4xl mb-3">{getMimeIcon(file?.mime_type)}</div>
                   <span className="truncate w-full text-center text-xs font-semibold text-zinc-300 group-hover:text-zinc-100">{file?.name}</span>
                   <span className="text-[10px] text-zinc-600 mt-1">{formatBytes(file?.size)}</span>
 
@@ -907,7 +907,7 @@ export function FileExplorer() {
                       </button>
                     </div>
                   )}
-                </motion.div>
+                </div>
               ) : (
                 /* ── LIST ROW ─────────────────────────────────────────── */
                 <div

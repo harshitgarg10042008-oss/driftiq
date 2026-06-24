@@ -125,32 +125,8 @@ export class TelegramService {
       return { status: 'user_not_found' };
     }
 
-    // Find or create "Telegram Imports" folder
-    let folderId: string | null = null;
-    try {
-      const { data: folder } = await this.supabase
-        .getClient()
-        .from('folders')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('name', 'Telegram Imports')
-        .is('parent_id', null)
-        .maybeSingle();
-
-      if (folder) {
-        folderId = folder.id;
-      } else {
-        const { data: newFolder } = await this.supabase
-          .getClient()
-          .from('folders')
-          .insert({ user_id: user.id, name: 'Telegram Imports', parent_id: null })
-          .select('id')
-          .single();
-        folderId = newFolder?.id || null;
-      }
-    } catch (folderErr: any) {
-      this.logger.error('Folder setup failed:', folderErr?.message);
-    }
+    // Files from Telegram should go directly to the root drive
+    const folderId = null;
 
     // Save file record to DB
     const newFile = {
@@ -187,7 +163,7 @@ export class TelegramService {
 
     await this.sendTelegramMessage(
       telegramUserId,
-      `✅ "${newFile.name}" saved to DriftIQ!\n📁 Folder: Telegram Imports`,
+      `✅ "${newFile.name}" saved to DriftIQ!\n📁 Folder: My Drive (Root)`,
     );
 
     return { status: 'success', fileId: file.id };
