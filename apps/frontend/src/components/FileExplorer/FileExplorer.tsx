@@ -105,46 +105,41 @@ interface FileActionsProps {
 }
 function FileActions({ file, onPreview, onRename, onMove, onDownload, onShare, onDelete, onStar, isTrash, onRestore }: FileActionsProps) {
   return (
-    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
       {!isTrash && (
         <>
           <button onClick={(e) => { e.stopPropagation(); onPreview(); }}
-            title="Preview" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); onStar(); }}
-            title={file?.is_starred ? 'Unstar' : 'Star'} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-            <Star className={`w-3.5 h-3.5 ${file?.is_starred ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-500 hover:text-yellow-400'}`} />
+            title="Preview" className="p-1.5 rounded-lg hover:bg-white/10 text-emerald-500 transition-colors">
+            <Eye className="w-4 h-4" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); onRename(); }}
-            title="Rename" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-            <Edit3 className="w-3.5 h-3.5" />
+            title="Rename" className="p-1.5 rounded-lg hover:bg-white/10 text-amber-500 transition-colors">
+            <Edit3 className="w-4 h-4" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); onMove(); }}
-            title="Move" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-            <Move className="w-3.5 h-3.5" />
+            title="Move" className="p-1.5 rounded-lg hover:bg-white/10 text-blue-500 transition-colors">
+            <Move className="w-4 h-4" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); onDownload(); }}
-            title="Download" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-            <Download className="w-3.5 h-3.5" />
+            title="Download" className="p-1.5 rounded-lg hover:bg-white/10 text-emerald-400 transition-colors">
+            <Download className="w-4 h-4" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); onShare(); }}
-            title="Share" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-            <LinkIcon className="w-3.5 h-3.5" />
+            title="Share" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-300 transition-colors">
+            <LinkIcon className="w-4 h-4" />
           </button>
-          <div className="w-px h-4 bg-white/10 mx-0.5" />
         </>
       )}
       {isTrash && onRestore && (
         <button onClick={(e) => { e.stopPropagation(); onRestore(); }}
-          title="Restore" className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-zinc-500 hover:text-emerald-400 transition-colors">
-          <RefreshCw className="w-3.5 h-3.5" />
+          title="Restore" className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-500 hover:text-emerald-400 transition-colors">
+          <RefreshCw className="w-4 h-4" />
         </button>
       )}
       <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
         title={isTrash ? 'Delete permanently' : 'Move to trash'}
-        className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition-colors">
-        <Trash2 className="w-3.5 h-3.5" />
+        className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 hover:text-red-400 transition-colors">
+        <Trash2 className="w-4 h-4" />
       </button>
     </div>
   );
@@ -327,18 +322,13 @@ export function FileExplorer() {
 
   // ─── Handlers — all original, untouched ─────────────────────────────
   const handleUpload = async (fileList: FileList) => {
-    if (currentSection !== 'drive') {
-      toast.show('You can only upload files to My Drive', 'error');
-      return;
-    }
-
     const createdFolders = new Map<string, string>();
 
     for (const file of Array.from(fileList)) {
       const formData = new FormData();
       formData.append('file', file);
 
-      let targetFolderId = currentFolderId;
+      let targetFolderId = currentSection === 'drive' ? currentFolderId : null;
 
       if (file.webkitRelativePath) {
         const parts = file.webkitRelativePath.split('/');
@@ -523,17 +513,17 @@ export function FileExplorer() {
       <div className="w-[240px] bg-zinc-950 border-r border-white/[0.06] flex flex-col shrink-0 relative z-20">
 
         {/* Logo */}
-        <div className="h-[64px] flex items-center px-5 shrink-0 border-b border-white/[0.06]">
-          <Link to="/" className="flex items-center gap-2.5">
+        <div className="h-[72px] flex items-center px-6 shrink-0 border-b border-white/[0.04]">
+          <Link to="/" className="flex items-center gap-3">
             <img
               src="/logo-icon.png"
               alt="DriftIQ"
-              className="w-7 h-7 object-contain"
+              className="w-9 h-9 object-contain drop-shadow-[0_0_12px_rgba(124,58,237,0.4)]"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
-            <span className="font-black italic text-base tracking-tight select-none">
+            <span className="font-black italic text-2xl tracking-tight select-none">
               <span className="text-white">Drift</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">IQ</span>
             </span>
           </Link>
         </div>
@@ -609,13 +599,6 @@ export function FileExplorer() {
               />
             </Link>
           )}
-          {telegramConnected === false && (
-            <Link to="/telegram-connect">
-              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#2AABEE]/10 border border-[#2AABEE]/20 text-[#2AABEE] text-xs font-medium hover:bg-[#2AABEE]/20 transition mt-2">
-                <Zap className="w-3.5 h-3.5" /> Connect Telegram
-              </button>
-            </Link>
-          )}
         </div>
 
         {/* Storage bar */}
@@ -652,24 +635,6 @@ export function FileExplorer() {
 
         {/* User card */}
         <div className="px-4 pb-4 border-t border-white/[0.06] pt-3">
-          {/* Telegram status */}
-          {telegramConnected !== null && (
-            telegramConnected ? (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-2 text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-400 shadow-sm shadow-emerald-400/50" />
-                <Zap className="w-3 h-3" />
-                Telegram connected
-              </div>
-            ) : (
-              <Link to="/telegram-connect" className="block mb-2">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium bg-white/5 border border-white/10 text-zinc-500 hover:bg-white/10 transition">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-zinc-600" />
-                  <Zap className="w-3 h-3" />
-                  Telegram not linked
-                </div>
-              </Link>
-            )
-          )}
 
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
             <UserAvatar name={user?.full_name || user?.username} />
@@ -741,6 +706,23 @@ export function FileExplorer() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Telegram Status Header */}
+            {telegramConnected !== null && (
+              telegramConnected ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mr-2 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
+                  <Zap className="w-3 h-3" />
+                  <span className="hidden sm:inline">Telegram Linked</span>
+                </div>
+              ) : (
+                <Link to="/telegram-connect" className="mr-2">
+                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#2AABEE]/10 border border-[#2AABEE]/30 text-[#2AABEE] hover:bg-[#2AABEE]/20 transition shadow-[0_0_10px_rgba(42,171,238,0.15)]">
+                    <Zap className="w-3 h-3" />
+                    <span className="hidden sm:inline">Connect Telegram</span>
+                  </button>
+                </Link>
+              )
+            )}
             {/* Search */}
             <div className="relative group">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-colors" />
@@ -818,12 +800,13 @@ export function FileExplorer() {
 
         {/* ── LIST HEADER (list mode) ───────────────────────────────────── */}
         {!loading && viewMode === 'list' && (displayFiles.length > 0 || folders.length > 0) && (
-          <div className="flex items-center px-6 py-2 border-b border-white/[0.04] text-[11px] font-semibold text-zinc-600 uppercase tracking-widest">
-            <span className="w-8 mr-4" />
-            <span className="flex-1">Name</span>
-            <span className="w-28 text-right mr-6">Modified</span>
-            <span className="w-20 text-right mr-6">Size</span>
-            <span className="w-32 text-right">Actions</span>
+          <div className="flex items-center px-6 py-3 border-b border-white/[0.04] text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
+            <span className="w-10 shrink-0" />
+            <span className="flex-1 truncate pr-4">Name</span>
+            <span className="w-32 shrink-0">Date modified</span>
+            <span className="w-24 shrink-0">Type</span>
+            <span className="w-20 shrink-0">Size</span>
+            <span className="w-56 shrink-0 text-center">Actions</span>
           </div>
         )}
 
@@ -860,31 +843,32 @@ export function FileExplorer() {
               ) : (
                 <div
                   key={folder?.id}
-                  className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all group border ${selectedId === folder?.id
-                      ? 'bg-violet-500/10 border-violet-500/30'
-                      : 'bg-transparent border-transparent hover:bg-white/[0.03] hover:border-white/[0.06]'
+                  className={`flex items-center px-6 py-3 border-b border-white/[0.04] cursor-pointer transition-all group ${selectedId === folder?.id
+                      ? 'bg-violet-500/10 border-b-violet-500/30'
+                      : 'hover:bg-white/[0.02]'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(folder?.id); }}
                   onDoubleClick={() => navigateToFolder(folder?.id, folder?.name)}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: folder, type: 'folder' }); }}
                 >
-                  <span className="text-xl mr-4 w-8 text-center shrink-0">📁</span>
-                  <span className="flex-1 truncate text-sm font-medium text-zinc-300 group-hover:text-zinc-100">{folder?.name}</span>
-                  <span className="text-xs text-zinc-600 w-28 text-right mr-6 shrink-0">{formatDate(folder?.created_at)}</span>
-                  <span className="text-xs text-zinc-600 w-20 text-right mr-6 shrink-0">—</span>
+                  <span className="text-xl w-10 shrink-0 text-amber-500">📁</span>
+                  <span className="flex-1 truncate text-sm font-medium text-zinc-200 pr-4">{folder?.name}</span>
+                  <span className="text-xs text-zinc-500 w-32 shrink-0">—</span>
+                  <span className="text-xs text-zinc-500 w-24 shrink-0">File folder</span>
+                  <span className="text-xs text-zinc-500 w-20 shrink-0">—</span>
                   {/* Folder actions */}
-                  <div className="w-32 flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-56 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <button onClick={(e) => { e.stopPropagation(); setRenameModal({ id: folder?.id, name: folder?.name, type: 'folder' }); }}
-                      title="Rename" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-                      <Edit3 className="w-3.5 h-3.5" />
+                      title="Rename" className="p-1.5 rounded-lg hover:bg-white/10 text-amber-500 transition-colors">
+                      <Edit3 className="w-4 h-4" />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); setMoveModal({ id: folder?.id, type: 'folder' }); }}
-                      title="Move" className="p-1.5 rounded-lg hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors">
-                      <Move className="w-3.5 h-3.5" />
+                      title="Move" className="p-1.5 rounded-lg hover:bg-white/10 text-blue-500 transition-colors">
+                      <Move className="w-4 h-4" />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleDelete(folder?.id, 'folder'); }}
-                      title="Delete" className="p-1.5 rounded-lg hover:bg-red-500/10 text-zinc-500 hover:text-red-400 transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
+                      title="Delete" className="p-1.5 rounded-lg hover:bg-white/10 text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -928,19 +912,20 @@ export function FileExplorer() {
                 /* ── LIST ROW ─────────────────────────────────────────── */
                 <div
                   key={file?.id}
-                  className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all group border hover:border-l-2 hover:border-l-violet-500 ${selectedId === file?.id
-                      ? 'bg-violet-500/10 border-violet-500/30'
-                      : 'bg-transparent border-transparent hover:bg-white/[0.03] hover:border-y-white/[0.06] hover:border-r-white/[0.06]'
+                  className={`flex items-center px-6 py-3 border-b border-white/[0.04] cursor-pointer transition-all group ${selectedId === file?.id
+                      ? 'bg-violet-500/10 border-b-violet-500/30'
+                      : 'hover:bg-white/[0.02]'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(file?.id); }}
                   onDoubleClick={() => { if (currentSection !== 'trash') setPreviewFile(file); }}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: file, type: 'file' }); }}
                 >
-                  <span className="text-lg mr-4 w-8 text-center shrink-0">{getMimeIcon(file?.mime_type)}</span>
-                  <span className="flex-1 truncate text-sm font-medium text-zinc-300 group-hover:text-zinc-100">{file?.name}</span>
-                  <span className="text-xs text-zinc-600 w-28 text-right mr-6 shrink-0">{formatDate(file?.created_at)}</span>
-                  <span className="text-xs text-zinc-600 w-20 text-right mr-6 shrink-0">{formatBytes(file?.size)}</span>
-                  <div className="w-32 flex justify-end shrink-0">
+                  <span className="text-xl w-10 shrink-0">{getMimeIcon(file?.mime_type)}</span>
+                  <span className="flex-1 truncate text-sm font-medium text-zinc-200 pr-4">{file?.name}</span>
+                  <span className="text-xs text-zinc-500 w-32 shrink-0">{formatDate(file?.created_at)}</span>
+                  <span className="text-xs text-zinc-500 w-24 shrink-0 truncate pr-2">{file?.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</span>
+                  <span className="text-xs text-zinc-500 w-20 shrink-0">{formatBytes(file?.size)}</span>
+                  <div className="w-56 flex justify-center shrink-0">
                     <FileActions
                       file={file}
                       onPreview={() => setPreviewFile(file)}
@@ -977,10 +962,10 @@ export function FileExplorer() {
                   <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-indigo-400 mb-2">
                     {currentSection === 'trash' ? 'Trash is empty' : 'Drop files to get started'}
                   </h3>
-                  {currentSection === 'drive' && (
+                  {currentSection !== 'trash' && (
                     <>
                       <p className="text-sm text-zinc-500 mb-8 text-center max-w-sm">
-                        Drag & drop files here, or use the buttons below to upload files or create a new folder.
+                        Drag & drop files here, or use the buttons below to upload.
                       </p>
                       <div className="flex items-center gap-4">
                         <button
@@ -989,12 +974,14 @@ export function FileExplorer() {
                         >
                           <Upload className="w-4 h-4" /> Upload File
                         </button>
-                        <button
-                          onClick={() => setNewFolderModal(true)}
-                          className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-zinc-300 font-semibold rounded-xl border border-white/10 transition-all"
-                        >
-                          <FolderPlus className="w-4 h-4" /> New Folder
-                        </button>
+                        {currentSection === 'drive' && (
+                          <button
+                            onClick={() => setNewFolderModal(true)}
+                            className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-zinc-300 font-semibold rounded-xl border border-white/10 transition-all"
+                          >
+                            <FolderPlus className="w-4 h-4" /> New Folder
+                          </button>
+                        )}
                       </div>
                     </>
                   )}
