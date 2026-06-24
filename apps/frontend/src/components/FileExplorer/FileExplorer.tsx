@@ -7,7 +7,7 @@ import {
   ChevronRight, Upload, FolderPlus, Download, Trash2, Eye,
   Star, Edit3, Move, Search, Grid, List, HardDrive, Shield,
   RefreshCw, LogOut, Link as LinkIcon, Settings, Zap,
-  Image, Film, Music, FileText, X
+  Image, Film, Music, FileText, X, Sun, Moon, Folder
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../ui/Modal';
@@ -48,21 +48,21 @@ function NavItem({ icon, label, active, onClick, count, colorClass }: NavItemPro
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative group ${active
-          ? 'bg-white/10 text-white border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
-          : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+          ? 'dark:bg-white/10 dark:text-white dark:border-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] bg-white text-stone-800 border-stone-200 shadow-sm'
+          : 'dark:text-zinc-400 text-stone-500 dark:hover:text-zinc-200 hover:text-stone-800 dark:hover:bg-white/5 hover:bg-stone-200/40 border border-transparent'
         }`}
     >
       {active && (
         <motion.div
           layoutId="nav-active"
-          className="absolute inset-0 rounded-xl bg-white/5"
+          className="absolute inset-0 rounded-xl dark:bg-white/5 bg-white shadow-sm"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
-      <span className={`relative z-10 transition-transform duration-200 group-hover:scale-110 ${colorClass || 'text-zinc-500 group-hover:text-zinc-300'}`}>{icon}</span>
+      <span className={`relative z-10 transition-transform duration-200 group-hover:scale-110 ${colorClass || 'dark:text-zinc-500 text-stone-400 dark:group-hover:text-zinc-300 group-hover:text-stone-600'}`}>{icon}</span>
       <span className={`relative z-10 flex-1 text-left ${active ? 'font-semibold' : ''}`}>{label}</span>
       {count !== undefined && (
-        <span className={`relative z-10 text-xs px-1.5 py-0.5 rounded-md font-semibold ${active ? 'bg-white/20 text-white' : 'bg-white/5 text-zinc-500'}`}>
+        <span className={`relative z-10 text-xs px-1.5 py-0.5 rounded-md font-semibold ${active ? 'dark:bg-white/20 dark:text-white bg-stone-100 text-stone-800' : 'dark:bg-white/5 dark:text-zinc-500 bg-stone-100 text-stone-500'}`}>
           {count}
         </span>
       )}
@@ -162,6 +162,18 @@ export function FileExplorer() {
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(
+    (localStorage.getItem('driftiq-theme') as 'dark' | 'light') || 'dark'
+  );
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('driftiq-theme', theme);
+  }, [theme]);
 
   // Notepad
   const [notepadOpen, setNotepadOpen] = useState(false);
@@ -218,12 +230,14 @@ export function FileExplorer() {
         setFolders([]);
       } else if (currentSection === 'documents') {
         const { data } = await api.get('/files');
-        setFiles(data.filter((f: any) =>
-          f?.mime_type?.includes('pdf') ||
-          f?.mime_type?.includes('document') ||
-          f?.mime_type?.includes('word') ||
-          f?.mime_type?.includes('text')
-        ));
+        setFiles(data.filter((f: any) => {
+          const mime = f?.mime_type?.toLowerCase() || '';
+          const name = f?.name?.toLowerCase() || '';
+          const isDocMime = mime.includes('pdf') || mime.includes('document') || mime.includes('word') || mime.includes('text');
+          const isCodeExt = name.match(/\.(cpp|c|h|py|java|js|ts|jsx|tsx|html|css|json|txt|md|csv)$/i);
+          const isUnknown = mime === 'application/octet-stream';
+          return isDocMime || isCodeExt || isUnknown;
+        }));
         setFolders([]);
       }
     } catch (err: any) {
@@ -696,21 +710,21 @@ export function FileExplorer() {
         <input ref={folderInputRef} type="file" className="hidden" webkitdirectory="" onChange={(e) => e.target.files && handleUpload(e.target.files)} />
 
         {/* Top bar */}
-        <div className="h-[64px] flex items-center justify-between px-6 shrink-0 border-b border-white/[0.06] bg-zinc-950/90 backdrop-blur-md sticky top-0 z-10">
+        <div className="h-[64px] flex items-center justify-between px-6 shrink-0 border-b dark:border-white/[0.06] border-stone-200/60 dark:bg-zinc-950/90 bg-[#FBF9F6]/90 backdrop-blur-md sticky top-0 z-10 transition-colors duration-300">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-1 text-sm font-medium text-zinc-400 overflow-x-auto">
+          <div className="flex items-center space-x-1 text-sm font-medium dark:text-zinc-400 text-stone-500 overflow-x-auto">
             {currentSection === 'drive' ? breadcrumbs.map((crumb, idx) => (
               <div key={crumb?.id || 'root'} className="flex items-center">
-                {idx > 0 && <ChevronRight className="w-4 h-4 text-zinc-700 mx-1" />}
+                {idx > 0 && <ChevronRight className="w-4 h-4 dark:text-zinc-700 text-stone-300 mx-1" />}
                 <button
-                  className={`hover:text-zinc-100 transition whitespace-nowrap px-2 py-1 rounded-lg hover:bg-white/5 ${idx === breadcrumbs.length - 1 ? 'text-zinc-100 font-semibold' : ''}`}
+                  className={`dark:hover:text-zinc-100 hover:text-stone-900 transition whitespace-nowrap px-2 py-1 rounded-lg dark:hover:bg-white/5 hover:bg-stone-200/50 ${idx === breadcrumbs.length - 1 ? 'dark:text-zinc-100 text-stone-900 font-semibold' : ''}`}
                   onClick={(e) => { e.stopPropagation(); navigateToBreadcrumb(idx); }}
                 >
                   {crumb?.name}
                 </button>
               </div>
             )) : (
-              <span className="text-zinc-100 font-semibold px-2">{sectionLabel}</span>
+              <span className="dark:text-zinc-100 text-stone-900 font-semibold px-2">{sectionLabel}</span>
             )}
           </div>
 
@@ -719,74 +733,56 @@ export function FileExplorer() {
             {/* Telegram Status Header */}
             {telegramConnected !== null && (
               telegramConnected ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mr-2 shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 mr-2 shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
                   <Zap className="w-3 h-3" />
                   <span className="hidden sm:inline">Telegram Linked</span>
                 </div>
               ) : (
                 <Link to="/telegram-connect" className="mr-2">
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#2AABEE]/10 border border-[#2AABEE]/30 text-[#2AABEE] hover:bg-[#2AABEE]/20 transition shadow-[0_0_10px_rgba(42,171,238,0.15)]">
-                    <Zap className="w-3 h-3" />
-                    <span className="hidden sm:inline">Connect Telegram</span>
+                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium dark:bg-white/5 bg-stone-200/60 dark:hover:bg-white/10 hover:bg-stone-200 border dark:border-white/10 border-stone-200/80 dark:text-zinc-300 text-stone-600 transition-colors">
+                    <Zap className="w-3 h-3" /> Connect Telegram
                   </button>
                 </Link>
               )
             )}
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-1.5 dark:text-zinc-400 text-stone-500 hover:dark:text-zinc-100 hover:text-stone-900 dark:hover:bg-white/5 hover:bg-stone-200/50 rounded-lg transition-all border border-transparent dark:hover:border-white/10 hover:border-stone-300"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
             {/* Search */}
             <div className="relative group">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-violet-400 transition-colors" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 dark:text-zinc-600 text-stone-400 group-focus-within:text-violet-400 transition-colors" />
               <input
                 type="text"
                 placeholder="Search files..."
-                className="bg-white/[0.04] border border-white/[0.08] rounded-xl pl-8 pr-4 py-2 text-xs w-44 focus:w-60 transition-all duration-200 focus:ring-1 focus:ring-violet-500/50 outline-none text-zinc-200 placeholder-zinc-600"
+                className="dark:bg-white/[0.04] bg-stone-100 border dark:border-white/[0.08] border-stone-200/80 rounded-xl pl-8 pr-4 py-2 text-xs w-44 focus:w-60 transition-all duration-200 focus:ring-1 focus:ring-violet-500/50 outline-none dark:text-zinc-200 text-stone-800 dark:placeholder-zinc-600 placeholder-stone-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
             {/* View toggle */}
-            <div className="flex items-center bg-white/5 rounded-lg p-0.5 border border-white/[0.08]">
+            <div className="flex items-center dark:bg-white/5 bg-stone-100 rounded-lg p-0.5 border dark:border-white/[0.08] border-stone-200/80">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'dark:bg-white/10 bg-white shadow-sm dark:text-zinc-100 text-stone-800' : 'dark:text-zinc-500 text-stone-400 dark:hover:text-zinc-300 hover:text-stone-600'}`}
               >
                 <Grid className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'dark:bg-white/10 bg-white shadow-sm dark:text-zinc-100 text-stone-800' : 'dark:text-zinc-500 text-stone-400 dark:hover:text-zinc-300 hover:text-stone-600'}`}
               >
                 <List className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            {currentSection === 'drive' && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setNewFolderModal(true)}
-                  className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-medium rounded-xl transition border border-white/[0.08]"
-                >
-                  <FolderPlus className="w-3.5 h-3.5" /> New Folder
-                </button>
-                <div className="flex rounded-xl overflow-hidden border border-violet-500/30">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-4 py-2 transition text-xs font-semibold border-r border-white/10"
-                  >
-                    <Upload className="w-3.5 h-3.5" /> Upload File
-                  </button>
-                  <button
-                    onClick={() => folderInputRef.current?.click()}
-                    title="Upload Folder"
-                    className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-3 py-2 transition text-xs font-semibold"
-                  >
-                    <FolderPlus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
             {currentSection === 'trash' && (
               <button
                 onClick={handleEmptyTrash}
@@ -835,44 +831,44 @@ export function FileExplorer() {
                   key={folder?.id}
                   className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === folder?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
-                      : 'bg-white/[0.02] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.04]'
+                      : 'dark:bg-white/[0.02] bg-white dark:border-white/[0.06] border-stone-200 hover:dark:border-white/20 hover:border-stone-300 hover:dark:bg-white/[0.04] shadow-sm hover:shadow-md dark:shadow-none'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(folder?.id); }}
                   onDoubleClick={() => navigateToFolder(folder?.id, folder?.name)}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: folder, type: 'folder' }); }}
                 >
                   <div className="text-4xl mb-3">📁</div>
-                  <span className="truncate w-full text-center text-xs font-semibold text-zinc-300 group-hover:text-zinc-100">{folder?.name}</span>
-                  <span className="text-[10px] text-zinc-600 mt-1">{formatDate(folder?.created_at)}</span>
+                  <span className="truncate w-full text-center text-xs font-semibold dark:text-zinc-300 text-stone-700 dark:group-hover:text-zinc-100 group-hover:text-stone-900">{folder?.name}</span>
+                  <span className="text-[10px] dark:text-zinc-600 text-stone-400 mt-1">{formatDate(folder?.created_at)}</span>
                 </div>
               ) : (
                 <div
                   key={folder?.id}
-                  className={`flex items-center px-6 py-3 border-b border-white/[0.04] cursor-pointer transition-all group ${selectedId === folder?.id
+                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${selectedId === folder?.id
                       ? 'bg-violet-500/10 border-b-violet-500/30'
-                      : 'hover:bg-white/[0.02]'
+                      : 'hover:dark:bg-white/[0.02] hover:bg-stone-100/60'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(folder?.id); }}
                   onDoubleClick={() => navigateToFolder(folder?.id, folder?.name)}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: folder, type: 'folder' }); }}
                 >
                   <span className="text-xl w-10 shrink-0 text-amber-500">📁</span>
-                  <span className="flex-1 truncate text-sm font-medium text-zinc-200 pr-4">{folder?.name}</span>
-                  <span className="text-xs text-zinc-500 w-32 shrink-0">—</span>
-                  <span className="text-xs text-zinc-500 w-24 shrink-0">File folder</span>
-                  <span className="text-xs text-zinc-500 w-20 shrink-0">—</span>
+                  <span className="flex-1 truncate text-sm font-medium dark:text-zinc-200 text-stone-800 pr-4">{folder?.name}</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-32 shrink-0">—</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-24 shrink-0">File folder</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-20 shrink-0">—</span>
                   {/* Folder actions */}
                   <div className="w-56 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <button onClick={(e) => { e.stopPropagation(); setRenameModal({ id: folder?.id, name: folder?.name, type: 'folder' }); }}
-                      title="Rename" className="p-1.5 rounded-lg hover:bg-white/10 text-amber-500 transition-colors">
+                      title="Rename" className="p-1.5 rounded-lg dark:hover:bg-white/10 hover:bg-stone-200 text-amber-500 transition-colors">
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); setMoveModal({ id: folder?.id, type: 'folder' }); }}
-                      title="Move" className="p-1.5 rounded-lg hover:bg-white/10 text-blue-500 transition-colors">
+                      title="Move" className="p-1.5 rounded-lg dark:hover:bg-white/10 hover:bg-stone-200 text-blue-500 transition-colors">
                       <Move className="w-4 h-4" />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleDelete(folder?.id, 'folder'); }}
-                      title="Delete" className="p-1.5 rounded-lg hover:bg-white/10 text-red-500 transition-colors">
+                      title="Delete" className="p-1.5 rounded-lg dark:hover:bg-white/10 hover:bg-stone-200 text-red-500 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -887,23 +883,23 @@ export function FileExplorer() {
                   key={file?.id}
                   className={`flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none group relative hover:scale-[1.02] hover:-translate-y-1 animate-fade-in ${selectedId === file?.id
                       ? 'bg-violet-500/10 border-violet-500/40 shadow-lg shadow-violet-500/10'
-                      : 'bg-white/[0.02] border-white/[0.06] hover:border-white/20 hover:bg-white/[0.04]'
+                      : 'dark:bg-white/[0.02] bg-white dark:border-white/[0.06] border-stone-200 hover:dark:border-white/20 hover:border-stone-300 hover:dark:bg-white/[0.04] shadow-sm hover:shadow-md dark:shadow-none'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(file?.id); }}
                   onDoubleClick={() => { if (currentSection !== 'trash') setPreviewFile(file); }}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: file, type: 'file' }); }}
                 >
                   <div className="text-4xl mb-3">{getMimeIcon(file?.mime_type)}</div>
-                  <span className="truncate w-full text-center text-xs font-semibold text-zinc-300 group-hover:text-zinc-100">{file?.name}</span>
-                  <span className="text-[10px] text-zinc-600 mt-1">{formatBytes(file?.size)}</span>
+                  <span className="truncate w-full text-center text-xs font-semibold dark:text-zinc-300 text-stone-700 dark:group-hover:text-zinc-100 group-hover:text-stone-900">{file?.name}</span>
+                  <span className="text-[10px] dark:text-zinc-600 text-stone-400 mt-1">{formatBytes(file?.size)}</span>
 
                   {currentSection !== 'trash' && (
                     <div className="absolute top-2.5 right-2.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleStar(file?.id, file?.is_starred); }}
-                        className="p-1.5 bg-zinc-900/90 rounded-lg hover:bg-zinc-800 transition border border-white/10"
+                        className="p-1.5 dark:bg-zinc-900/90 bg-white/90 rounded-lg dark:hover:bg-zinc-800 hover:bg-stone-100 transition border dark:border-white/10 border-stone-200 shadow-sm"
                       >
-                        <Star className={`w-3 h-3 ${file?.is_starred ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-500'}`} />
+                        <Star className={`w-3 h-3 ${file?.is_starred ? 'text-yellow-400 fill-yellow-400' : 'dark:text-zinc-500 text-stone-400'}`} />
                       </button>
                     </div>
                   )}
@@ -912,19 +908,19 @@ export function FileExplorer() {
                 /* ── LIST ROW ─────────────────────────────────────────── */
                 <div
                   key={file?.id}
-                  className={`flex items-center px-6 py-3 border-b border-white/[0.04] cursor-pointer transition-all group ${selectedId === file?.id
+                  className={`flex items-center px-6 py-3 border-b dark:border-white/[0.04] border-stone-200/50 cursor-pointer transition-all group ${selectedId === file?.id
                       ? 'bg-violet-500/10 border-b-violet-500/30'
-                      : 'hover:bg-white/[0.02]'
+                      : 'hover:dark:bg-white/[0.02] hover:bg-stone-100/60'
                     }`}
                   onClick={(e) => { e.stopPropagation(); setSelectedId(file?.id); }}
                   onDoubleClick={() => { if (currentSection !== 'trash') setPreviewFile(file); }}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: file, type: 'file' }); }}
                 >
                   <span className="text-xl w-10 shrink-0">{getMimeIcon(file?.mime_type)}</span>
-                  <span className="flex-1 truncate text-sm font-medium text-zinc-200 pr-4">{file?.name}</span>
-                  <span className="text-xs text-zinc-500 w-32 shrink-0">{formatDate(file?.created_at)}</span>
-                  <span className="text-xs text-zinc-500 w-24 shrink-0 truncate pr-2">{file?.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</span>
-                  <span className="text-xs text-zinc-500 w-20 shrink-0">{formatBytes(file?.size)}</span>
+                  <span className="flex-1 truncate text-sm font-medium dark:text-zinc-200 text-stone-800 pr-4">{file?.name}</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-32 shrink-0">{formatDate(file?.created_at)}</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-24 shrink-0 truncate pr-2">{file?.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-20 shrink-0">{formatBytes(file?.size)}</span>
                   <div className="w-56 flex justify-center shrink-0">
                     <FileActions
                       file={file}
