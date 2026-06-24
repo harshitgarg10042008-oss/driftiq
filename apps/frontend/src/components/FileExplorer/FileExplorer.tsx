@@ -12,7 +12,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../ui/Modal';
 import { useToast } from '../ui/Toast';
-import { formatBytes, formatDate, getMimeIcon } from '../../lib/utils';
+import { formatBytes, formatDate, getMimeIcon, getFileTypeLabel } from '../../lib/utils';
 import api from '../../lib/api';
 import { FilePreviewModal } from './FilePreviewModal';
 import { ShareModal } from './ShareModal';
@@ -34,35 +34,31 @@ function UserAvatar({ name }: { name?: string }) {
   );
 }
 
-/* ─── Sidebar nav item ─────────────────────────────────────────────────── */
+/* ─── Sidebar nav item (DocDrop style) ────────────────────────────────── */
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
   active: boolean;
   onClick: () => void;
   count?: number;
-  colorClass?: string;
+  iconBg?: string;
 }
-function NavItem({ icon, label, active, onClick, count, colorClass }: NavItemProps) {
+function NavItem({ icon, label, active, onClick, count, iconBg }: NavItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 relative group ${active
-          ? 'dark:bg-white/10 dark:text-white dark:border-white/10 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] bg-white text-stone-800 border-stone-200 shadow-sm'
-          : 'dark:text-zinc-400 text-stone-500 dark:hover:text-zinc-200 hover:text-stone-800 dark:hover:bg-white/5 hover:bg-stone-200/40 border border-transparent'
-        }`}
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 relative group border-l-2 ${
+        active
+          ? 'border-l-emerald-500 dark:bg-emerald-500/10 bg-emerald-50 dark:text-emerald-400 text-emerald-700'
+          : 'border-l-transparent dark:text-zinc-400 text-stone-500 dark:hover:text-zinc-200 hover:text-stone-800 dark:hover:bg-white/5 hover:bg-stone-200/40'
+      }`}
     >
-      {active && (
-        <motion.div
-          layoutId="nav-active"
-          className="absolute inset-0 rounded-xl dark:bg-white/5 bg-white shadow-sm"
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        />
-      )}
-      <span className={`relative z-10 transition-transform duration-200 group-hover:scale-110 ${colorClass || 'dark:text-zinc-500 text-stone-400 dark:group-hover:text-zinc-300 group-hover:text-stone-600'}`}>{icon}</span>
-      <span className={`relative z-10 flex-1 text-left ${active ? 'font-semibold' : ''}`}>{label}</span>
+      <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${iconBg || 'dark:bg-white/5 bg-stone-200/60'} ${active ? '!bg-emerald-500/20' : ''}`}>
+        {icon}
+      </span>
+      <span className="flex-1 text-left truncate">{label}</span>
       {count !== undefined && (
-        <span className={`relative z-10 text-xs px-1.5 py-0.5 rounded-md font-semibold ${active ? 'dark:bg-white/20 dark:text-white bg-stone-100 text-stone-800' : 'dark:bg-white/5 dark:text-zinc-500 bg-stone-100 text-stone-500'}`}>
+        <span className={`text-xs px-1.5 py-0.5 rounded-md font-semibold dark:bg-white/5 bg-stone-200 dark:text-zinc-500 text-stone-500`}>
           {count}
         </span>
       )}
@@ -232,8 +228,10 @@ export function FileExplorer() {
         setFiles(data.filter((f: any) => {
           const mime = f?.mime_type?.toLowerCase() || '';
           const name = f?.name?.toLowerCase() || '';
+          // Exclude audio, video, images — they have their own sections
+          if (mime.startsWith('audio/') || mime.startsWith('video/') || mime.startsWith('image/')) return false;
           const isDocMime = mime.includes('pdf') || mime.includes('document') || mime.includes('word') || mime.includes('text');
-          const isCodeExt = name.match(/\.(cpp|c|h|py|java|js|ts|jsx|tsx|html|css|json|txt|md|csv)$/i);
+          const isCodeExt = name.match(/\.(cpp|c|h|py|java|js|ts|jsx|tsx|html|css|json|txt|md|csv|xml|sh|rs|go|kt|swift|rb|php|cs)$/i);
           const isUnknown = mime === 'application/octet-stream';
           return isDocMime || isCodeExt || isUnknown;
         }));
@@ -324,13 +322,60 @@ export function FileExplorer() {
 
 
 
+  // ─── MIME type detection from file extension ─────────────────────────
+  const getMimeFromExtension = (filename: string): string | null => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const map: Record<string, string> = {
+      // Code
+      cpp: 'text/x-c++src', c: 'text/x-csrc', h: 'text/x-chdr',
+      py: 'text/x-python', java: 'text/x-java-source',
+      js: 'text/javascript', ts: 'text/typescript',
+      jsx: 'text/jsx', tsx: 'text/tsx',
+      html: 'text/html', css: 'text/css',
+      json: 'application/json', xml: 'application/xml',
+      sh: 'application/x-sh', rs: 'text/x-rust',
+      go: 'text/x-go', kt: 'text/x-kotlin',
+      swift: 'text/x-swift', rb: 'text/x-ruby',
+      php: 'text/x-php', cs: 'text/x-csharp',
+      // Documents
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ppt: 'application/vnd.ms-powerpoint',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      txt: 'text/plain', md: 'text/markdown', csv: 'text/csv',
+      // Images
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml',
+      ico: 'image/x-icon', bmp: 'image/bmp',
+      // Audio
+      mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg',
+      flac: 'audio/flac', aac: 'audio/aac', m4a: 'audio/mp4',
+      // Video
+      mp4: 'video/mp4', webm: 'video/webm', mkv: 'video/x-matroska',
+      avi: 'video/x-msvideo', mov: 'video/quicktime',
+      // Archives
+      zip: 'application/zip', rar: 'application/x-rar-compressed',
+      tar: 'application/x-tar', gz: 'application/gzip',
+      '7z': 'application/x-7z-compressed',
+    };
+    return ext ? (map[ext] || null) : null;
+  };
+
   // ─── Handlers — all original, untouched ─────────────────────────────
   const handleUpload = async (fileList: FileList) => {
     const createdFolders = new Map<string, string>();
 
     for (const file of Array.from(fileList)) {
       const formData = new FormData();
-      formData.append('file', file);
+      const correctMime = getMimeFromExtension(file.name);
+      const fileToUpload = (correctMime && (file.type === 'application/octet-stream' || !file.type))
+        ? new File([file], file.name, { type: correctMime })
+        : file;
+
+      formData.append('file', fileToUpload);
 
       let targetFolderId = currentSection === 'drive' ? currentFolderId : null;
 
@@ -531,148 +576,183 @@ export function FileExplorer() {
               : 'Music';
 
   return (
-    <div className="flex w-full h-full bg-zinc-950 text-zinc-100 overflow-hidden">
+    <div className="flex w-full h-full dark:bg-zinc-950 bg-[#FBF9F6] dark:text-zinc-100 text-stone-900 overflow-hidden transition-colors duration-300">
 
-      {/* ── SIDEBAR ────────────────────────────────────────────────────── */}
-      <div className="w-[240px] bg-zinc-950 border-r border-white/[0.06] flex flex-col shrink-0 relative z-20">
+      {/* ── SIDEBAR ────────────────────────────────────────────── */}
+      <div className="w-[220px] dark:bg-[#0f0f10] bg-[#F2EFE9] border-r dark:border-white/[0.06] border-stone-200/80 flex flex-col shrink-0 relative z-20 transition-colors duration-300">
 
         {/* Logo */}
-        <div className="h-[72px] flex items-center px-6 shrink-0 border-b border-white/[0.04]">
-          <Link to="/" className="flex items-center gap-3">
+        <div className="h-[64px] flex items-center px-5 shrink-0 border-b dark:border-white/[0.04] border-stone-200/60">
+          <Link to="/" className="flex items-center gap-2.5">
             <img
               src="/logo-icon.png"
               alt="DriftIQ"
-              className="w-9 h-9 object-contain drop-shadow-[0_0_12px_rgba(124,58,237,0.4)]"
+              className="w-8 h-8 object-contain drop-shadow-[0_0_12px_rgba(124,58,237,0.5)]"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
-            <span className="font-black italic text-2xl tracking-tight select-none">
-              <span className="text-white">Drift</span>
+            <span className="font-black italic text-xl tracking-tight select-none">
+              <span className="dark:text-white text-stone-900">Drift</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">IQ</span>
             </span>
           </Link>
         </div>
 
         {/* Nav */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5 scrollbar-thin">
 
-          {/* Main section */}
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest px-3 mb-2">Main</p>
+          {/* QUICK ACCESS */}
+          <p className="text-[10px] font-bold dark:text-zinc-600 text-stone-400 uppercase tracking-widest px-2 mb-2 mt-1">Quick Access</p>
+
           <NavItem
-            icon={<HardDrive className="w-4 h-4" />}
-            label="My Drive"
+            icon={<HardDrive className="w-3.5 h-3.5" />}
+            label="Home"
             active={currentSection === 'drive'}
             onClick={() => { setCurrentSection('drive'); navigateToBreadcrumb(0); }}
-            colorClass="text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+            iconBg="bg-violet-500/20"
           />
           <NavItem
-            icon={<Star className="w-4 h-4" />}
-            label="Starred"
-            active={currentSection === 'starred'}
-            onClick={() => setCurrentSection('starred')}
-            colorClass="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-          />
-
-          {/* Categories */}
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest px-3 mt-4 mb-2">Categories</p>
-          <NavItem
-            icon={<FileText className="w-4 h-4" />}
+            icon={<FileText className="w-3.5 h-3.5 text-blue-400" />}
             label="Documents"
             active={currentSection === 'documents'}
             onClick={() => setCurrentSection('documents')}
-            colorClass="text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]"
+            iconBg="bg-blue-500/15"
           />
           <NavItem
-            icon={<Image className="w-4 h-4" />}
+            icon={<Image className="w-3.5 h-3.5 text-emerald-400" />}
             label="Pictures"
             active={currentSection === 'pictures'}
             onClick={() => setCurrentSection('pictures')}
-            colorClass="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+            iconBg="bg-emerald-500/15"
           />
           <NavItem
-            icon={<Film className="w-4 h-4" />}
+            icon={<Film className="w-3.5 h-3.5 text-rose-400" />}
             label="Videos"
             active={currentSection === 'videos'}
             onClick={() => setCurrentSection('videos')}
-            colorClass="text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.6)]"
+            iconBg="bg-rose-500/15"
           />
           <NavItem
-            icon={<Music className="w-4 h-4" />}
+            icon={<Music className="w-3.5 h-3.5 text-cyan-400" />}
             label="Music"
             active={currentSection === 'music'}
             onClick={() => setCurrentSection('music')}
-            colorClass="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+            iconBg="bg-cyan-500/15"
           />
-
-          {/* Other */}
-          <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-widest px-3 mt-4 mb-2">Other</p>
           <NavItem
-            icon={<Trash2 className="w-4 h-4" />}
-            label="Trash"
+            icon={<Star className="w-3.5 h-3.5 text-amber-400" />}
+            label="Starred"
+            active={currentSection === 'starred'}
+            onClick={() => setCurrentSection('starred')}
+            iconBg="bg-amber-500/15"
+            count={currentSection === 'starred' ? files.length : undefined}
+          />
+          <NavItem
+            icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
+            label="Recycle Bin"
             active={currentSection === 'trash'}
             onClick={() => setCurrentSection('trash')}
-            colorClass="text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.6)]"
+            iconBg="bg-red-500/15"
+            count={currentSection === 'trash' ? files.length : undefined}
           />
-          <Link to="/settings">
-            <NavItem
-              icon={<Settings className="w-4 h-4" />}
-              label="Settings"
-              active={false}
-              onClick={() => { }}
-              colorClass="text-zinc-400"
-            />
-          </Link>
+
+          {/* ACTIONS */}
+          <p className="text-[10px] font-bold dark:text-zinc-600 text-stone-400 uppercase tracking-widest px-2 mt-5 mb-2">Actions</p>
+
+          {currentSection === 'drive' && (
+            <>
+              <NavItem
+                icon={<FolderPlus className="w-3.5 h-3.5 text-emerald-400" />}
+                label="New folder"
+                active={false}
+                onClick={() => setNewFolderModal(true)}
+                iconBg="bg-emerald-500/15"
+              />
+              <NavItem
+                icon={<Upload className="w-3.5 h-3.5 text-violet-400" />}
+                label="Upload Files"
+                active={false}
+                onClick={() => fileInputRef.current?.click()}
+                iconBg="bg-violet-500/15"
+              />
+              <NavItem
+                icon={<Upload className="w-3.5 h-3.5 text-indigo-400" />}
+                label="Upload Folder"
+                active={false}
+                onClick={() => folderInputRef.current?.click()}
+                iconBg="bg-indigo-500/15"
+              />
+            </>
+          )}
+          <NavItem
+            icon={<Download className="w-3.5 h-3.5 text-blue-400" />}
+            label={selectedFile ? `Download "${selectedFile.name.length > 16 ? selectedFile.name.slice(0, 16) + '...' : selectedFile.name}"` : 'Download'}
+            active={false}
+            onClick={() => {
+              if (selectedFile) {
+                handleDownload(selectedFile.id);
+              } else {
+                toast.show('Select a file first to download', 'error');
+              }
+            }}
+            iconBg="bg-blue-500/15"
+          />
           {user?.role === 'admin' && (
             <Link to="/admin">
               <NavItem
-                icon={<Shield className="w-4 h-4" />}
+                icon={<Shield className="w-3.5 h-3.5 text-orange-400" />}
                 label="Admin Panel"
                 active={false}
-                onClick={() => { }}
+                onClick={() => {}}
+                iconBg="bg-orange-500/15"
               />
             </Link>
           )}
+          <Link to="/settings">
+            <NavItem
+              icon={<Settings className="w-3.5 h-3.5 text-zinc-400" />}
+              label="Settings"
+              active={false}
+              onClick={() => {}}
+              iconBg="dark:bg-white/5 bg-stone-200/60"
+            />
+          </Link>
         </div>
 
         {/* Storage bar */}
-        <div className="px-4 py-3 border-t border-white/[0.06]">
-          <div className="p-3.5 rounded-2xl bg-white/[0.025] border border-white/[0.06]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-zinc-400">Storage</span>
-              <span className="text-xs font-bold text-zinc-400">{storagePercent.toFixed(0)}%</span>
-            </div>
-            <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5 mb-2">
-              {stats && (
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${storagePercent}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                  className="h-full rounded-full"
-                  style={{
-                    background: storagePercent > 80
-                      ? 'linear-gradient(90deg, #ef4444, #f97316)'
-                      : storagePercent > 50
-                        ? 'linear-gradient(90deg, #8b5cf6, #f59e0b)'
-                        : 'linear-gradient(90deg, #7c3aed, #6366f1)',
-                  }}
-                />
-              )}
-            </div>
-            <div className="text-[11px] text-zinc-600 font-medium">
-              {stats
-                ? `${formatBytes(stats.storageUsed)} of ${formatBytes(stats.storageLimit)}`
-                : 'Loading...'}
-            </div>
+        <div className="px-3 py-3 border-t dark:border-white/[0.06] border-stone-200/60">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-[11px] font-semibold dark:text-zinc-400 text-stone-500 uppercase tracking-wider">Storage</span>
+            <span className="text-[11px] font-bold dark:text-zinc-400 text-stone-500">{storagePercent.toFixed(0)}%</span>
           </div>
+          <div className="h-1.5 w-full dark:bg-zinc-900 bg-stone-200 rounded-full overflow-hidden border dark:border-white/5 border-stone-300/50 mb-1">
+            {stats && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${storagePercent}%` }}
+                transition={{ duration: 1.2, ease: 'easeOut' }}
+                className="h-full rounded-full"
+                style={{
+                  background: storagePercent > 80
+                    ? 'linear-gradient(90deg, #ef4444, #f97316)'
+                    : storagePercent > 50
+                      ? 'linear-gradient(90deg, #8b5cf6, #f59e0b)'
+                      : 'linear-gradient(90deg, #7c3aed, #6366f1)',
+                }}
+              />
+            )}
+          </div>
+          <p className="text-[11px] dark:text-zinc-600 text-stone-400">
+            {stats ? `${formatBytes(stats.storageUsed)} of ${formatBytes(stats.storageLimit)}` : 'Loading...'}
+          </p>
         </div>
 
         {/* User card */}
-        <div className="px-4 pb-4 border-t border-white/[0.06] pt-3">
-
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <div className="px-3 pb-3 border-t dark:border-white/[0.06] border-stone-200/60 pt-3">
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl dark:bg-white/[0.03] bg-stone-200/50 border dark:border-white/[0.06] border-stone-200">
             <UserAvatar name={user?.full_name || user?.username} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-zinc-200 truncate">{user?.full_name || user?.username || user?.email?.split('@')[0] || 'User'}</p>
-              <p className="text-[11px] text-zinc-600 truncate">{user?.email}</p>
+              <p className="text-xs font-semibold dark:text-zinc-200 text-stone-800 truncate">{user?.full_name || user?.username || user?.email?.split('@')[0] || 'User'}</p>
+              <p className="text-[10px] dark:text-zinc-600 text-stone-400 truncate">{user?.email}</p>
             </div>
             <button
               onClick={logout}
@@ -687,7 +767,7 @@ export function FileExplorer() {
 
       {/* ── MAIN CONTENT ───────────────────────────────────────────────── */}
       <div
-        className="flex-1 flex flex-col min-w-0 relative bg-zinc-950"
+        className="flex-1 flex flex-col min-w-0 relative dark:bg-zinc-950 bg-[#FBF9F6] transition-colors duration-300"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -737,13 +817,13 @@ export function FileExplorer() {
           </div>
 
           {/* Centered Search Bar */}
-          <div className="flex-1 flex justify-center px-4">
-            <div className="relative group w-full max-w-[320px]">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 dark:text-zinc-600 text-stone-400 group-focus-within:text-violet-400 transition-colors" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[480px] px-4 pointer-events-none">
+            <div className="relative group w-full pointer-events-auto shadow-sm hover:shadow-md transition-shadow rounded-xl">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 dark:text-zinc-500 text-stone-400 group-focus-within:text-violet-500 transition-colors" />
               <input
                 type="text"
-                placeholder="Search files..."
-                className="w-full dark:bg-white/[0.04] bg-stone-100 border dark:border-white/[0.08] border-stone-200/80 rounded-xl pl-8 pr-4 py-2 text-xs transition-all duration-200 focus:ring-1 focus:ring-violet-500/50 outline-none dark:text-zinc-200 text-stone-800 dark:placeholder-zinc-600 placeholder-stone-400 shadow-sm"
+                placeholder="Search files and folders..."
+                className="w-full dark:bg-[#1a1a1c] bg-white border dark:border-white/[0.08] border-stone-200/80 rounded-xl pl-10 pr-4 py-2.5 text-sm transition-all duration-200 focus:ring-2 focus:ring-violet-500/50 outline-none dark:text-zinc-200 text-stone-800 dark:placeholder-zinc-600 placeholder-stone-400"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -892,8 +972,8 @@ export function FileExplorer() {
             {/* ── FILES ───────────────────────────────────────────────── */}
             {displayFiles.map((file: any) => {
               const isMatch = searchQuery.trim() && file?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-              const matchHighlightGrid = isMatch ? 'ring-2 ring-violet-500 shadow-lg shadow-violet-500/20 bg-violet-500/5' : '';
-              const matchHighlightList = isMatch ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : '';
+              const matchHighlightGrid = isMatch ? 'ring-2 ring-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)] bg-violet-500/10 scale-[1.02]' : '';
+              const matchHighlightList = isMatch ? 'bg-violet-500/10 border-l-4 border-l-violet-500' : '';
               return viewMode === 'grid' ? (
                 <div
                   key={file?.id}
@@ -932,10 +1012,10 @@ export function FileExplorer() {
                   onDoubleClick={() => { if (currentSection !== 'trash') setPreviewFile(file); }}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, item: file, type: 'file' }); }}
                 >
-                  <span className="text-xl w-10 shrink-0">{getMimeIcon(file?.mime_type)}</span>
+                  <span className="text-xl w-10 shrink-0">{getMimeIcon(file?.mime_type, file?.name)}</span>
                   <span className="flex-1 truncate text-sm font-medium dark:text-zinc-200 text-stone-800 pr-4">{file?.name}</span>
                   <span className="text-xs dark:text-zinc-500 text-stone-400 w-32 shrink-0">{formatDate(file?.created_at)}</span>
-                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-24 shrink-0 truncate pr-2">{file?.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</span>
+                  <span className="text-xs dark:text-zinc-500 text-stone-400 w-24 shrink-0 truncate pr-2">{getFileTypeLabel(file?.mime_type, file?.name)}</span>
                   <span className="text-xs dark:text-zinc-500 text-stone-400 w-20 shrink-0">{formatBytes(file?.size)}</span>
                   <div className="w-56 flex justify-center shrink-0">
                     <FileActions
