@@ -1,40 +1,141 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../lib/api';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Loader2, HardDrive, Zap, Shield, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, ArrowRight, Loader2, Music } from 'lucide-react';
 
-/* ─── Floating particle canvas (CSS) ─────────────────────────────────────── */
-function FloatingParticles() {
-  const colors = ['bg-violet-500', 'bg-indigo-500', 'bg-[#2AABEE]', 'bg-pink-500', 'bg-emerald-500'];
-  const [particles, setParticles] = useState<any[]>([]);
+/* ─── Theme Initialization ──────────────────────────────────────────────── */
+function useThemeInit() {
+  useEffect(() => {
+    const isDarkMode = localStorage.getItem('theme') === 'dark' || 
+                      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+}
+
+/* ─── Creative Element: Spider Web Network ─────────────────────────────── */
+function NetworkParticles() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: { x: number, y: number, vx: number, vy: number }[] = [];
+    let animationFrameId: number;
+
+    const resize = () => {
+      canvas.width = canvas.parentElement?.clientWidth || window.innerWidth / 2;
+      canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
+      initParticles();
+    };
+
+    const initParticles = () => {
+      particles = [];
+      const numParticles = Math.floor((canvas.width * canvas.height) / 15000);
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+        });
+      }
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isDark = document.documentElement.classList.contains('dark');
+      const baseColor = isDark ? '255, 255, 255' : '124, 58, 237';
+
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${baseColor}, 0.5)`;
+        ctx.fill();
+      });
+
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(${baseColor}, ${0.2 - dist / 600})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none opacity-40 mix-blend-screen" />;
+}
+
+/* ─── Creative Element: Floating Bubbles ───────────────────────────────── */
+function FloatingBubbles() {
+  const [bubbles, setBubbles] = useState<{ id: number, size: number, left: number, duration: number, delay: number }[]>([]);
 
   useEffect(() => {
     const generated = Array.from({ length: 15 }).map((_, i) => ({
       id: i,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 4 + 2,
+      size: Math.random() * 60 + 20,
       left: Math.random() * 100,
-      duration: Math.random() * 12 + 8,
-      delay: Math.random() * 15,
+      duration: Math.random() * 20 + 10,
+      delay: Math.random() * 10,
     }));
-    setParticles(generated);
+    setBubbles(generated);
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {particles.map((p) => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <style>{`
+        @keyframes floatBubble {
+          0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+          20% { opacity: 0.4; }
+          80% { opacity: 0.4; }
+          100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+        }
+      `}</style>
+      {bubbles.map(b => (
         <div
-          key={p.id}
-          className={`absolute rounded-full opacity-60 ${p.color}`}
+          key={b.id}
+          className="absolute rounded-full border border-white/20 bg-gradient-to-tr from-white/10 to-transparent backdrop-blur-sm"
           style={{
-            width: p.size,
-            height: p.size,
-            left: `${p.left}%`,
-            bottom: '-20px',
-            animation: `floatUp ${p.duration}s linear infinite`,
-            animationDelay: `${p.delay}s`,
+            width: b.size,
+            height: b.size,
+            left: `${b.left}%`,
+            bottom: '-100px',
+            animation: `floatBubble ${b.duration}s ease-in infinite`,
+            animationDelay: `${b.delay}s`,
           }}
         />
       ))}
@@ -42,18 +143,32 @@ function FloatingParticles() {
   );
 }
 
-/* ─── Floating shape (decorative) ─────────────────────────────────────── */
-function FloatingShape({ className, delay = 0 }: { className?: string; delay?: number }) {
+/* ─── Creative Element: Audio Visualizer ───────────────────────────────── */
+function AudioVisualizer() {
   return (
-    <motion.div
-      animate={{ y: [0, -14, 0], rotate: [0, 6, 0] }}
-      transition={{ duration: 5 + Math.random() * 4, repeat: Infinity, ease: 'easeInOut', delay }}
-      className={className}
-    />
+    <div className="flex items-end gap-1.5 h-12 opacity-70">
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ height: ['20%', '100%', '40%', '80%', '20%'] }}
+          transition={{
+            duration: 1.5 + Math.random(),
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: i * 0.1
+          }}
+          className="w-2 bg-gradient-to-t from-violet-500 to-[#2AABEE] rounded-full"
+        />
+      ))}
+      <Music className="text-violet-400 w-6 h-6 ml-3 animate-pulse" />
+    </div>
   );
 }
 
+/* ─── Main Register Page ──────────────────────────────────────────────── */
 export default function Register() {
+  useThemeInit();
+
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
@@ -63,7 +178,6 @@ export default function Register() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
-  // ─── Original handler — unchanged ────────────────────────────────────
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -74,7 +188,6 @@ export default function Register() {
         headers: { Authorization: `Bearer ${data.access_token}` },
       });
       setAuth(me.data, data.access_token, data.refresh_token);
-      // After register → Telegram connect flow
       navigate('/telegram-connect');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -84,144 +197,111 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[#09090B]">
+    <div className="min-h-screen w-full flex bg-slate-50 dark:bg-[#09090B]">
 
-      {/* ── LEFT BRANDING PANEL ─────────────────────────────────────── */}
-      <div className="hidden lg:flex w-[52%] relative flex-col overflow-hidden">
-        <FloatingParticles />
+      {/* ── LEFT CREATIVE PANEL ─────────────────────────────────────── */}
+      <div className="hidden lg:flex w-[52%] relative flex-col overflow-hidden bg-slate-900 dark:bg-[#09090B]">
+        {/* Gradient base */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/60 via-violet-950/80 to-[#09090B]" />
-        <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/3 w-60 h-60 bg-violet-500/15 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+        
+        {/* Ambient glows */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/30 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 bg-violet-500/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
 
-        {/* Floating decorative file preview card mockup */}
-        <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-32 right-12 z-20 w-64 rounded-xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-xl"
-        >
-          <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-            <div className="h-8 w-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400">
-              <HardDrive className="w-4 h-4" />
+        {/* Creative Particles & Bubbles */}
+        <NetworkParticles />
+        <FloatingBubbles />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col h-full p-16 justify-between">
+          
+          {/* Top Logo - Massive */}
+          <div className="flex items-center gap-6">
+            <div className="relative flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white/10 border border-white/20 backdrop-blur-md shadow-[0_0_50px_rgba(124,58,237,0.4)]">
+               <img src="/logo-icon.png" alt="DriftIQ" className="h-14 w-14 object-contain" onError={(e) => {
+                 (e.target as HTMLImageElement).style.display = 'none';
+               }} />
             </div>
-            <div>
-              <div className="h-2 w-24 rounded bg-white/20 mb-1.5" />
-              <div className="h-2 w-12 rounded bg-white/10" />
-            </div>
-          </div>
-          <div className="mt-3 space-y-2">
-            <div className="h-1.5 w-full rounded bg-white/5" />
-            <div className="h-1.5 w-4/5 rounded bg-white/5" />
-            <div className="h-1.5 w-3/4 rounded bg-white/5" />
-          </div>
-        </motion.div>
-
-        <FloatingShape delay={0} className="absolute top-28 right-28 w-14 h-14 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm" />
-        <FloatingShape delay={1} className="absolute bottom-32 left-20 w-10 h-10 rounded-xl border border-indigo-400/20 bg-indigo-500/10 backdrop-blur-sm" />
-        <FloatingShape delay={2} className="absolute top-2/3 right-20 w-6 h-6 rounded-lg bg-violet-500/20 border border-violet-400/20" />
-
-        <div className="relative z-10 flex flex-col h-full p-14">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <img src="/logo-icon.png" alt="DriftIQ" className="h-8 w-8 object-contain" onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }} />
-            <span className="font-black italic text-xl tracking-tight select-none">
+            <span className="font-black italic text-6xl tracking-tight select-none">
               <span className="text-white">Drift</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">IQ</span>
             </span>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center mt-8">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2AABEE]/10 border border-[#2AABEE]/30 text-[#2AABEE] text-xs font-semibold mb-8 w-fit">
-              <Zap className="w-3 h-3" />
-              Powered by Telegram Bot
+          <div className="flex-1 flex flex-col justify-center">
+            <div className="mb-6">
+              <AudioVisualizer />
             </div>
 
-            <h2 className="text-4xl font-extrabold text-zinc-100 tracking-tight leading-tight mb-4">
+            <h2 className="text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
               Start storing<br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-violet-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400 animate-shimmer">
                 smarter today.
               </span>
             </h2>
-            <p className="text-zinc-400 text-base leading-relaxed max-w-xs mb-10">
-              Get 5 GB of free storage instantly. No credit card required.
+            <p className="text-zinc-300 text-lg leading-relaxed max-w-sm mb-12 backdrop-blur-sm bg-black/10 p-4 rounded-xl border border-white/5">
+              Get 5 GB of free storage instantly. Join the revolution of Telegram-powered limitless storage.
             </p>
 
             {/* 3-step mini flow */}
-            <div className="flex items-center gap-3 text-sm font-medium text-zinc-300 mb-10 bg-white/[0.03] p-4 rounded-xl border border-white/[0.05] w-fit">
+            <div className="flex items-center gap-4 text-sm font-bold text-zinc-300 mb-10 bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10 w-fit shadow-xl">
               <span className="text-white">Register</span>
-              <ArrowRight className="w-4 h-4 text-violet-400 opacity-60" />
+              <ArrowRight className="w-5 h-5 text-violet-400 opacity-60" />
               <span className="text-zinc-400">Connect Telegram</span>
-              <ArrowRight className="w-4 h-4 text-violet-400 opacity-60" />
+              <ArrowRight className="w-5 h-5 text-violet-400 opacity-60" />
               <span className="text-zinc-400">Start Uploading</span>
             </div>
-
-            <ul className="space-y-3.5">
-              {[
-                { icon: <Zap className="w-3.5 h-3.5" />, text: 'Sync files via Telegram bot' },
-                { icon: <Shield className="w-3.5 h-3.5" />, text: 'Share with password protection' },
-                { icon: <RefreshCw className="w-3.5 h-3.5" />, text: 'Real-time collaboration updates' },
-                { icon: <HardDrive className="w-3.5 h-3.5" />, text: 'Admin controls & analytics' },
-              ].map(item => (
-                <li key={item.text} className="flex items-center gap-3 text-sm text-zinc-400">
-                  <div className="w-6 h-6 rounded-md bg-violet-500/15 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
-                    {item.icon}
-                  </div>
-                  {item.text}
-                </li>
-              ))}
-            </ul>
           </div>
-
-          <p className="text-xs text-zinc-600 mt-4">Free forever · No credit card · Cancel anytime</p>
         </div>
       </div>
 
       {/* ── RIGHT FORM PANEL ────────────────────────────────────────── */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 to-zinc-900/50" />
+        {/* Clean solid background */}
+        <div className="absolute inset-0 bg-slate-50 dark:bg-[#050505]" />
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="relative w-full max-w-sm"
+          className="relative w-full max-w-md"
         >
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-10">
-            <img src="/logo-icon.png" alt="DriftIQ" className="h-8 w-8 object-contain" onError={(e) => {
+          <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
+            <img src="/logo-icon.png" alt="DriftIQ" className="h-10 w-10 object-contain" onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }} />
-            <span className="font-black italic text-xl tracking-tight select-none">
-              <span className="text-white">Drift</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-400">IQ</span>
+            <span className="font-black italic text-3xl tracking-tight select-none">
+              <span className="text-slate-900 dark:text-white">Drift</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-indigo-500">IQ</span>
             </span>
           </div>
 
-          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-8 backdrop-blur-sm">
-            <h1 className="text-2xl font-bold text-zinc-100 tracking-tight mb-1">Create account</h1>
-            <p className="text-sm text-zinc-500 mb-8">Free forever. No credit card required.</p>
+          {/* Clean Card Container */}
+          <div className="bg-white dark:bg-[#0A0A0A] border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] p-8 md:p-10 relative z-10">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Create account</h1>
+            <p className="text-sm text-slate-500 dark:text-zinc-400 mb-8">Free forever. No credit card required.</p>
 
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm"
+                className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl mb-6 text-sm"
               >
                 {error}
               </motion.div>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-5">
               <div>
                 <label className="label">Full Name</label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <User className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     required
                     placeholder="Jane Smith"
-                    className="input-field pl-10 focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50"
+                    className="input-field pl-12 h-14"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -231,12 +311,12 @@ export default function Register() {
               <div>
                 <label className="label">Username</label>
                 <div className="relative">
-                  <span className="text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">@</span>
+                  <span className="text-slate-400 dark:text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none font-bold">@</span>
                   <input
                     type="text"
                     required
                     placeholder="janesmith"
-                    className="input-field pl-9 focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50"
+                    className="input-field pl-10 h-14"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
@@ -246,12 +326,12 @@ export default function Register() {
               <div>
                 <label className="label">Email</label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Mail className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="email"
                     required
                     placeholder="you@example.com"
-                    className="input-field pl-10 focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50"
+                    className="input-field pl-12 h-14"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -261,12 +341,12 @@ export default function Register() {
               <div>
                 <label className="label">Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Lock className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="password"
                     required
                     placeholder="Min. 6 characters"
-                    className="input-field pl-10 focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500/50"
+                    className="input-field pl-12 h-14"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -276,22 +356,22 @@ export default function Register() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full mt-2 py-3 disabled:opacity-60 disabled:cursor-not-allowed group animate-shimmer-btn bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-[#7C3AED]"
+                className="btn-primary w-full mt-4 h-14 text-base disabled:opacity-60 disabled:cursor-not-allowed group"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                 ) : (
                   <>
                     Create Account
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-zinc-500">
+            <p className="mt-8 text-center text-sm text-slate-500 dark:text-zinc-500">
               Already have an account?{' '}
-              <Link to="/login" className="text-violet-400 hover:text-violet-300 font-medium transition">
+              <Link to="/login" className="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-bold transition">
                 Sign in
               </Link>
             </p>

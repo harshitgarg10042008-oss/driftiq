@@ -227,14 +227,14 @@ export default function Login() {
         {/* Content */}
         <div className="relative z-10 flex flex-col h-full p-16 justify-between">
           
-          {/* Top Logo - Much Larger */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md shadow-[0_0_30px_rgba(124,58,237,0.3)]">
-               <img src="/logo-icon.png" alt="DriftIQ" className="h-8 w-8 object-contain" onError={(e) => {
+          {/* Top Logo - Massive */}
+          <div className="flex items-center gap-6">
+            <div className="relative flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white/10 border border-white/20 backdrop-blur-md shadow-[0_0_50px_rgba(124,58,237,0.4)]">
+               <img src="/logo-icon.png" alt="DriftIQ" className="h-14 w-14 object-contain" onError={(e) => {
                  (e.target as HTMLImageElement).style.display = 'none';
                }} />
             </div>
-            <span className="font-black italic text-4xl tracking-tight select-none">
+            <span className="font-black italic text-6xl tracking-tight select-none">
               <span className="text-white">Drift</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">IQ</span>
             </span>
@@ -274,8 +274,8 @@ export default function Login() {
 
       {/* ── RIGHT FORM PANEL ────────────────────────────────────────── */}
       <div className="flex-1 flex items-center justify-center p-8 relative">
-        {/* Subtle background noise */}
-        <div className="absolute inset-0 bg-slate-50 dark:bg-gradient-to-br dark:from-zinc-950 dark:to-zinc-900/50" />
+        {/* Clean solid background */}
+        <div className="absolute inset-0 bg-slate-50 dark:bg-[#050505]" />
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -300,7 +300,7 @@ export default function Login() {
           </div>
 
           {/* Clean Card Container */}
-          <div className="bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] shadow-xl dark:shadow-none rounded-[2rem] p-8 md:p-10 backdrop-blur-xl">
+          <div className="bg-white dark:bg-[#0A0A0A] border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] p-8 md:p-10 relative z-10">
             <AnimatePresence mode="wait">
               {/* ── LOGIN VIEW ─────────────────────────────────────────── */}
               {view === 'login' && (
