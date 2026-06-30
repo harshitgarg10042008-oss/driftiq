@@ -332,7 +332,7 @@ export default function Login() {
                         <input
                           type="text"
                           required
-                          placeholder="you@example.com"
+                          placeholder="you@example.com" or username
                           className="input-field pl-12 h-14"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
