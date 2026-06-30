@@ -816,9 +816,9 @@ export function FileExplorer() {
             )}
           </div>
 
-          {/* Centered Search Bar */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[480px] px-4 pointer-events-none">
-            <div className="relative group w-full pointer-events-auto shadow-sm hover:shadow-md transition-shadow rounded-xl">
+          {/* Centered Search Bar & Upload */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-[52%] -translate-y-1/2 w-full max-w-[600px] px-4 pointer-events-none flex items-center gap-3">
+            <div className="relative group w-full pointer-events-auto shadow-sm hover:shadow-md transition-shadow rounded-xl flex-1">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 dark:text-zinc-500 text-stone-400 group-focus-within:text-violet-500 transition-colors" />
               <input
                 type="text"
@@ -828,7 +828,16 @@ export function FileExplorer() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="pointer-events-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white shadow-sm hover:shadow-md transition-all shrink-0"
+              title="Upload File"
+            >
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Upload</span>
+            </button>
           </div>
+
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 w-1/3">
